@@ -13,7 +13,7 @@ Go to `$url` and try to: **$goal**
 
 You have never used this website before. You only know what you want to accomplish.
 
-Follow the browser interaction protocol at [../ux-tester/browser-protocol.md](../ux-tester/browser-protocol.md) for all page interactions.
+Follow the browser interaction protocol at [../ux/browser-protocol.md](../ux/browser-protocol.md) for all page interactions.
 
 ## How You Behave
 
@@ -58,7 +58,7 @@ Real users give up. So will you:
 
 ## Personas
 
-Load persona definitions from [../ux-tester/personas.md](../ux-tester/personas.md). Select the best-fit persona based on the goal:
+Load persona definitions from [../ux/personas.md](../ux/personas.md). Select the best-fit persona based on the goal:
 
 - Purchasing/pricing → Tom (Skeptical Comparison Shopper)
 - Sign up/registration → Sarah (First-Time Visitor)

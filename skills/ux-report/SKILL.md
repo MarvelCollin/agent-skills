@@ -19,7 +19,7 @@ Search the current conversation and working directory for:
 
 ## Report Generation
 
-Use the template at [../ux-tester/templates/report-template.md](../ux-tester/templates/report-template.md) as the base structure.
+Use the template at [../ux/templates/report-template.md](../ux/templates/report-template.md) as the base structure.
 
 Fill in every section based on available data. Handle partial data gracefully:
 
@@ -27,7 +27,7 @@ Fill in every section based on available data. Handle partial data gracefully:
 
 | Data Available | Behavior |
 |---------------|----------|
-| Full audit ran (ux-tester) | Fill all sections with findings |
+| Full audit ran (/ux) | Fill all sections with findings |
 | Only flow tests ran | Fill flow sections, mark others "Not tested in this session" |
 | Only accessibility ran | Fill a11y section, mark others "Not tested in this session" |
 | Only comparison ran | Adapt template to comparison format |
@@ -36,11 +36,11 @@ Fill in every section based on available data. Handle partial data gracefully:
 For untested categories:
 - Do NOT assign a score (use "—" not "0")
 - Do NOT include in overall score calculation (adjust weights proportionally)
-- DO include a note: "Run /ux-tester with [focus] to evaluate this category"
+- DO include a note: "Run /ux with [focus] to evaluate this category"
 
 ## Scoring
 
-Apply the scoring rubric from [../ux-tester/scoring-rubric.md](../ux-tester/scoring-rubric.md):
+Apply the scoring rubric from [../ux/scoring-rubric.md](../ux/scoring-rubric.md):
 
 1. Score each category 1-10 based on findings
 2. Calculate the weighted overall score

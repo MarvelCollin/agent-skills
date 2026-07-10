@@ -43,9 +43,9 @@ For each task:
 
 ### Phase 4: Category-by-Category Scoring
 
-Score both sites using the rubric at [../ux-tester/scoring-rubric.md](../ux-tester/scoring-rubric.md).
+Score both sites using the rubric at [../ux/scoring-rubric.md](../ux/scoring-rubric.md).
 
-Use the same persona (Sarah - First-Time Visitor from [../ux-tester/personas.md](../ux-tester/personas.md)) for both to keep comparison fair.
+Use the same persona (Sarah - First-Time Visitor from [../ux/personas.md](../ux/personas.md)) for both to keep comparison fair.
 
 If `$focus` is provided, deep-dive that category.
 
@@ -54,11 +54,11 @@ If `$focus` is provided, deep-dive that category.
 Run performance checks on both:
 
 ```!
-bash ${CLAUDE_SKILL_DIR}/../../../scripts/perf-check.sh $url1
+bash ${CLAUDE_SKILL_DIR}/../../scripts/perf-check.sh $url1
 ```
 
 ```!
-bash ${CLAUDE_SKILL_DIR}/../../../scripts/perf-check.sh $url2
+bash ${CLAUDE_SKILL_DIR}/../../scripts/perf-check.sh $url2
 ```
 
 ## Output Format

@@ -7,6 +7,8 @@ allowed-tools: Bash(curl *) Bash(npx *) Bash(playwright *) WebFetch WebSearch Re
 
 You are an accessibility specialist auditing `$url` against WCAG guidelines. Default level is AA. If `$level` is provided, use that (A, AA, or AAA).
 
+Follow the browser interaction protocol at [../ux/browser-protocol.md](../ux/browser-protocol.md) for all page interactions.
+
 ## Automated Checks
 
 Run automated accessibility scanning:
