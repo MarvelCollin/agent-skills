@@ -1,15 +1,18 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "skills": {
-    "ux-tester": {
+    "ux": {
       "cases": [
         {
-          "id": "ux-tester-basic",
-          "input": "/ux-tester https://example.com",
+          "id": "ux-full-audit",
+          "input": "/ux https://example.com",
           "expected_sections": [
             "Executive Summary",
             "Scores Breakdown",
             "Critical Issues",
+            "Cookie Consent & Privacy",
+            "Dark Mode & Theming",
+            "Error Pages (404, 500)",
             "Top 3 Quick Wins"
           ],
           "expected_scores": {
@@ -20,12 +23,18 @@
             "takes_screenshots",
             "navigates_multiple_pages",
             "tests_interactive_elements",
-            "identifies_at_least_one_issue"
+            "identifies_at_least_one_issue",
+            "rotates_personas_across_phases",
+            "delegates_to_ux_flow_test",
+            "delegates_to_ux_accessibility",
+            "tests_cookie_consent",
+            "tests_404_page",
+            "checks_dark_mode"
           ]
         },
         {
-          "id": "ux-tester-focus-nav",
-          "input": "/ux-tester https://example.com nav",
+          "id": "ux-focus-nav",
+          "input": "/ux https://example.com nav",
           "expected_sections": [
             "Navigation & IA"
           ],
@@ -37,14 +46,35 @@
           ]
         },
         {
-          "id": "ux-tester-focus-mobile",
-          "input": "/ux-tester https://example.com mobile",
+          "id": "ux-focus-mobile",
+          "input": "/ux https://example.com mobile",
           "expected_behavior": [
             "tests_375px_viewport",
             "tests_768px_viewport",
             "checks_touch_targets",
             "checks_horizontal_scroll",
             "uses_aisha_persona"
+          ]
+        },
+        {
+          "id": "ux-focus-privacy",
+          "input": "/ux https://example.com privacy",
+          "expected_behavior": [
+            "uses_tom_persona",
+            "checks_cookie_banner",
+            "checks_reject_all_ease",
+            "checks_privacy_policy_link",
+            "tests_site_without_cookies"
+          ]
+        },
+        {
+          "id": "ux-focus-404",
+          "input": "/ux https://example.com 404",
+          "expected_behavior": [
+            "navigates_to_nonexistent_path",
+            "checks_custom_404_page",
+            "checks_recovery_options",
+            "checks_branding_consistency"
           ]
         }
       ]
@@ -104,7 +134,8 @@
             "checks_contrast",
             "checks_keyboard_nav",
             "checks_heading_hierarchy",
-            "runs_automated_scan"
+            "runs_automated_scan",
+            "follows_browser_protocol"
           ]
         },
         {
@@ -142,18 +173,23 @@
     "ux-report": {
       "cases": [
         {
-          "id": "report-generation",
+          "id": "report-full",
           "input": "/ux-report",
           "expected_sections": [
             "Executive Summary",
             "Scores Breakdown",
+            "Cookie Consent & Privacy",
+            "Dark Mode & Theming",
+            "Error Pages (404, 500)",
+            "Top 3 Quick Wins",
             "Recommendations"
           ],
           "expected_behavior": [
             "fills_all_template_sections",
             "marks_untested_sections_as_not_tested",
             "calculates_weighted_score",
-            "prioritizes_findings"
+            "prioritizes_findings",
+            "uses_dash_for_untested_scores"
           ]
         }
       ]
