@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 URL="${1:?Usage: lighthouse-audit.sh <url> [output-dir]}"
 OUTPUT_DIR="${2:-.}"

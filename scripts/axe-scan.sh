@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 URL="${1:?Usage: axe-scan.sh <url> [output-file]}"
 OUTPUT="${2:-axe-results.json}"
