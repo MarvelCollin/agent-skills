@@ -101,6 +101,28 @@
 
 ---
 
+## AI Design Slop Audit
+
+**Slop Score: {{slop_score}} ({{slop_rating}})**
+
+| Category | P0 | P1 | P2 | Patterns |
+|----------|----|----|----|----|
+| Colors | {{color_p0}} | {{color_p1}} | {{color_p2}} | {{color_patterns}} |
+| Typography | {{type_p0}} | {{type_p1}} | {{type_p2}} | {{type_patterns}} |
+| Layout | {{layout_p0}} | {{layout_p1}} | {{layout_p2}} | {{layout_patterns}} |
+| Components | {{comp_p0}} | {{comp_p1}} | {{comp_p2}} | {{comp_patterns}} |
+| Content | {{content_p0}} | {{content_p1}} | {{content_p2}} | {{content_patterns}} |
+| Motion | {{motion_p0}} | {{motion_p1}} | {{motion_p2}} | {{motion_patterns}} |
+| Structure | {{struct_p0}} | {{struct_p1}} | {{struct_p2}} | {{struct_patterns}} |
+
+### Biggest AI Tells
+{{biggest_tells}}
+
+### De-Slop Recommendations
+{{deslop_recs}}
+
+---
+
 ## Top 3 Quick Wins
 
 {{quick_wins}}

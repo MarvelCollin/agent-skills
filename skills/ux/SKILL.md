@@ -28,6 +28,7 @@ Load persona definitions from [personas.md](personas.md). Rotate personas across
 | Phase 9 (Privacy) | Tom (Skeptical Comparison Shopper) | Privacy-conscious |
 | Phase 10 (Dark Mode) | Marcus (Returning Power User) | Power user expectation |
 | Phase 11 (Error Pages) | Sarah (First-Time Visitor) | Lost user scenario |
+| Phase 12 (AI Slop) | Tom (Skeptical Comparison Shopper) | Notices generic/template feel |
 
 If `$focus` includes a persona name (e.g., "mobile" uses Aisha, "exec" uses David), weight that persona throughout.
 
@@ -157,6 +158,14 @@ Test error handling at the page level:
 4. Does the 404 page maintain the site's branding?
 5. Test back button behavior from the error page
 
+### Phase 12: AI Design Slop Detection
+
+Delegate to `/ux-slop $url` for full AI pattern audit.
+
+This checks for 80+ known AI-generated design patterns across colors, typography, layout, components, content, motion, and structure. Produces a slop score and identifies the biggest tells.
+
+Merge the slop score and top findings into the report. If slop score is "Heavy" or "Maximum," flag it as a major issue in the executive summary.
+
 ## Evaluation Framework
 
 Score every finding using the rubric at [scoring-rubric.md](scoring-rubric.md).
@@ -175,6 +184,7 @@ Focus area mappings:
 - "privacy" or "gdpr" → Phase 9 deep dive
 - "dark" or "theme" → Phase 10 deep dive
 - "404" → Phase 11 deep dive
+- "slop" or "ai" → Phase 12 deep dive (delegate to `/ux-slop $url`)
 
 ## Sub-Skill Delegation
 
@@ -182,6 +192,7 @@ This skill orchestrates other skills when doing a full audit:
 
 - **Phase 3** → delegates to `/ux-flow-test` for each identified flow
 - **Phase 8** → delegates to `/ux-accessibility $url` for WCAG audit
+- **Phase 12** → delegates to `/ux-slop $url` for AI pattern detection
 - **Report** → delegates to `/ux-report` for final compiled output
 
 When delegating, pass all findings collected so far as context. Merge sub-skill results into the final report.
