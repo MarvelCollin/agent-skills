@@ -7,5 +7,24 @@
     "url": "https://github.com/MarvelCollin"
   },
   "skills": "./skills/",
-  "scripts": "./scripts/"
+  "scripts": "./scripts/",
+  "agents": [],
+  "hooks": {},
+  "mcpServers": {},
+  "dependencies": [],
+  "defaultEnabled": true,
+  "keywords": [
+    "ux",
+    "testing",
+    "accessibility",
+    "usability",
+    "user-testing",
+    "qa",
+    "audit"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MarvelCollin/user-testing-skills"
+  },
+  "license": "MIT"
 }
