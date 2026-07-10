@@ -15,8 +15,8 @@ if ($LASTEXITCODE -eq 0) {
 
     if (Test-Path $Output) {
         $results = Get-Content $Output | ConvertFrom-Json
-        $violations = ($results | ForEach-Object { $_.violations }) | Measure-Object | Select-Object -ExpandProperty Count
-        $passes = ($results | ForEach-Object { $_.passes }) | Measure-Object | Select-Object -ExpandProperty Count
+        $violations = @($results | ForEach-Object { $_.violations } | Where-Object { $_ -ne $null }).Count
+        $passes = @($results | ForEach-Object { $_.passes } | Where-Object { $_ -ne $null }).Count
         Write-Output "VIOLATIONS: $violations"
         Write-Output "PASSES: $passes"
 
