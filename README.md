@@ -1,16 +1,40 @@
 # User Testing Skills
 
-Claude Code plugin that acts as a human user to test websites for usability, UX quality, accessibility, performance, and user flow issues.
+Claude Code plugin that acts as a human user to test websites for usability, UX quality, accessibility, performance, privacy, and user flow issues.
 
-## Skills
+## Quick Start
 
-| Skill | Trigger | Purpose |
-|-------|---------|---------|
-| `/ux-tester` | Manual | Full UX audit — orchestrates all other skills |
-| `/ux-flow-test` | Manual | Test a specific user flow end-to-end |
-| `/ux-accessibility` | Manual/Auto | WCAG A/AA/AAA compliance audit |
-| `/ux-compare` | Manual | Head-to-head comparison of two websites |
-| `/ux-report` | Manual | Compile findings into prioritized report |
+```
+/ux https://your-site.com
+```
+
+One command. Tests everything: navigation, flows, interactions, errors, performance, responsive, accessibility, privacy, dark mode, 404 pages. Produces a scored report with prioritized findings.
+
+## All Skills
+
+| Skill | Usage | Purpose |
+|-------|-------|---------|
+| `/ux` | `/ux <url> [focus]` | Full comprehensive UX audit |
+| `/ux-flow-test` | `/ux-flow-test <url> "goal"` | Test a specific user flow |
+| `/ux-accessibility` | `/ux-accessibility <url> [A\|AA\|AAA]` | WCAG compliance audit |
+| `/ux-compare` | `/ux-compare <url1> <url2>` | Head-to-head comparison |
+| `/ux-report` | `/ux-report [output-path]` | Compile findings into report |
+
+## Focus Areas
+
+Run `/ux` with a focus area for targeted deep-dives:
+
+```
+/ux https://example.com nav        # Navigation deep dive
+/ux https://example.com mobile     # Responsive + touch targets
+/ux https://example.com forms      # Form interactions
+/ux https://example.com a11y       # Accessibility
+/ux https://example.com privacy    # Cookie consent + GDPR
+/ux https://example.com perf       # Performance
+/ux https://example.com errors     # Error handling
+/ux https://example.com dark       # Dark mode testing
+/ux https://example.com 404        # Error pages
+```
 
 ## Installation
 
@@ -18,36 +42,23 @@ Claude Code plugin that acts as a human user to test websites for usability, UX 
 claude plugin add ./
 ```
 
-## Usage
-
-```
-/ux-tester https://example.com
-/ux-tester https://example.com mobile
-/ux-flow-test https://example.com "sign up and create first project"
-/ux-accessibility https://example.com
-/ux-accessibility https://example.com AAA
-/ux-compare https://site-a.com https://site-b.com
-/ux-report
-/ux-report ./reports/my-report.md
-```
-
 ## Project Structure
 
 ```
 .claude-plugin/plugin.json    Plugin manifest
-skills/                       Skill definitions
-  ux-tester/                  Full audit orchestrator + shared resources
-    SKILL.md                  Main skill
+skills/
+  ux/                         Main orchestrator + shared resources
+    SKILL.md                  11-phase comprehensive audit
     browser-protocol.md       Browser interaction rules
     personas.md               6 test personas
     scoring-rubric.md         8-category weighted scoring
-    ux-heuristics.md          Nielsen's 10 + cognitive load framework
-    templates/                Report and flow test templates
+    ux-heuristics.md          Nielsen's 10 + cognitive load
+    templates/                Report and flow templates
   ux-flow-test/               Goal-based user flow simulation
-  ux-accessibility/           WCAG compliance auditor
-  ux-compare/                 Side-by-side website comparison
-  ux-report/                  Report compiler with partial data handling
-scripts/                      Automation scripts (bash + PowerShell)
+  ux-accessibility/           WCAG A/AA/AAA auditor
+  ux-compare/                 Side-by-side comparison
+  ux-report/                  Report compiler
+scripts/                      Automation (bash + PowerShell)
 evals/                        Skill evaluation test cases
 ```
 
@@ -57,4 +68,4 @@ evals/                        Skill evaluation test cases
 |--------|---------|
 | `lighthouse-audit.sh/.ps1` | Lighthouse performance + a11y scan |
 | `axe-scan.sh/.ps1` | axe-core accessibility violations |
-| `perf-check.sh/.ps1` | TTFB, compression, cache header checks |
+| `perf-check.sh/.ps1` | TTFB, compression, cache checks |
