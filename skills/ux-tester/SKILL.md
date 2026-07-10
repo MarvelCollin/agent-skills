@@ -45,13 +45,13 @@ At each page, screenshot and note:
 
 ### Phase 3: Core Flow Testing
 
-Identify and test the primary user flows:
+Identify the primary user flows and delegate each to `/ux-flow-test`:
 
-1. The main conversion action (sign up, buy, contact, etc.)
-2. The information discovery flow (find specific content)
-3. Any secondary flows (settings, help, account management)
+1. `/ux-flow-test $url "complete the main conversion action (sign up, buy, contact)"`
+2. `/ux-flow-test $url "find specific information about the product/service"`
+3. `/ux-flow-test $url "access account settings or help"`
 
-For each flow, document every step using the flow test template at [flow-test-template.md](templates/flow-test-template.md).
+Collect results from each sub-test and merge into the overall report.
 
 ### Phase 4: Interaction Quality
 
@@ -109,7 +109,17 @@ Focus area mappings:
 - "errors" → Phase 5 deep dive
 - "perf" or "performance" → Phase 6 deep dive
 - "mobile" → Phase 7 deep dive
-- "a11y" or "accessibility" → Run /ux-accessibility instead
+- "a11y" or "accessibility" → Delegate to `/ux-accessibility $url`
+
+## Sub-Skill Delegation
+
+This skill orchestrates other skills when doing a full audit:
+
+- **Phase 3** → delegates to `/ux-flow-test` for each identified flow
+- **Accessibility** → delegates to `/ux-accessibility $url` for WCAG audit
+- **Report** → delegates to `/ux-report` for final compiled output
+
+When delegating, pass all findings collected so far as context. Merge sub-skill results into the final report.
 
 ## Output Format
 
