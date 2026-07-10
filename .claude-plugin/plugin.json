@@ -1,0 +1,11 @@
+{
+  "name": "agent-ux-tester",
+  "displayName": "Agent UX Tester",
+  "version": "0.1.0",
+  "author": {
+    "name": "MarvelCollin",
+    "url": "https://github.com/MarvelCollin"
+  },
+  "skills": "./skills/",
+  "scripts": "./scripts/"
+}
