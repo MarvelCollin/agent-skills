@@ -1,0 +1,10 @@
+ux-report-*.md
+screenshots/
+*.report.json
+*.report.html
+axe-results.json
+lighthouse_*
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
