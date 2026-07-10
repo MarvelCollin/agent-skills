@@ -29,7 +29,21 @@
             "delegates_to_ux_accessibility",
             "tests_cookie_consent",
             "tests_404_page",
-            "checks_dark_mode"
+            "checks_dark_mode",
+            "delegates_to_ux_slop",
+            "reports_slop_score"
+          ]
+        },
+        {
+          "id": "ux-focus-slop",
+          "input": "/ux https://example.com slop",
+          "expected_behavior": [
+            "delegates_to_ux_slop",
+            "scans_colors_typography_layout_components",
+            "scans_content_for_buzzwords",
+            "checks_font_families",
+            "produces_slop_score",
+            "lists_pattern_ids"
           ]
         },
         {
@@ -170,6 +184,42 @@
         }
       ]
     },
+    "ux-slop": {
+      "cases": [
+        {
+          "id": "slop-basic",
+          "input": "/ux-slop https://example.com",
+          "expected_sections": [
+            "Slop Score",
+            "Pattern Breakdown",
+            "Detailed Findings",
+            "Biggest AI Tells",
+            "De-Slop Recommendations",
+            "What's Actually Good"
+          ],
+          "expected_behavior": [
+            "takes_screenshot",
+            "fetches_html_source",
+            "checks_color_patterns",
+            "checks_typography_patterns",
+            "checks_layout_patterns",
+            "checks_component_patterns",
+            "checks_content_buzzwords",
+            "checks_motion_patterns",
+            "calculates_weighted_score",
+            "uses_pattern_ids"
+          ]
+        },
+        {
+          "id": "slop-strict",
+          "input": "/ux-slop https://example.com strict",
+          "expected_behavior": [
+            "includes_p2_patterns",
+            "stricter_scoring"
+          ]
+        }
+      ]
+    },
     "ux-report": {
       "cases": [
         {
@@ -181,6 +231,7 @@
             "Cookie Consent & Privacy",
             "Dark Mode & Theming",
             "Error Pages (404, 500)",
+            "AI Design Slop Audit",
             "Top 3 Quick Wins",
             "Recommendations"
           ],

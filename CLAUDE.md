@@ -11,6 +11,7 @@ skills/                       Skill definitions (each folder = one slash command
   ux-flow-test/               Single user flow tester
   ux-accessibility/           WCAG compliance auditor
   ux-compare/                 Head-to-head site comparison
+  ux-slop/                    AI design slop detector
   ux-report/                  Report compiler
 scripts/                      Automation scripts (.sh + .ps1 variants)
 evals/                        Test cases for skill evaluation
@@ -44,5 +45,7 @@ Run evals with:
 /ux-flow-test https://example.com "sign up for account"
 /ux-accessibility https://example.com
 /ux-compare https://site-a.com https://site-b.com
+/ux-slop https://example.com
+/ux-slop https://example.com strict
 /ux-report
 ```
