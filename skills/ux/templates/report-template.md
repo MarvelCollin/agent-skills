@@ -2,7 +2,7 @@
 
 **URL:** {{url}}
 **Date:** {{date}}
-**Tester:** Agent UX Tester v0.1.0
+**Tester:** User Testing Skills v0.1.0
 
 ---
 
@@ -80,3 +80,27 @@
 | Viewport | {{viewport}} |
 | Connection | {{connection}} |
 | Device Type | {{device}} |
+
+---
+
+## Cookie Consent & Privacy
+
+{{cookie_privacy}}
+
+---
+
+## Dark Mode & Theming
+
+{{dark_mode}}
+
+---
+
+## Error Pages (404, 500)
+
+{{error_pages}}
+
+---
+
+## Top 3 Quick Wins
+
+{{quick_wins}}
