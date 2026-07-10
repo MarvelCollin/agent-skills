@@ -1,4 +1,5 @@
 # User Testing Skills
+![License](https://img.shields.io/github/license/MarvelCollin/user-testing-skills) ![Last commit](https://img.shields.io/github/last-commit/MarvelCollin/user-testing-skills) ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 
 Claude Code plugin that acts as a human user to test websites for usability, UX quality, accessibility, performance, privacy, and user flow issues.
 
