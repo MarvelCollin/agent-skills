@@ -21,7 +21,22 @@ Search the current conversation and working directory for:
 
 Use the template at [../ux-tester/templates/report-template.md](../ux-tester/templates/report-template.md) as the base structure.
 
-Fill in every section. If data for a section is missing, mark it as "Not tested" rather than omitting it.
+Fill in every section based on available data. Handle partial data gracefully:
+
+### Section Completeness Rules
+
+| Data Available | Behavior |
+|---------------|----------|
+| Full audit ran (ux-tester) | Fill all sections with findings |
+| Only flow tests ran | Fill flow sections, mark others "Not tested in this session" |
+| Only accessibility ran | Fill a11y section, mark others "Not tested in this session" |
+| Only comparison ran | Adapt template to comparison format |
+| Mixed partial data | Fill what's available, aggregate scores only from tested categories |
+
+For untested categories:
+- Do NOT assign a score (use "—" not "0")
+- Do NOT include in overall score calculation (adjust weights proportionally)
+- DO include a note: "Run /ux-tester with [focus] to evaluate this category"
 
 ## Scoring
 
