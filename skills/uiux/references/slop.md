@@ -67,7 +67,7 @@ Fetch the page HTML via WebFetch. Analyze:
 - Scan all visible text for buzzwords from detection list
 - Check headlines against vague aspirational patterns
 - Check for fake social proof claims
-- Count em-dashes per paragraph
+- Flag any em dash or semicolon in copy (X04)
 - Check for abstract opening verbs
 - Check CTA copy quality
 

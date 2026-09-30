@@ -2,9 +2,9 @@
 
 ## Severity Levels
 
-- **P0** — Screams AI on sight. Instant tell.
-- **P1** — Obvious AI smell. Trained eyes spot immediately.
-- **P2** — Cosmetic AI pattern. Subtle but contributes to the "vibe-coded" feel.
+- **P0**: Screams AI on sight. Instant tell.
+- **P1**: Obvious AI smell. Trained eyes spot immediately.
+- **P2**: Cosmetic AI pattern. Subtle but contributes to the "vibe-coded" feel.
 
 ---
 
@@ -151,7 +151,7 @@
 
 | ID | Pattern | Detection |
 |----|---------|-----------|
-| X04 | Em-Dash Overuse | More than 2 em-dashes (`—`) per paragraph in body copy |
+| X04 | Em Dashes and Semicolons in Copy | Any em dash (U+2014) or semicolon joining clauses in UI copy, headings, buttons or messages |
 | X05 | Abstract Opening Verbs | "Unlock," "Transform," "Discover," "Reimagine" as section openers |
 | X06 | Hedging Value Props | "May help you," "can potentially," "designed to possibly" in value proposition |
 | X07 | Generic Audience Copy | "For modern teams," "for forward-thinking companies," "for the next generation" |

@@ -29,7 +29,7 @@ Fill in every section based on available data. Handle partial data gracefully:
 | Mixed partial data | Fill what's available, aggregate scores only from tested categories |
 
 For untested categories:
-- Do NOT assign a score (use "—" not "0")
+- Do NOT assign a score (write "Not tested", not "0")
 - Do NOT include in overall score calculation (adjust weights proportionally)
 - DO include a note: "Run `/uiux <url> <focus>` to evaluate this category"
 
@@ -75,6 +75,8 @@ The executive summary must be 3-5 sentences max. It should answer:
 4. What's the single biggest strength?
 
 No jargon in the executive summary. A non-technical stakeholder must understand it.
+
+Write the whole report without semicolons or em dashes. Use short sentences, commas and colons instead.
 
 ## Comparison Mode
 
