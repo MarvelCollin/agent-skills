@@ -33,6 +33,8 @@ Claude also loads the skill on its own whenever you ask it to build or restyle U
 | R7 Custom controls | Custom scrollbars, date pickers, selects, checkboxes, sliders, dialogs and tooltips, built on accessible APG patterns |
 | R8 Specific, consistent layouts | Layouts come from the product's content and main task, not a template, with one set of tokens and one component per job |
 | R9 Clean copy | No semicolons and no em dashes in UI text or in anything the skill writes |
+| R10 Fast data loading | Tables and lists paginate from the backend with server-side sort and filter, skeleton loading states, no layout shift, no lag |
+| R11 Real avatars | A real photo or a neutral placeholder, never a circle of initials |
 
 It also applies the guides on [navigation](skills/uiux/references/navigation.md), [color picking](skills/uiux/references/color.md) and [Shneiderman's Eight Golden Rules](skills/uiux/references/golden-rules.md).
 

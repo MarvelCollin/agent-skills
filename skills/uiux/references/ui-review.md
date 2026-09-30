@@ -20,7 +20,9 @@ If the UI can run (a dev server, a static file, a preview), open it with a brows
 4. Trigger every state you built: empty, loading, error, success, disabled, long text, many rows
 5. For tables: search, filter every column, sort, clear filters, reload, and check that the filters survive
 6. For overlays: open each one with short and long content and check that it sizes itself and scrolls only its body
-7. Squint at the screenshot and view it in grayscale (see the checks in [color.md](color.md))
+7. For speed (R10): load tables and lists against a large dataset. Check the network panel: one page per request with paging, sort and filter parameters, never the whole dataset. Throttle the network and confirm skeletons appear with no layout jump. Type in search and confirm it debounces and queries the server
+8. For avatars (R11): view users with and without photos. No initials circles
+9. Squint at the screenshot and view it in grayscale (see the checks in [color.md](color.md))
 
 ## 3. Answer the Three Questions
 
@@ -36,6 +38,7 @@ Rate each of the Eight Golden Rules in [golden-rules.md](golden-rules.md) Pass, 
 Judge the feel, with evidence for each point:
 - Visual hierarchy: the main action and content are obvious first
 - Color: pastel palette or the user's colors, contrast checked (R1)
+- Speed: pages load one at a time from the backend, skeletons hold the layout, nothing lags or jumps (R10)
 - Feedback: every action responds, motion is quick and meaningful
 - Craft: consistent spacing, radius and type tokens, every state designed
 - Slop: check against [slop-patterns.md](slop-patterns.md). The build must rate Clean (0 to 10). Anything worse gets fixed before reporting
@@ -81,6 +84,8 @@ Write the review in chat, without semicolons or em dashes (R9):
 | R7 Custom controls and scrollbars | | |
 | R8 Specific and consistent layout | | |
 | R9 No semicolons or em dashes | | |
+| R10 Fast, backend pagination, skeletons | | |
+| R11 Real avatars, no initials | | |
 
 ### Fixed During Review
 - ...
