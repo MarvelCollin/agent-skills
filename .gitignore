@@ -1,10 +1,13 @@
+ux-audit-*/
 ux-report-*.md
 screenshots/
 *.report.json
 *.report.html
 axe-results.json
 lighthouse_*
+evals/results/
 node_modules/
 .DS_Store
 Thumbs.db
 *.log
+!tests/fixtures/**

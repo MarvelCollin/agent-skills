@@ -1,30 +1,24 @@
 {
-  "name": "user-testing-skills",
-  "displayName": "User Testing Skills",
-  "version": "0.1.0",
+  "name": "agent-skills",
+  "displayName": "Agent Skills",
+  "version": "0.2.0",
+  "description": "A growing set of Claude Code skills. Starts with /ux, a website UX audit that tests like a real user and writes a scored report.",
   "author": {
     "name": "MarvelCollin",
     "url": "https://github.com/MarvelCollin"
   },
-  "skills": "./skills/",
-  "scripts": "./scripts/",
-  "agents": [],
-  "hooks": {},
-  "mcpServers": {},
-  "dependencies": [],
-  "defaultEnabled": true,
+  "homepage": "https://github.com/MarvelCollin/agent-skills",
+  "repository": "https://github.com/MarvelCollin/agent-skills",
+  "license": "MIT",
   "keywords": [
+    "claude-code",
+    "skills",
     "ux",
-    "testing",
-    "accessibility",
     "usability",
+    "accessibility",
+    "wcag",
     "user-testing",
-    "qa",
     "audit"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/MarvelCollin/user-testing-skills"
-  },
-  "license": "MIT"
+  "skills": "./skills/"
 }

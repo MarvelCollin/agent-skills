@@ -1,0 +1,18 @@
+{
+  "name": "agent-skills",
+  "owner": {
+    "name": "MarvelCollin",
+    "url": "https://github.com/MarvelCollin"
+  },
+  "metadata": {
+    "description": "Claude Code skills by MarvelCollin."
+  },
+  "plugins": [
+    {
+      "name": "agent-skills",
+      "source": "./",
+      "description": "A growing set of Claude Code skills. Starts with /ux, a website UX audit that tests like a real user and writes a scored report.",
+      "version": "0.2.0"
+    }
+  ]
+}

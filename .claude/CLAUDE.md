@@ -1,51 +1,45 @@
-# User Testing Skills
+# Agent Skills
 
-Claude Code plugin for automated UX testing via agent-as-human simulation.
+Claude Code plugin that bundles a growing set of skills. Each skill lives in its own folder under `skills/` and becomes one slash command.
 
 ## Project Structure
 
 ```
-.claude-plugin/plugin.json    Plugin manifest
-skills/                       Skill definitions (each folder = one slash command)
-  ux/                         Full UX audit orchestrator (main entry point)
-  ux-flow-test/               Single user flow tester
-  ux-accessibility/           WCAG compliance auditor
-  ux-compare/                 Head-to-head site comparison
-  ux-slop/                    AI design slop detector
-  ux-report/                  Report compiler
-scripts/                      Automation scripts (.sh + .ps1 variants)
-evals/                        Test cases for skill evaluation
+.claude-plugin/plugin.json       Plugin manifest
+.claude-plugin/marketplace.json  Marketplace entry for installing from GitHub
+skills/ux/                       /ux website UX audit
+  SKILL.md                       Entry point, modes, phases
+  references/                    Loaded on demand by SKILL.md
+  templates/                     Report and flow test templates
+  scripts/                       Helper scripts (.sh + .ps1 pairs)
+evals/<case>/                    claude plugin eval cases (prompt.md + graders/)
+tests/                           Script unit tests, fixture server, fake npx
 ```
 
 ## Conventions
 
-- Every skill MUST have a SKILL.md with valid YAML frontmatter
-- Skills reference shared resources via relative markdown links
-- All scripts have both bash (.sh) and PowerShell (.ps1) variants
-- No code comments in scripts — keep them self-documenting via clear variable names
-- Generated reports and artifacts go in .gitignore, never committed
-- Personas, heuristics, and scoring rubrics live in ux/ as shared resources
+- Every skill has a SKILL.md with `name`, `description` and `when_to_use` frontmatter
+- A skill keeps everything it needs inside its own folder so it also works when copied to `~/.claude/skills/`
+- `${CLAUDE_SKILL_DIR}` only expands inside SKILL.md. Reference files write `<skill-dir>` instead
+- Do not use `!` command injection for anything that can fail. A failing injected command aborts the whole skill
+- Every script has a bash (.sh) and a PowerShell (.ps1) variant with the same output keys
+- Scripts print `ERROR:` to stderr and exit 1 on failure. Never fail silently
+- No comments in code
+- Generated reports and scan output are gitignored, never committed
 - Conventional commits: feat: fix: chore: refactor: docs: test:
 
-## Skill Design Principles
+## /ux Design Principles
 
-- Skills act as human users, not automated bots
-- Every finding needs severity + evidence (screenshot or specific observation)
-- Scoring uses weighted rubric from scoring-rubric.md
-- /ux orchestrates sub-skills, avoid duplicating logic across skills
-- Browser interactions follow browser-protocol.md
-- All skills support the agent-browser MCP tool and Playwright as fallback
+- Act as a human user, not a bot
+- Every finding needs a severity and evidence (screenshot or specific observation)
+- Scoring uses the weighted rubric in `skills/ux/references/scoring-rubric.md`
+- Browser interactions follow `skills/ux/references/browser-protocol.md`
+- Never submit real purchases, payments or messages during a test
 
-## Testing Skills
+## Checks
 
-Run evals with:
 ```
-/ux https://example.com
-/ux https://example.com mobile
-/ux-flow-test https://example.com "sign up for account"
-/ux-accessibility https://example.com
-/ux-compare https://site-a.com https://site-b.com
-/ux-slop https://example.com
-/ux-slop https://example.com strict
-/ux-report
+bash tests/run-tests.sh
+claude plugin validate .
+claude plugin eval . --case <name> --allow-tools Bash WebFetch
 ```
