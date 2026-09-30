@@ -1,5 +1,5 @@
-ux-audit-*/
-ux-report-*.md
+uiux-audit-*/
+uiux-report-*.md
 screenshots/
 *.report.json
 *.report.html

@@ -11,8 +11,8 @@
     {
       "name": "agent-skills",
       "source": "./",
-      "description": "A growing set of Claude Code skills. Starts with /ux, a website UX audit that tests like a real user and writes a scored report.",
-      "version": "0.2.0"
+      "description": "A growing set of Claude Code skills. Starts with /uiux, a website UX audit that tests like a real user and writes a scored report.",
+      "version": "0.3.0"
     }
   ]
 }

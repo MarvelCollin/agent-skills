@@ -2,7 +2,7 @@
 
 **URL:** {{url}}
 **Date:** {{date}}
-**Tester:** agent-skills /ux v0.2.0
+**Tester:** agent-skills /uiux v0.3.0
 
 ---
 

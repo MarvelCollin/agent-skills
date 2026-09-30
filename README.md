@@ -7,14 +7,14 @@ A growing set of skills for Claude Code, packaged as one plugin.
 
 | Skill | Usage | What it does |
 |-------|-------|--------------|
-| `/ux` | `/ux <url> [focus]` | Tests a website the way a real first-time user would and writes a scored UX report |
+| `/uiux` | `/uiux <url> [focus]` | Tests a website the way a real first-time user would and writes a scored UX report |
 
 More skills are on the way.
 
-## `/ux`
+## `/uiux`
 
 ```
-/ux https://your-site.com
+/uiux https://your-site.com
 ```
 
 One command runs 12 phases: first impression, navigation, core user flows, interactions, errors and edge cases, performance, responsive layout, WCAG accessibility, cookie consent and privacy, dark mode, 404 pages, and AI design slop. Every finding comes with a severity and evidence, and the report ends with the three fixes that pay off most.
@@ -22,11 +22,11 @@ One command runs 12 phases: first impression, navigation, core user flows, inter
 ### Modes
 
 ```
-/ux https://example.com                                  # full audit
-/ux https://example.com a11y AA                          # one focus area
-/ux https://example.com flow "sign up for an account"   # one user goal, step by step
-/ux https://example.com vs https://example.org           # head-to-head comparison
-/ux report                                               # compile findings from this session
+/uiux https://example.com                                  # full audit
+/uiux https://example.com a11y AA                          # one focus area
+/uiux https://example.com flow "sign up for an account"   # one user goal, step by step
+/uiux https://example.com vs https://example.org           # head-to-head comparison
+/uiux report                                               # compile findings from this session
 ```
 
 ### Focus Areas
@@ -66,7 +66,7 @@ Or copy a single skill into your personal skills folder:
 
 ```bash
 git clone https://github.com/MarvelCollin/agent-skills
-cp -r agent-skills/skills/ux ~/.claude/skills/ux
+cp -r agent-skills/skills/uiux ~/.claude/skills/uiux
 ```
 
 To try a local checkout without installing it:

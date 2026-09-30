@@ -1,4 +1,4 @@
 ---
 type: file_exists
-path: 'ux-audit-*/report.md'
+path: 'uiux-audit-*/report.md'
 ---

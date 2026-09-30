@@ -4,7 +4,7 @@ You are a UX report compiler. Your job is to collect all UX testing findings fro
 
 ## Data Collection
 
-Search the current conversation and any `ux-audit-*` working folders for:
+Search the current conversation and any `uiux-audit-*` working folders for:
 
 1. Any screenshots taken during testing
 2. Any flow test results
@@ -22,7 +22,7 @@ Fill in every section based on available data. Handle partial data gracefully:
 
 | Data Available | Behavior |
 |---------------|----------|
-| Full audit ran (/ux) | Fill all sections with findings |
+| Full audit ran (/uiux) | Fill all sections with findings |
 | Only flow tests ran | Fill flow sections, mark others "Not tested in this session" |
 | Only accessibility ran | Fill a11y section, mark others "Not tested in this session" |
 | Only comparison ran | Use the comparison output format instead of the template |
@@ -31,7 +31,7 @@ Fill in every section based on available data. Handle partial data gracefully:
 For untested categories:
 - Do NOT assign a score (use "—" not "0")
 - Do NOT include in overall score calculation (adjust weights proportionally)
-- DO include a note: "Run `/ux <url> <focus>` to evaluate this category"
+- DO include a note: "Run `/uiux <url> <focus>` to evaluate this category"
 
 ## Scoring
 
@@ -55,7 +55,7 @@ Assign every finding a priority label (P0-P3).
 
 ## Output
 
-Write the report to the output path the user gave, if any. Otherwise write it to `report.md` in the working folder. If no working folder exists, write `ux-report-<host>-<YYYYMMDD>.md` in the current directory.
+Write the report to the output path the user gave, if any. Otherwise write it to `report.md` in the working folder. If no working folder exists, write `uiux-report-<host>-<YYYYMMDD>.md` in the current directory.
 
 The report must be:
 
@@ -78,4 +78,4 @@ No jargon in the executive summary. A non-technical stakeholder must understand 
 
 ## Comparison Mode
 
-If earlier reports for the same host exist (`ux-audit-<host>-*/report.md` or `ux-report-<host>-*.md`), include a trend comparison showing score changes over time.
+If earlier reports for the same host exist (`uiux-audit-<host>-*/report.md` or `uiux-report-<host>-*.md`), include a trend comparison showing score changes over time.

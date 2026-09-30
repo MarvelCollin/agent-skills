@@ -2,7 +2,7 @@
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SCRIPTS="$ROOT/skills/ux/scripts"
+SCRIPTS="$ROOT/skills/uiux/scripts"
 FAKES="$ROOT/tests/fakes"
 WORK="$(mktemp -d)"
 PASSED=0

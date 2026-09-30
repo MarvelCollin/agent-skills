@@ -1,5 +1,5 @@
 ---
-name: ux
+name: uiux
 description: Audit a website the way a real first-time user experiences it. Covers navigation, core user flows, interactions, error handling, performance, responsive layout, WCAG accessibility, cookie consent and privacy, dark mode, 404 pages, and AI design slop, then writes a scored report with prioritized fixes. Can also run a single goal-based flow test, compare two sites head to head, or compile a report from findings already gathered.
 when_to_use: Use when the user asks to UX test, usability test, audit, review, or critique a website or web app by URL, walk through a sign-up or checkout flow as a user, check accessibility or WCAG compliance, measure page speed, compare two sites, check whether a site looks AI-generated, or turn UX findings into a report.
 argument-hint: <url> [focus] | <url> flow "<goal>" | <url> vs <url2> [focus] | report [output-path]
@@ -49,7 +49,7 @@ The skill directory is `${CLAUDE_SKILL_DIR}`. Reference files write it as `<skil
 
 1. Read [references/browser-protocol.md](references/browser-protocol.md) and pick the browser tool you will use.
 2. Read [references/personas.md](references/personas.md).
-3. Create a working folder `ux-audit-<host>-<YYYYMMDD>/` in the current directory. Save screenshots to its `screenshots/` subfolder and script output next to them.
+3. Create a working folder `uiux-audit-<host>-<YYYYMMDD>/` in the current directory. Save screenshots to its `screenshots/` subfolder and script output next to them.
 
 ## Personas per Phase
 

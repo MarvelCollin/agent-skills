@@ -7,7 +7,7 @@ Claude Code plugin that bundles a growing set of skills. Each skill lives in its
 ```
 .claude-plugin/plugin.json       Plugin manifest
 .claude-plugin/marketplace.json  Marketplace entry for installing from GitHub
-skills/ux/                       /ux website UX audit
+skills/uiux/                     /uiux UI build rules and UX audit
   SKILL.md                       Entry point, modes, phases
   references/                    Loaded on demand by SKILL.md
   templates/                     Report and flow test templates
@@ -28,12 +28,12 @@ tests/                           Script unit tests, fixture server, fake npx
 - Generated reports and scan output are gitignored, never committed
 - Conventional commits: feat: fix: chore: refactor: docs: test:
 
-## /ux Design Principles
+## /uiux Design Principles
 
 - Act as a human user, not a bot
 - Every finding needs a severity and evidence (screenshot or specific observation)
-- Scoring uses the weighted rubric in `skills/ux/references/scoring-rubric.md`
-- Browser interactions follow `skills/ux/references/browser-protocol.md`
+- Scoring uses the weighted rubric in `skills/uiux/references/scoring-rubric.md`
+- Browser interactions follow `skills/uiux/references/browser-protocol.md`
 - Never submit real purchases, payments or messages during a test
 
 ## Checks
