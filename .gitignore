@@ -1,4 +1,5 @@
 uiux-audit-*/
+security-*/
 uiux-report-*.md
 screenshots/
 *.report.json
@@ -11,3 +12,5 @@ node_modules/
 Thumbs.db
 *.log
 !tests/fixtures/**
+!evals/security-*/
+!evals/security-*/**

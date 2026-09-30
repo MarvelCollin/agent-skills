@@ -11,8 +11,8 @@
     {
       "name": "agent-skills",
       "source": "./",
-      "description": "A growing set of Claude Code skills. Starts with /uiux, which builds UI under strict UX rules and reviews it, or audits a live site as a real user.",
-      "version": "0.3.0"
+      "description": "A growing set of Claude Code skills. /uiux builds UI under strict UX rules and reviews it or audits a live site. /security runs an authorized security review of an app you own.",
+      "version": "0.4.0"
     }
   ]
 }

@@ -8,6 +8,7 @@ A growing set of skills for Claude Code, packaged as one plugin.
 | Skill | Usage | What it does |
 |-------|-------|--------------|
 | `/uiux` | `/uiux [what to build]` or `/uiux <url> [focus]` | Builds UI that follows strict UX rules and reviews it, or audits a live site as a real user |
+| `/security` | `/security <target-or-path> [phase]` | Runs an authorized security review of an app you own or are cleared to test, or a static code review |
 
 More skills are on the way.
 
@@ -82,6 +83,27 @@ To try a local checkout without installing it:
 claude --plugin-dir ./agent-skills
 ```
 
+## `/security`
+
+An authorized security review of a web app you own or are cleared to test. It is built for your own and local or dev builds first (localhost, private hosts, your own source), and refuses targets you cannot show authorization for.
+
+```
+/security ./src                          # static secure-code review, runs nothing live
+/security http://localhost:3000          # full review of your local app
+/security http://localhost:3000 recon    # one phase
+/security review ./api                    # code review of a folder
+```
+
+It works in phases, based on the OWASP WSTG and ASVS:
+
+1. **Scope.** Confirms authorization and writes the rules of engagement. Nothing active runs before this. A `scope-check` script verifies each target is in scope, and flags out-of-scope hosts.
+2. **Recon.** Maps the attack surface inside scope, preferring the app's own source and traffic over noisy scanning.
+3. **Testing.** Works through vulnerability classes matched to what recon found: injection, broken auth and access control, SSRF and server-side, XSS and client-side, session and tokens, business logic, misconfiguration, exposed secrets, API, and LLM features. Lightest touch that proves the issue, nothing destructive.
+4. **Validation.** Six gates kill false positives. A finding ships only when reproduced with evidence and real impact.
+5. **Report.** Every finding gets severity, evidence, impact and a concrete fix, mapped to OWASP and CWE, with fixes ranked by risk over effort.
+
+A `grep-audit` script speeds up code review by flagging risky sinks and hardcoded secrets for a human to read. The skill only tests targets the user owns or is authorized to test, and never helps evade detection, target at scale, run denial-of-service, or attack third parties.
+
 ## Project Structure
 
 ```
@@ -96,6 +118,12 @@ skills/
                               accessibility, comparison, slop catalog, report
     templates/                Report and flow test templates
     scripts/                  rule-scan, perf-check, axe-scan, lighthouse-audit (.sh + .ps1)
+  security/
+    SKILL.md                  Entry point: scope, recon, test, validate, report, code review
+    references/               Authorization, recon, validation, reporting, code review,
+                              testing/ (10 vulnerability classes)
+    templates/                Report and finding templates
+    scripts/                  scope-check, grep-audit (.sh + .ps1)
 evals/                        Cases for claude plugin eval
 tests/                        Unit tests for the scripts
 ```

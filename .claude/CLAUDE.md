@@ -8,9 +8,10 @@ Claude Code plugin that bundles a growing set of skills. Each skill lives in its
 .claude-plugin/plugin.json       Plugin manifest
 .claude-plugin/marketplace.json  Marketplace entry for installing from GitHub
 skills/uiux/                     /uiux UI build rules, UI review and UX audit
-  SKILL.md                       Entry point: build, review and audit modes
+skills/security/                 /security authorized security review and code review
+  SKILL.md                       Entry point (each skill)
   references/                    Loaded on demand by SKILL.md
-  templates/                     Report and flow test templates
+  templates/                     Report templates
   scripts/                       Helper scripts (.sh + .ps1 pairs)
 evals/<case>/                    claude plugin eval cases (prompt.md + graders/)
 tests/                           Script unit tests, fixture server, fake npx
@@ -33,6 +34,13 @@ tests/                           Script unit tests, fixture server, fake npx
 
 - Build mode hard rules R1 to R9 live in `skills/uiux/references/build-rules.md`. Keep `scripts/rule-scan.*` in sync when a rule changes
 - No semicolons or em dashes in anything the skill tells Claude to write, and none in the skill's own prose
+
+## /security Principles
+
+- Authorization first. No active testing before a scope is on file and the target is confirmed in it. `scope-check.*` enforces this. Local and own builds are the default authorized case
+- Only targets the user owns or is authorized to test. Never help evade detection, target at scale, run DoS, or attack third parties
+- Methodology-driven (OWASP WSTG, ASVS, CWE), lightest-touch proof, no destructive payloads
+- Every finding needs evidence and real impact (six validation gates) before it ships
 - Act as a human user, not a bot
 - Every finding needs a severity and evidence (screenshot or specific observation)
 - Scoring uses the weighted rubric in `skills/uiux/references/scoring-rubric.md`
