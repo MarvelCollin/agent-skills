@@ -1,6 +1,6 @@
 # UI Build Rules
 
-These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R9 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
+These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R11 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
 
 Read these alongside [color.md](color.md), [navigation.md](navigation.md), [golden-rules.md](golden-rules.md) and the slop catalog in [slop-patterns.md](slop-patterns.md).
 
@@ -131,13 +131,36 @@ Never use a semicolon or an em dash (U+2014) in any text a person reads: UI copy
 - Use a colon to introduce a list or an explanation, and a plain hyphen only inside compound words and ranges
 - Code syntax is not copy. Semicolons in CSS and JavaScript statements are fine
 
+## R10: Fast, and Never Loading a Whole Dataset at Once
+
+The UI stays responsive no matter how much data exists. Never fetch every row and render it. See [performance.md](performance.md) for the full method.
+
+- **Tables and long lists paginate.** Load one page at a time from the backend, with page or cursor, page size, sort, and filters sent as parameters. The server does the paging, sorting and filtering, not the browser. Default page size 25 to 50. Offer next and previous or infinite scroll, and show the range ("26 to 50 of 1,240").
+- **The filters and sort from R5 run on the backend too.** A search box sends its query to the server (debounced about 250ms), it does not filter a giant in-memory array.
+- **Skeletons, not spinners, for content.** While a page or table loads, show a skeleton shaped like the real content (rows, cards, text lines) so the layout does not jump. Use a spinner only for a small inline action. Never a blank screen.
+- **No layout shift.** Reserve space for images, avatars and async content so nothing jumps when it arrives (CLS near zero). Give images width and height.
+- **Keep interaction smooth.** Debounce search and resize, throttle scroll handlers, and keep work off the main thread. Virtualize a list only when a page of rows is still very long. Do not animate layout properties (R8).
+- **Load what is needed, when needed.** Code-split routes, lazy-load below-the-fold and heavy components, and lazy-load offscreen images. Cache and reuse fetched pages, and do not refetch what has not changed.
+- **Optimistic where safe.** For a small write the user expects to succeed, update the UI at once and reconcile with the server, with a clear rollback on failure.
+
+A table or list that loads its whole dataset and pages or filters in the browser fails this rule.
+
+## R11: Real Avatars, Never Initials
+
+Do not fall back to a circle with a person's initials for a profile picture. The initials-in-a-colored-circle avatar is a template default and reads as generic.
+
+- Show the person's actual photo when there is one.
+- When there is none, use a neutral placeholder that is not initials: a simple user glyph in the product's muted tone, or a generated shape or pattern keyed to the user id (an identicon or a soft gradient blob), the same treatment everywhere.
+- Reserve the avatar's exact size so it does not shift when the image loads (R10). Give the `img` width, height, `loading="lazy"` and a real `alt` of the person's name.
+- If a monogram is truly unavoidable for a brand reason, that is the one exception, and it must be a deliberate, consistent style, not the default letter circle. Say so in the review.
+
 ## Every Component Ships with Every State
 
 Default, hover, focus-visible, active, disabled, loading, empty, error and success, where they apply. A screen is not done until its loading, empty and error states exist.
 
 ## Checking the Rules
 
-Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7 and R9 violations with file and line:
+Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7, R9, R10 and R11 violations with file and line:
 
 ```bash
 bash "<skill-dir>/scripts/rule-scan.sh" "<project-or-folder>"
@@ -149,4 +172,4 @@ On Windows without bash:
 powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/rule-scan.ps1" -Path "<project-or-folder>"
 ```
 
-The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2 and R8 in the rendered UI.
+The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2, R8 and the rest of R10 in the rendered UI.

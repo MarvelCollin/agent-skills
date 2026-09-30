@@ -46,6 +46,9 @@ border-radius: 0.75rem  /* rounded-xl default */
 <input type="range">                              <!-- S07 native slider -->
 confirm("Are you sure?")                          <!-- S07 browser dialog -->
 <div class="fixed ... w-[500px]">                 <!-- S08 fixed-size modal -->
+getInitials(name)                                 <!-- K16 initials avatar -->
+name.charAt(0) + surname.charAt(0)                <!-- K16 initials avatar -->
+data.map(row => ...)  // over a full fetch        <!-- S10 unbounded render -->
 ```
 
 ## Tailwind Class Detection

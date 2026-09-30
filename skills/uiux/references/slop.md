@@ -86,6 +86,9 @@ Fetch the page HTML via WebFetch. Analyze:
 - Check for browser default controls: native selects, date inputs, checkboxes, scrollbars, alert or confirm dialogs (S07)
 - Open two or three modals and check whether they all share one fixed size (S08)
 - Check whether data tables offer search and per-column filters (S09)
+- Check whether large tables and lists paginate from the backend, or load the whole dataset and page in the browser (S10, R10)
+- Check whether content shows a skeleton while loading, or a blank screen or a bare spinner (R10)
+- Check profile pictures: a real photo or a non-letter placeholder, not an initials circle (K16, R11)
 
 ### Step 3: Responsive Check
 

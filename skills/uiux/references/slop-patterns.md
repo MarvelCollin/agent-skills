@@ -115,6 +115,7 @@
 | K04 | Purple/Violet Gradient Orbs | Absolute-positioned `bg-gradient-to-*` + `blur-3xl` + `opacity-*` blobs behind hero |
 | K11 | Pill Badges | `rounded-full` + `px-2`/`px-3` + `text-xs` tinted labels for status, role, category or tags ("Student", "Active", "New"), or Badge/Chip/Pill components that render that way |
 | K15 | Icon-Tile Stat Cards | Row of 3-6 identical white cards, each with a saturated colored icon tile, a small gray label and a big number, one rainbow color per card ("Total Users 5", "Test Results 7") |
+| K16 | Initials Avatar | A circle with a person's initials as the profile-picture fallback ("JD" on a colored disc), instead of a real photo or a non-letter placeholder |
 
 ### P1
 
@@ -216,6 +217,7 @@
 | S07 | Browser Default Controls | Native `<select>`, `<input type="date">`, checkboxes, radios, range sliders, file inputs, default scrollbars, `alert()`/`confirm()` dialogs or `title` tooltips left in the browser's own look |
 | S08 | Fixed-Size Overlays | Every modal or drawer shares one fixed width or height (`w-[500px]`, `width: 480px`) regardless of content, clipping or leaving empty space |
 | S09 | Bare Data Tables | Data tables with no search and no per-column filters, so users scan rows by eye |
+| S10 | Unbounded Data Load | A table or list that fetches the whole dataset and pages, sorts or filters in the browser, with no backend pagination and no skeleton while it loads |
 
 ---
 
