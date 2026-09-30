@@ -59,6 +59,7 @@ $hues = "red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|vi
 $saturatedHex = "3b82f6|2563eb|1d4ed8|22c55e|16a34a|15803d|a855f7|9333ea|7e22ce|f97316|ea580c|c2410c|f59e0b|d97706|8b5cf6|7c3aed|6366f1|4f46e5|10b981|059669|ef4444|dc2626|ec4899|db2777|06b6d4|0891b2|14b8a6|0d9488|eab308|84cc16|f43f5e|0ea5e9|0284c7"
 $tablePattern = "<table([\s>]|$)|<Table([\s>]|$)|<DataTable|useReactTable|createColumnHelper"
 $columnFilterPattern = "column-filter|columnFilter|ColumnFilter|setFilterValue|getColumnFilter|filterFn"
+$paginationPattern = "paginat|pageSize|page_size|per_page|perPage|[?&]page=|offset|cursor|hasNextPage|nextPage|loadMore|useInfiniteQuery|limit="
 $overflowPattern = "overflow(-[xy])?-(auto|scroll)([^a-z-]|$)|overflow(-[xy])?\s*:\s*(auto|scroll)"
 $customScrollbarPattern = "scrollbar-width|scrollbar-color|::-webkit-scrollbar|ScrollArea|scroll-area|OverlayScrollbars|simplebar"
 $emDash = [string][char]0x2014
@@ -86,6 +87,10 @@ foreach ($file in $files) {
     if ($hasTable -and -not $hasFilters) {
         Add-Findings (Select-String -LiteralPath $file.FullName -Pattern $tablePattern -Encoding UTF8 -CaseSensitive | Select-Object -First 1) "R5" "table-without-column-filters"
     }
+    $hasPagination = Select-String -LiteralPath $file.FullName -Pattern $paginationPattern -Encoding UTF8 -Quiet
+    if ($hasTable -and -not $hasPagination) {
+        Add-Findings (Select-String -LiteralPath $file.FullName -Pattern $tablePattern -Encoding UTF8 -CaseSensitive | Select-Object -First 1) "R10" "table-without-pagination"
+    }
 }
 
 Add-Findings (Find-Lines $files "modal|dialog|drawer|sheet|popover" -IgnoreCase | Where-Object {
@@ -106,6 +111,8 @@ if (-not $hasCustomScrollbar) {
     }
 }
 
+Add-Findings (Find-Lines $files "getInitials|(^|[^a-z])initials([^a-z]|$)|charAt\(0\)|(slice|substring|substr)\(0,[ 	]*[12]\)[ 	]*\.toUpperCase" -IgnoreCase) "R11" "initials-avatar"
+
 Add-Findings (Find-Lines $files "$emDash|&mdash;|&#8212;") "R9" "em-dash"
 Add-Findings (Find-Lines $jsonFiles $emDash) "R9" "em-dash"
 Add-Findings (Find-Lines $files "[A-Za-z0-9`"'/]>[^<>{}]*[A-Za-z0-9)]\s*;\s+[A-Za-z][^<>{}]*<") "R9" "semicolon-in-copy"
@@ -117,7 +124,7 @@ Write-Output ""
 $results | Sort-Object { $_ } -Culture "en-US" | ForEach-Object { Write-Output $_ }
 Write-Output ""
 Write-Output "FINDINGS: $($results.Count)"
-foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9")) {
+foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9", "R10", "R11")) {
     $count = @($results | Where-Object { $_.StartsWith("$rule ") }).Count
     Write-Output "${rule}: $count"
 }

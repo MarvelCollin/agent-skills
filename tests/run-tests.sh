@@ -168,7 +168,9 @@ rule_scan_checks() {
     expect_contains "$label flags em dashes" "$bad_output" "R9 em-dash dashboard.html:12:"
     expect_contains "$label flags semicolons in markup copy" "$bad_output" "R9 semicolon-in-copy dashboard.html:13:"
     expect_contains "$label flags semicolons in string files" "$bad_output" "R9 semicolon-in-copy strings.json:2:"
-    expect_contains "$label counts every finding" "$bad_output" "FINDINGS: 13"
+    expect_contains "$label flags tables without pagination" "$bad_output" "R10 table-without-pagination dashboard.html:11:"
+    expect_contains "$label flags initials avatars" "$bad_output" "R11 initials-avatar dashboard.html:"
+    expect_contains "$label counts every finding" "$bad_output" "FINDINGS: 15"
     expect_contains "$label passes clean UI" "$good_output" "FINDINGS: 0"
     expect_contains "$label skips node_modules" "$vendored_output" "FINDINGS: 0"
 }

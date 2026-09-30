@@ -41,6 +41,7 @@ HUES="red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|viole
 SATURATED_HEX="3b82f6|2563eb|1d4ed8|22c55e|16a34a|15803d|a855f7|9333ea|7e22ce|f97316|ea580c|c2410c|f59e0b|d97706|8b5cf6|7c3aed|6366f1|4f46e5|10b981|059669|ef4444|dc2626|ec4899|db2777|06b6d4|0891b2|14b8a6|0d9488|eab308|84cc16|f43f5e|0ea5e9|0284c7"
 TABLE_PATTERN="<table([[:space:]>]|$)|<Table([[:space:]>]|$)|<DataTable|useReactTable|createColumnHelper"
 COLUMN_FILTER_PATTERN="column-filter|columnFilter|ColumnFilter|setFilterValue|getColumnFilter|filterFn"
+PAGINATION_PATTERN="paginat|pageSize|page_size|per_page|perPage|[?&]page=|offset|cursor|hasNextPage|nextPage|loadMore|useInfiniteQuery|limit="
 OVERFLOW_PATTERN="overflow(-[xy])?-(auto|scroll)([^a-z-]|$)|overflow(-[xy])?[[:space:]]*:[[:space:]]*(auto|scroll)"
 CUSTOM_SCROLLBAR_PATTERN="scrollbar-width|scrollbar-color|::-webkit-scrollbar|ScrollArea|scroll-area|OverlayScrollbars|simplebar"
 
@@ -94,6 +95,9 @@ for file in "${FILES[@]+"${FILES[@]}"}"; do
     if grep -qE "$TABLE_PATTERN" "$file" && ! grep -qE "$COLUMN_FILTER_PATTERN" "$file"; then
         grep -nHE -m1 "$TABLE_PATTERN" "$file" | report R5 table-without-column-filters
     fi
+    if grep -qE "$TABLE_PATTERN" "$file" && ! grep -qiE "$PAGINATION_PATTERN" "$file"; then
+        grep -nHE -m1 "$TABLE_PATTERN" "$file" | report R10 table-without-pagination
+    fi
 done
 
 scan_insensitive "modal|dialog|drawer|sheet|popover" \
@@ -117,6 +121,8 @@ if [ "$HAS_CUSTOM_SCROLLBAR" -eq 0 ]; then
     done
 fi
 
+scan_insensitive "getInitials|(^|[^a-z])initials([^a-z]|$)|charAt\(0\)|(slice|substring|substr)\(0,[[:space:]]*[12]\)[[:space:]]*\.toUpperCase" | report R11 initials-avatar
+
 scan "—|&mdash;|&#8212;" | report R9 em-dash
 scan_json "—" | report R9 em-dash
 scan "[A-Za-z0-9\"'/]>[^<>{}]*[A-Za-z0-9)][[:space:]]*;[[:space:]]+[A-Za-z][^<>{}]*<" | report R9 semicolon-in-copy
@@ -128,6 +134,6 @@ echo ""
 sort "$RESULTS"
 echo ""
 echo "FINDINGS: $(wc -l <"$RESULTS" | tr -d ' ')"
-for rule in R1 R3 R4 R5 R6 R7 R9; do
+for rule in R1 R3 R4 R5 R6 R7 R9 R10 R11; do
     echo "$rule: $(grep -c "^$rule " "$RESULTS" || true)"
 done
