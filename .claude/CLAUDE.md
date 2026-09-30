@@ -7,8 +7,8 @@ Claude Code plugin that bundles a growing set of skills. Each skill lives in its
 ```
 .claude-plugin/plugin.json       Plugin manifest
 .claude-plugin/marketplace.json  Marketplace entry for installing from GitHub
-skills/uiux/                     /uiux UI build rules and UX audit
-  SKILL.md                       Entry point, modes, phases
+skills/uiux/                     /uiux UI build rules, UI review and UX audit
+  SKILL.md                       Entry point: build, review and audit modes
   references/                    Loaded on demand by SKILL.md
   templates/                     Report and flow test templates
   scripts/                       Helper scripts (.sh + .ps1 pairs)
@@ -23,13 +23,16 @@ tests/                           Script unit tests, fixture server, fake npx
 - `${CLAUDE_SKILL_DIR}` only expands inside SKILL.md. Reference files write `<skill-dir>` instead
 - Do not use `!` command injection for anything that can fail. A failing injected command aborts the whole skill
 - Every script has a bash (.sh) and a PowerShell (.ps1) variant with the same output keys
+- Frontmatter values that start with `[`, `{` or contain `: ` must be quoted, or the whole frontmatter silently fails to parse. Check with `claude --plugin-dir . plugin details agent-skills` (always-on cost near 20 tokens means it failed)
 - Scripts print `ERROR:` to stderr and exit 1 on failure. Never fail silently
 - No comments in code
 - Generated reports and scan output are gitignored, never committed
-- Conventional commits: feat: fix: chore: refactor: docs: test:
+- Commit messages are one line starting with feat: or fix:
 
 ## /uiux Design Principles
 
+- Build mode hard rules R1 to R9 live in `skills/uiux/references/build-rules.md`. Keep `scripts/rule-scan.*` in sync when a rule changes
+- No semicolons or em dashes in anything the skill tells Claude to write, and none in the skill's own prose
 - Act as a human user, not a bot
 - Every finding needs a severity and evidence (screenshot or specific observation)
 - Scoring uses the weighted rubric in `skills/uiux/references/scoring-rubric.md`

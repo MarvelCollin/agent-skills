@@ -7,50 +7,57 @@ A growing set of skills for Claude Code, packaged as one plugin.
 
 | Skill | Usage | What it does |
 |-------|-------|--------------|
-| `/uiux` | `/uiux <url> [focus]` | Tests a website the way a real first-time user would and writes a scored UX report |
+| `/uiux` | `/uiux [what to build]` or `/uiux <url> [focus]` | Builds UI that follows strict UX rules and reviews it, or audits a live site as a real user |
 
 More skills are on the way.
 
 ## `/uiux`
 
-```
-/uiux https://your-site.com
-```
-
-One command runs 12 phases: first impression, navigation, core user flows, interactions, errors and edge cases, performance, responsive layout, WCAG accessibility, cookie consent and privacy, dark mode, 404 pages, and AI design slop. Every finding comes with a severity and evidence, and the report ends with the three fixes that pay off most.
-
-### Modes
+### Build
 
 ```
-/uiux https://example.com                                  # full audit
+/uiux an admin dashboard for a school testing system
+```
+
+Claude also loads the skill on its own whenever you ask it to build or restyle UI. Every build follows these hard rules:
+
+| Rule | What it means |
+|------|---------------|
+| R1 Pastel palette | Pastel colors built in OKLCH unless you name your own. No saturated default blue, green, purple or orange fills. Contrast is still checked |
+| R2 No icon-tile stat cards | Totals go in one summary strip with context and links, not a row of identical cards with colored icon squares |
+| R3 No icons in rounded squares | Icons sit inline with their text, without a tinted tile |
+| R4 No pill badges | Status and role labels use plain column values, a shape plus a word, or weighted text |
+| R5 Filterable tables | Global search plus a filter on every column, sorting, a clear-filters line, and filters kept in the URL |
+| R6 Overlays size to content | Modals, drawers and popovers fit their content within limits and become sheets on mobile |
+| R7 Custom controls | Custom scrollbars, date pickers, selects, checkboxes, sliders, dialogs and tooltips, built on accessible APG patterns |
+| R8 Specific, consistent layouts | Layouts come from the product's content and main task, not a template, with one set of tokens and one component per job |
+| R9 Clean copy | No semicolons and no em dashes in UI text or in anything the skill writes |
+
+It also applies the guides on [navigation](skills/uiux/references/navigation.md), [color picking](skills/uiux/references/color.md) and [Shneiderman's Eight Golden Rules](skills/uiux/references/golden-rules.md).
+
+After building, it reviews its own work and answers three questions with evidence: **Is it easy to use? Is it nice to use? Is the navigation good?** It runs a rule scan on the code, uses the UI in a browser when it can, and fixes what it finds before reporting.
+
+```
+/uiux review                     # review the UI built in this session
+/uiux review src/pages/admin     # review existing code
+```
+
+### Audit
+
+```
+/uiux https://example.com                                  # full audit, 12 phases
 /uiux https://example.com a11y AA                          # one focus area
 /uiux https://example.com flow "sign up for an account"   # one user goal, step by step
 /uiux https://example.com vs https://example.org           # head-to-head comparison
 /uiux report                                               # compile findings from this session
 ```
 
-### Focus Areas
-
-| Focus | Tests |
-|-------|-------|
-| `nav` | Navigation and wayfinding |
-| `flow` | Core user flows |
-| `forms` | Forms and interactive elements |
-| `errors` | Invalid input and edge cases |
-| `perf` | Time to first byte, compression, caching, Lighthouse |
-| `mobile` | Responsive layout and touch targets |
-| `a11y [A\|AA\|AAA]` | WCAG audit with axe-core and a manual checklist |
-| `privacy` | Cookie consent, trackers, privacy policy |
-| `dark` | Dark mode and theming |
-| `404` | Error pages |
-| `slop [strict]` | 80+ patterns that make a site look AI-generated |
-
-A persona name (`sarah`, `marcus`, `elena`, `david`, `aisha`, `tom`) runs the full audit as that persona.
+Focus areas: `nav`, `flow`, `forms`, `errors`, `perf`, `mobile`, `a11y [A|AA|AAA]`, `privacy`, `dark`, `404`, `slop [strict]`. A persona name (`sarah`, `marcus`, `elena`, `david`, `aisha`, `tom`) runs the full audit as that persona.
 
 ### Requirements
 
 - A browser tool: the [agent-browser](https://github.com/vercel-labs/agent-browser) CLI (recommended), the Claude desktop browser pane, or the Playwright MCP server
-- `curl` or PowerShell for the performance check
+- bash or PowerShell for the scripts
 - Node.js and Chrome for the axe-core and Lighthouse scans (optional)
 
 ## Installation
@@ -62,7 +69,7 @@ claude plugin marketplace add MarvelCollin/agent-skills
 claude plugin install agent-skills@agent-skills
 ```
 
-Or copy a single skill into your personal skills folder:
+Or copy the skill into your personal skills folder:
 
 ```bash
 git clone https://github.com/MarvelCollin/agent-skills
@@ -82,12 +89,13 @@ claude --plugin-dir ./agent-skills
   plugin.json                 Plugin manifest
   marketplace.json            Marketplace entry so the repo can be installed directly
 skills/
-  ux/
-    SKILL.md                  Entry point: modes, focus areas, 12 phases
-    references/               Browser protocol, personas, rubric, heuristics,
-                              flow test, accessibility, comparison, slop, report
+  uiux/
+    SKILL.md                  Entry point: build, review and audit modes
+    references/               Build rules, color, navigation, golden rules, UI review,
+                              browser protocol, personas, rubric, heuristics, flow test,
+                              accessibility, comparison, slop catalog, report
     templates/                Report and flow test templates
-    scripts/                  perf-check, axe-scan, lighthouse-audit (.sh + .ps1)
+    scripts/                  rule-scan, perf-check, axe-scan, lighthouse-audit (.sh + .ps1)
 evals/                        Cases for claude plugin eval
 tests/                        Unit tests for the scripts
 ```
@@ -106,10 +114,10 @@ Validate the manifests and skill frontmatter:
 claude plugin validate .
 ```
 
-Run the behavior evals. They drive a real browser against live sites, so start with one case:
+Run the behavior evals, starting with one case:
 
 ```bash
-claude plugin eval . --case report-without-data --allow-tools Bash WebFetch
+claude plugin eval . --case build-dashboard --allow-tools Bash Write Edit
 ```
 
 ## License
