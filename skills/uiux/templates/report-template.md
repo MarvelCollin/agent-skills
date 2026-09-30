@@ -29,6 +29,21 @@
 
 ---
 
+## Eight Golden Rules
+
+| Rule | Rating | Evidence |
+|------|--------|----------|
+| 1 Strive for consistency | {{gr1_rating}} | {{gr1_evidence}} |
+| 2 Seek universal usability | {{gr2_rating}} | {{gr2_evidence}} |
+| 3 Offer informative feedback | {{gr3_rating}} | {{gr3_evidence}} |
+| 4 Design dialogs to yield closure | {{gr4_rating}} | {{gr4_evidence}} |
+| 5 Prevent errors | {{gr5_rating}} | {{gr5_evidence}} |
+| 6 Permit easy reversal of actions | {{gr6_rating}} | {{gr6_evidence}} |
+| 7 Keep users in control | {{gr7_rating}} | {{gr7_evidence}} |
+| 8 Reduce short-term memory load | {{gr8_rating}} | {{gr8_evidence}} |
+
+---
+
 ## Critical Issues (Severity 4)
 
 {{critical_issues}}

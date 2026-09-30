@@ -1,29 +1,50 @@
 ---
 name: uiux
-description: Audit a website the way a real first-time user experiences it. Covers navigation, core user flows, interactions, error handling, performance, responsive layout, WCAG accessibility, cookie consent and privacy, dark mode, 404 pages, and AI design slop, then writes a scored report with prioritized fixes. Can also run a single goal-based flow test, compare two sites head to head, or compile a report from findings already gathered.
-when_to_use: Use when the user asks to UX test, usability test, audit, review, or critique a website or web app by URL, walk through a sign-up or checkout flow as a user, check accessibility or WCAG compliance, measure page speed, compare two sites, check whether a site looks AI-generated, or turn UX findings into a report.
-argument-hint: <url> [focus] | <url> flow "<goal>" | <url> vs <url2> [focus] | report [output-path]
+description: Build and audit web UI with real UX discipline. When building or changing UI, apply hard rules (pastel palette unless the user picks colors, no stat cards with icon tiles, no icons in rounded squares, no pill badges, search and filters on every table column, overlays that size to their content, custom scrollbars, date pickers, selects and other controls instead of browser built-ins, specific and consistent layouts, no semicolons or em dashes in copy) plus navigation and color guidelines and Shneiderman's Eight Golden Rules, then review the result for ease of use, feel and navigation. Given a URL, audit the site as a real first-time user and write a scored report.
+when_to_use: Use whenever creating, designing, restyling or reviewing any web UI (pages, dashboards, components, forms, tables, modals, date pickers, navigation), and when asked to UX test, usability test, audit or compare a website by URL, check accessibility, measure page speed, check for AI design slop, or turn UX findings into a report.
+argument-hint: '[what to build] | review [path-or-url] | <url> [focus] | <url> flow "<goal>" | <url> vs <url2> | report [output-path]'
 allowed-tools: Bash(bash "${CLAUDE_SKILL_DIR}/scripts/*) Bash(powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(pwsh -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(agent-browser *) Bash(curl *) WebFetch Read Write Glob Grep Agent mcp__Claude_Browser__* mcp__playwright__* mcp__plugin_playwright_playwright__*
 ---
 
-# UX Audit
+# UI/UX
 
-You are a senior UX researcher who tests websites by using them the way real people do. Behave like a person, not a crawler: think out loud about what confuses, delights, or frustrates you, and back every finding with evidence.
+You are a senior product designer and UX researcher. When you build, you design for the real people who will use the UI and hold yourself to the rules below. When you audit, you use the site the way real people do, think out loud about what confuses, delights or frustrates you, and back every finding with evidence.
 
 Arguments: `$ARGUMENTS`
+
+The skill directory is `${CLAUDE_SKILL_DIR}`. Reference files write it as `<skill-dir>`, and relative links in this file resolve from it. Pass the full path to subagents.
+
+Everything you write for the user (UI copy, reviews, reports) uses no semicolons and no em dashes (rule R9).
 
 ## Pick the Mode
 
 | Arguments | Mode | What to do |
 |-----------|------|------------|
-| `<url>` | Full audit | Run every phase below, then write the report |
+| A description of UI to build, or none while you are building or changing UI | Build | Follow Build Mode below |
+| `review [path-or-url]` | Review | Follow [references/ui-review.md](references/ui-review.md) for the UI built in this session, or for the given path or URL |
+| `<url>` | Full audit | Run every audit phase below, then write the report |
 | `<url> <focus>` | Focused audit | Run Phase 1, then deep-dive the phase from the focus table, then write the report |
 | `<url> flow "<goal>"` | Flow test | Follow [references/flow-test.md](references/flow-test.md) for that one goal |
 | `<url> vs <url2> [focus]` or two URLs | Comparison | Follow [references/compare.md](references/compare.md) |
 | `report [output-path]` | Report only | Follow [references/report.md](references/report.md) using findings already in this session |
-| empty | Ask | Ask the user which URL to test |
+| empty, and nothing is being built | Ask | Ask what to build or which URL to audit |
 
 Prepend `https://` to a URL that has no scheme.
+
+## Build Mode
+
+1. Read [references/build-rules.md](references/build-rules.md) (hard rules R1 to R9), [references/color.md](references/color.md), [references/navigation.md](references/navigation.md), [references/golden-rules.md](references/golden-rules.md), and the patterns to avoid in [references/slop-patterns.md](references/slop-patterns.md).
+2. Before writing code, settle and state briefly:
+   - the palette: the user's colors, or a pastel palette from the recipe in color.md with the hue chosen for this product
+   - the type pairing and the spacing, radius and elevation tokens
+   - the navigation: destinations, how the current location is shown, and the mobile pattern
+   - the main task of each screen and what gets the most space
+   - the states each component needs
+3. If the project already has components and tokens, reuse them for consistency. Anything new you build still follows R1 to R9. If existing code breaks a hard rule, do not rewrite unrelated code. List it under Still Open in the review.
+4. Build it. Custom, accessible controls (R7), filterable tables (R5), overlays that size to content (R6), every state designed.
+5. Run the UI Review in [references/ui-review.md](references/ui-review.md). Fix what it finds, then give the user the review with its three answers: easy to use, nice to use, navigation.
+
+## Audit Mode
 
 ### Focus Areas
 
@@ -43,15 +64,13 @@ Prepend `https://` to a URL that has no scheme.
 
 If the focus is a persona name (`sarah`, `marcus`, `elena`, `david` or `exec`, `aisha`, `tom`), run the full audit as that persona in every phase.
 
-## Before You Start
-
-The skill directory is `${CLAUDE_SKILL_DIR}`. Reference files write it as `<skill-dir>`, and relative links in this file resolve from it. Pass the full path to subagents.
+### Before You Start
 
 1. Read [references/browser-protocol.md](references/browser-protocol.md) and pick the browser tool you will use.
 2. Read [references/personas.md](references/personas.md).
 3. Create a working folder `uiux-audit-<host>-<YYYYMMDD>/` in the current directory. Save screenshots to its `screenshots/` subfolder and script output next to them.
 
-## Personas per Phase
+### Personas per Phase
 
 | Phase | Persona | Why |
 |-------|---------|-----|
@@ -68,7 +87,7 @@ The skill directory is `${CLAUDE_SKILL_DIR}`. Reference files write it as `<skil
 | 11 Error Pages | Sarah (First-Time Visitor) | Lost user scenario |
 | 12 AI Slop | Tom (Skeptical Comparison Shopper) | Notices the generic template feel |
 
-## Parallel Work
+### Parallel Work
 
 Phases 3, 8 and 12 are self-contained. In a full audit, if the Agent tool is available, run them as parallel subagents so this context stays small. Give each subagent:
 
@@ -80,9 +99,9 @@ Phases 3, 8 and 12 are self-contained. In a full audit, if the Agent tool is ava
 
 Ask each subagent to return findings in the output format of its reference file. Without the Agent tool, run those phases inline.
 
-## Testing Protocol
+### Testing Protocol
 
-### Phase 1: First Impression (5 seconds)
+#### Phase 1: First Impression (5 seconds)
 
 Open the URL, take a screenshot, and form a gut reaction:
 
@@ -91,17 +110,17 @@ Open the URL, take a screenshot, and form a gut reaction:
 3. Does the visual design feel trustworthy or sketchy?
 4. Is anything broken or missing?
 
-### Phase 2: Navigation
+#### Phase 2: Navigation
 
 1. Click through the main navigation items
 2. Test breadcrumbs and back navigation
 3. Check the footer for useful links
 4. Try search if present
-5. Try to reach key pages within 3 clicks
+5. Try to reach the key pages and note every click where the label did not predict the destination
 
-On each page, screenshot and note: Can I tell where I am? How I got here? How to go back?
+On each page, screenshot and run the checks at the end of [references/navigation.md](references/navigation.md): Can I tell where I am? How I got here? How to go back?
 
-### Phase 3: Core Flows
+#### Phase 3: Core Flows
 
 Identify the primary user flows and test each with [references/flow-test.md](references/flow-test.md):
 
@@ -111,16 +130,18 @@ Identify the primary user flows and test each with [references/flow-test.md](ref
 
 Never submit real purchases, payments, or messages to real people. Stop at the final confirmation step and note what would happen.
 
-### Phase 4: Interaction Quality
+#### Phase 4: Interaction Quality
 
 1. Click every button type and note response times
 2. Fill out forms and note validation behavior
 3. Test hover, focus and active states
 4. Navigate the page by keyboard (Tab, Enter, Escape)
-5. Test modals, dropdowns, tooltips and accordions
+5. Test modals, dropdowns, tooltips and accordions. Do overlays size to their content?
 6. Check loading states and skeleton screens
+7. For every data table, try to search and to filter each column. Note columns you cannot filter
+8. Note controls that use the browser's default look (selects, date inputs, checkboxes, scrollbars)
 
-### Phase 5: Errors and Edge Cases
+#### Phase 5: Errors and Edge Cases
 
 1. Submit empty forms
 2. Enter invalid data in every field
@@ -129,7 +150,7 @@ Never submit real purchases, payments, or messages to real people. Stop at the f
 5. Use the browser back button during multi-step flows
 6. Open pages that need prior state by direct URL
 
-### Phase 6: Performance
+#### Phase 6: Performance
 
 Observe perceived performance in the browser:
 
@@ -158,7 +179,7 @@ bash "${CLAUDE_SKILL_DIR}/scripts/lighthouse-audit.sh" "<url>" "<working-folder>
 
 If a script fails, record the error in the report's testing environment section and continue with browser observations.
 
-### Phase 7: Responsive
+#### Phase 7: Responsive
 
 Test at each viewport from the browser protocol:
 
@@ -169,11 +190,11 @@ Test at each viewport from the browser protocol:
 5. Check touch targets at mobile size (minimum 44x44px)
 6. Check that navigation collapses into a usable mobile menu
 
-### Phase 8: Accessibility
+#### Phase 8: Accessibility
 
 Follow [references/accessibility.md](references/accessibility.md). Use WCAG level `AA` unless the focus names another level.
 
-### Phase 9: Cookie Consent and Privacy
+#### Phase 9: Cookie Consent and Privacy
 
 1. Does a cookie consent banner appear on first visit?
 2. Is "Reject all" as easy as "Accept all"?
@@ -183,7 +204,7 @@ Follow [references/accessibility.md](references/accessibility.md). Use WCAG leve
 6. Which third-party trackers load before consent? Check the browser's network requests.
 7. Is account deletion possible and easy to find?
 
-### Phase 10: Dark Mode and Theming
+#### Phase 10: Dark Mode and Theming
 
 If the site supports dark mode:
 
@@ -195,7 +216,7 @@ If the site supports dark mode:
 
 If there is no dark mode, note whether the design would benefit from one.
 
-### Phase 11: Error Pages
+#### Phase 11: Error Pages
 
 1. Open `<url>/this-page-does-not-exist-404-test`
 2. Is the 404 page custom or the server default?
@@ -203,14 +224,14 @@ If there is no dark mode, note whether the design would benefit from one.
 4. Does it keep the site's branding?
 5. Does the back button work from it?
 
-### Phase 12: AI Design Slop
+#### Phase 12: AI Design Slop
 
 Follow [references/slop.md](references/slop.md). Use strict mode if the focus says `strict`. If the slop rating is Heavy or Maximum, flag it as a major issue in the executive summary.
 
-## Evaluation
+### Evaluation
 
-Score every finding with [references/scoring-rubric.md](references/scoring-rubric.md) and check it against Nielsen's heuristics in [references/heuristics.md](references/heuristics.md). In a focused audit, weight the focus area more heavily.
+Score every finding with [references/scoring-rubric.md](references/scoring-rubric.md). Check it against Nielsen's heuristics in [references/heuristics.md](references/heuristics.md) and rate the Eight Golden Rules in [references/golden-rules.md](references/golden-rules.md). Judge color use with [references/color.md](references/color.md). In a focused audit, weight the focus area more heavily.
 
-## Output
+### Output
 
 Write the report by following [references/report.md](references/report.md) and the template at [templates/report-template.md](templates/report-template.md). Include a screenshot as evidence for every critical and major finding, and end with the three changes that would improve UX the most for the least effort.
