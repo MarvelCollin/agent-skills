@@ -39,10 +39,22 @@ border-radius: 1rem     /* rounded-2xl default */
 border-radius: 0.75rem  /* rounded-xl default */
 ```
 
+### Control and Overlay Tells
+```html
+<select>                                          <!-- S07 native select -->
+<input type="date">                               <!-- S07 native date picker -->
+<input type="range">                              <!-- S07 native slider -->
+confirm("Are you sure?")                          <!-- S07 browser dialog -->
+<div class="fixed ... w-[500px]">                 <!-- S08 fixed-size modal -->
+```
+
 ## Tailwind Class Detection
 
 ### P0 Regex Patterns
 ```
+/rounded-full.*px-[2-3].*text-(xs|\[1[01]px\])/
+/(size|w|h)-(8|9|10|11|12).*rounded-(md|lg|xl|2xl|full).*bg-[a-z]+-(50|100|500|600).*(place-items-center|justify-center)/
+/bg-(blue|green|purple|violet|indigo|orange|emerald|pink|amber|sky|cyan|teal|rose|red)-(500|600)/
 /bg-(indigo|violet|purple)-(500|600)/
 /from-(purple|indigo|violet)-\d+ to-(blue|pink|purple)-\d+/
 /bg-clip-text.*text-transparent.*bg-gradient/
@@ -53,6 +65,9 @@ border-radius: 0.75rem  /* rounded-xl default */
 
 ### P1 Regex Patterns
 ```
+/<select\b|type=["'](date|datetime-local|time|month|week|range|color)["']/
+/\b(alert|confirm|prompt)\(/
+/(modal|dialog|drawer).*\b[wh]-\[\d+px\]/
 /border-l-[3-4].*border-(purple|indigo|violet|blue|emerald)/
 /bg-(zinc|slate)-(50|100|200|800|900|950)/
 /shadow-\[0_0_\d+px_rgba/

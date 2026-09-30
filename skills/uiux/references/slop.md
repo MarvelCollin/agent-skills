@@ -34,6 +34,7 @@ Fetch the page HTML via WebFetch. Analyze:
 - Check for cyan-on-dark scheme (C03)
 - Check for gradient text (C06)
 - Check for colored glow shadows (C04, C08)
+- Check for saturated default fills such as Tailwind 500/600 blue, green, purple, orange (C13)
 
 **Typography**
 - Identify all font families loaded (Google Fonts, local fonts, system stack)
@@ -59,7 +60,8 @@ Fetch the page HTML via WebFetch. Analyze:
 - Check for mandatory FAQ accordion (K08)
 - Check for logo cloud (K09)
 - Check for testimonial grid (K10)
-- Check for pill badges everywhere (K11)
+- Check for pill badges on status, role or tag labels (K11)
+- Check for rows of stat cards with colored icon tiles (K15)
 
 **Content**
 - Scan all visible text for buzzwords from detection list
@@ -81,6 +83,9 @@ Fetch the page HTML via WebFetch. Analyze:
 - Check for consistent shadow recipes (S03)
 - Check for uniform border-radius (S04)
 - Test responsive behavior (S05)
+- Check for browser default controls: native selects, date inputs, checkboxes, scrollbars, alert or confirm dialogs (S07)
+- Open two or three modals and check whether they all share one fixed size (S08)
+- Check whether data tables offer search and per-column filters (S09)
 
 ### Step 3: Responsive Check
 

@@ -18,6 +18,7 @@
 | C02 | VibeCode Purple | Primary color clustering around `#8B5CF6`, `bg-violet-500`, lavender-purple accent |
 | C03 | Cyan-on-Dark | `text-cyan-400` on `bg-slate-900/950`, neon cyan as primary accent on dark theme |
 | C04 | Neon Glow Borders | `box-shadow: 0 0 20px rgba(color, 0.8)`, colored `ring-*` at full saturation on dark |
+| C13 | Saturated Default Fills | Tailwind 500/600 fills (`bg-blue-500`, `bg-green-500`, `bg-purple-500`, `bg-orange-500`) or their hex values used as surface or icon fills when the user never chose those colors |
 
 ### P1
 
@@ -108,10 +109,12 @@
 
 | ID | Pattern | Detection |
 |----|---------|-----------|
-| K01 | Icon-in-Rounded-Square | `bg-{accent}-50 rounded-lg p-2` + Lucide/Heroicon above heading in feature card |
+| K01 | Icon-in-Rounded-Square | Any icon wrapped in a tinted or solid rounded square or circle (`bg-{color}-50 rounded-lg p-2`, `size-10 rounded-xl bg-blue-500 grid place-items-center`), in feature cards, stat blocks, list items, headers or empty states |
 | K02 | Reflexive Glassmorphism | `backdrop-filter: blur(10px)` + `bg-white/10` + semi-transparent border everywhere |
 | K03 | Untouched shadcn Defaults | `rounded-2xl shadow-lg p-6` on every surface, default shadcn card |
 | K04 | Purple/Violet Gradient Orbs | Absolute-positioned `bg-gradient-to-*` + `blur-3xl` + `opacity-*` blobs behind hero |
+| K11 | Pill Badges | `rounded-full` + `px-2`/`px-3` + `text-xs` tinted labels for status, role, category or tags ("Student", "Active", "New"), or Badge/Chip/Pill components that render that way |
+| K15 | Icon-Tile Stat Cards | Row of 3-6 identical white cards, each with a saturated colored icon tile, a small gray label and a big number, one rainbow color per card ("Total Users 5", "Test Results 7") |
 
 ### P1
 
@@ -123,7 +126,6 @@
 | K08 | Mandatory FAQ Accordion | FAQ accordion at page bottom regardless of product needs |
 | K09 | Logo Cloud Strip | "Trusted by" logo bar with recognizable company logos |
 | K10 | Testimonial Card Grid | Identical card format: circular avatar + name + title + quote |
-| K11 | Pill Badge Everywhere | Small rounded-full pill badges used for every label, tag, status |
 
 ### P2
 
@@ -211,6 +213,9 @@
 | S04 | 16px Border Radius Everywhere | Single `border-radius` value on all elements |
 | S05 | No Responsive Consideration | Desktop-only layout with missing/broken media queries |
 | S06 | Inline Styles Everywhere | High count of `style=""` attributes from AI generation |
+| S07 | Browser Default Controls | Native `<select>`, `<input type="date">`, checkboxes, radios, range sliders, file inputs, default scrollbars, `alert()`/`confirm()` dialogs or `title` tooltips left in the browser's own look |
+| S08 | Fixed-Size Overlays | Every modal or drawer shares one fixed width or height (`w-[500px]`, `width: 480px`) regardless of content, clipping or leaving empty space |
+| S09 | Bare Data Tables | Data tables with no search and no per-column filters, so users scan rows by eye |
 
 ---
 
