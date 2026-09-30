@@ -3,6 +3,8 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SCRIPTS="$ROOT/skills/uiux/scripts"
+SECSCRIPTS="$ROOT/skills/security/scripts"
+SECFIX="$ROOT/tests/fixtures/security"
 FAKES="$ROOT/tests/fakes"
 WORK="$(mktemp -d)"
 PASSED=0
@@ -183,6 +185,53 @@ OUT=$(bash "$SCRIPTS/rule-scan.sh" "$WORK/missing" 2>&1); CODE=$?
 expect_exit "fails on a missing path" "$CODE" 1
 expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
 
+SCOPE="$SECFIX/scope/scope.md"
+CODE_DIR="$SECFIX/code"
+
+scope_checks() {
+    local label="$1" runner="$2"
+    local out code
+    out=$($runner "$SCOPE" "https://app.demo.test/x" 2>&1); code=$?
+    expect_exit "$label in-scope exact exits 0" "$code" 0
+    expect_contains "$label reports in-scope" "$out" "IN_SCOPE"
+    $runner "$SCOPE" "https://a.staging.demo.com" >/dev/null 2>&1; expect_exit "$label in-scope wildcard exits 0" "$?" 0
+    $runner "$SCOPE" "http://localhost:3000" >/dev/null 2>&1; expect_exit "$label local host exits 0" "$?" 0
+    out=$($runner "$SCOPE" "https://payments.example.com" 2>&1); code=$?
+    expect_exit "$label out-of-scope exits 2" "$code" 2
+    expect_contains "$label reports out-of-scope" "$out" "OUT_OF_SCOPE"
+    $runner "$SCOPE" "https://old.legacy.example.com" >/dev/null 2>&1; expect_exit "$label out-of-scope wildcard exits 2" "$?" 2
+    out=$($runner "$SCOPE" "https://evil.com" 2>&1); code=$?
+    expect_exit "$label unlisted exits 1" "$code" 1
+    expect_contains "$label reports unlisted" "$out" "NOT_LISTED"
+    $runner "$SECFIX/scope/missing.md" "http://localhost" >/dev/null 2>&1; expect_exit "$label missing scope file exits 3" "$?" 3
+}
+
+audit_checks() {
+    local label="$1" audit_output="$2" safe_output="$3"
+    expect_contains "$label flags hardcoded secrets" "$audit_output" "[hardcoded-secret] app.py:2:"
+    expect_contains "$label flags aws keys" "$audit_output" "[aws-key] app.py:9:"
+    expect_contains "$label flags sql string concatenation" "$audit_output" "[sql-concat] app.py:4:"
+    expect_contains "$label flags command execution" "$audit_output" "[command-exec] app.py:6:"
+    expect_contains "$label flags weak crypto" "$audit_output" "[weak-crypto] app.py:8:"
+    expect_contains "$label flags eval" "$audit_output" "[code-eval] sub/ui.js:3:"
+    expect_contains "$label flags dangerous dom sinks" "$audit_output" "[dangerous-dom] sub/ui.js:1:"
+    expect_contains "$label flags permissive cors" "$audit_output" "[permissive-cors] sub/ui.js:2:"
+    expect_contains "$label counts nine leads" "$audit_output" "LEADS: 9"
+    expect_matches "$label leaves safe code clean" "$safe_output" "safe\.py"
+}
+
+echo "scope-check.sh"
+scope_checks "sh" "bash $SECSCRIPTS/scope-check.sh"
+
+echo "grep-audit.sh"
+AUDIT=$(bash "$SECSCRIPTS/grep-audit.sh" "$CODE_DIR" 2>&1); CODE=$?
+expect_exit "exits 0 on a scan with leads" "$CODE" 0
+SAFE=$(bash "$SECSCRIPTS/grep-audit.sh" "$CODE_DIR" 2>&1 | grep -c "safe.py" || true)
+audit_checks "sh" "$AUDIT" "$([ "$SAFE" = "0" ] && echo "safe.py-clean" || echo "safe.py-flagged")"
+OUT=$(bash "$SECSCRIPTS/grep-audit.sh" "$WORK/nope-audit" 2>&1); CODE=$?
+expect_exit "fails on a missing path" "$CODE" 1
+expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+
 if [ -n "$POWERSHELL" ]; then
     echo "perf-check.ps1"
     OUT=$(run_ps "$SCRIPTS/perf-check.ps1" -Url "$BASE/" 2>&1 | tr -d '\r'); CODE=$?
@@ -234,6 +283,17 @@ if [ -n "$POWERSHELL" ]; then
     OUT=$(run_ps "$SCRIPTS/rule-scan.ps1" -Path "$RULES/bad/strings.json" 2>&1 | tr -d '\r')
     expect_contains "scans a single file" "$OUT" "R9 semicolon-in-copy strings.json:2:"
     OUT=$(run_ps "$SCRIPTS/rule-scan.ps1" -Path "$WORK/missing" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "fails on a missing path" "$CODE" 1
+    expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+    echo "scope-check.ps1"
+    scope_checks "ps1" "run_ps $SECSCRIPTS/scope-check.ps1 -ScopeFile"
+
+    echo "grep-audit.ps1"
+    AUDIT=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$CODE_DIR" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "exits 0 on a scan with leads" "$CODE" 0
+    SAFE=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$CODE_DIR" 2>&1 | tr -d '\r' | grep -c "safe.py" || true)
+    audit_checks "ps1" "$AUDIT" "$([ "$SAFE" = "0" ] && echo "safe.py-clean" || echo "safe.py-flagged")"
+    OUT=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$WORK/nope-audit" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails on a missing path" "$CODE" 1
     expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
 else
