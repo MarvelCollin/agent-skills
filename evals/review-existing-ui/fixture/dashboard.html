@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+  <main class="p-8">
+    <h1 class="text-2xl font-bold mb-6">Dashboard</h1>
+    <div class="grid grid-cols-4 gap-4 mb-8">
+      <div class="rounded-xl bg-white p-4 shadow flex gap-3 items-center">
+        <div class="size-10 rounded-lg bg-blue-500 flex items-center justify-center text-white">?</div>
+        <div><p class="text-sm text-gray-500">Total Questions</p><p class="text-xl font-bold">18</p></div>
+      </div>
+      <div class="rounded-xl bg-white p-4 shadow flex gap-3 items-center">
+        <div class="size-10 rounded-lg bg-green-500 flex items-center justify-center text-white">U</div>
+        <div><p class="text-sm text-gray-500">Total Users</p><p class="text-xl font-bold">5</p></div>
+      </div>
+      <div class="rounded-xl bg-white p-4 shadow flex gap-3 items-center">
+        <div class="size-10 rounded-lg bg-purple-500 flex items-center justify-center text-white">S</div>
+        <div><p class="text-sm text-gray-500">Active Schedules</p><p class="text-xl font-bold">1</p></div>
+      </div>
+      <div class="rounded-xl bg-white p-4 shadow flex gap-3 items-center">
+        <div class="size-10 rounded-lg bg-orange-500 flex items-center justify-center text-white">R</div>
+        <div><p class="text-sm text-gray-500">Test Results</p><p class="text-xl font-bold">7</p></div>
+      </div>
+    </div>
+    <div class="flex gap-2 mb-4">
+      <select class="border rounded p-2"><option>All roles</option><option>Student</option><option>Teacher</option></select>
+      <input type="date" class="border rounded p-2">
+    </div>
+    <table class="w-full bg-white">
+      <thead><tr><th class="text-left p-2">Name</th><th class="text-left p-2">Role</th><th class="text-left p-2">Joined</th></tr></thead>
+      <tbody>
+        <tr><td class="p-2">Ana Putri</td><td class="p-2"><span class="rounded-full px-2 text-xs bg-indigo-50 text-indigo-600">Student</span></td><td class="p-2">2026-08-01</td></tr>
+        <tr><td class="p-2">Budi Santoso</td><td class="p-2"><span class="rounded-full px-2 text-xs bg-indigo-50 text-indigo-600">Teacher</span></td><td class="p-2">2026-07-12</td></tr>
+      </tbody>
+    </table>
+    <div class="fixed inset-0 hidden items-center justify-center bg-black/40" id="edit">
+      <div class="modal w-[500px] h-[400px] bg-white rounded-2xl shadow-lg p-6">Edit user</div>
+    </div>
+  </main>
+  <script>
+    function removeUser() { if (confirm("Delete user?")) { alert("Deleted"); } }
+  </script>
+</body>
+</html>
