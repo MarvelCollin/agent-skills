@@ -1,0 +1,35 @@
+#!/bin/bash
+set -euo pipefail
+
+FIXTURES="$(cd "$(dirname "$0")/../fixtures" && pwd)"
+MODE="${FAKE_NPX_MODE:-ok}"
+DIR="."
+SAVE=""
+OUTPUT_PATH=""
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --dir) DIR="$2"; shift 2 ;;
+        --save) SAVE="$2"; shift 2 ;;
+        --output-path=*) OUTPUT_PATH="${1#--output-path=}"; shift ;;
+        *) shift ;;
+    esac
+done
+
+if [ "$MODE" = "fail" ]; then
+    echo "fake npx failure" >&2
+    exit 1
+fi
+
+if [ -n "$SAVE" ]; then
+    cp "$FIXTURES/axe-results.json" "$DIR/$SAVE"
+fi
+
+if [ -n "$OUTPUT_PATH" ]; then
+    cp "$FIXTURES/lighthouse.report.json" "$OUTPUT_PATH.report.json"
+    echo "<html></html>" >"$OUTPUT_PATH.report.html"
+fi
+
+if [ "$MODE" = "fail-after-write" ]; then
+    exit 1
+fi

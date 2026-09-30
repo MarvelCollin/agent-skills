@@ -1,0 +1,24 @@
+[
+  {
+    "url": "http://127.0.0.1/",
+    "violations": [
+      {
+        "id": "image-alt",
+        "impact": "critical",
+        "help": "Images must have alternative text",
+        "nodes": [{}, {}]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": [{}, {}, {}]
+      }
+    ],
+    "passes": [
+      { "id": "document-title", "nodes": [{}] },
+      { "id": "html-has-lang", "nodes": [{}] },
+      { "id": "landmark-one-main", "nodes": [{}] }
+    ]
+  }
+]
