@@ -2,7 +2,7 @@
 
 **URL:** {{url}}
 **Date:** {{date}}
-**Tester:** User Testing Skills v0.1.0
+**Tester:** agent-skills /ux v0.2.0
 
 ---
 

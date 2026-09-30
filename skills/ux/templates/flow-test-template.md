@@ -1,58 +1,59 @@
-# Flow Test: {{flow_name}}
+# Flow Test: {{goal}}
 
 **URL:** {{url}}
 **Date:** {{date}}
-
----
-
-## Flow Definition
-
-**Goal:** {{user_goal}}
 **Persona:** {{persona}}
-**Starting Point:** {{start_url}}
-**Expected End State:** {{expected_outcome}}
 
 ---
 
-## Step-by-Step Walkthrough
-
-### Step {{n}}: {{step_title}}
-
-**Action:** {{what_user_does}}
-**Expected:** {{what_should_happen}}
-**Actual:** {{what_actually_happened}}
-**Status:** {{pass_fail_partial}}
-**Screenshot:** {{screenshot_ref}}
-
-**Observations:**
-{{observations}}
-
-**Friction Points:**
-{{friction}}
-
----
-
-## Flow Summary
+## Flow Result
 
 | Metric | Value |
 |--------|-------|
-| Total Steps | {{total_steps}} |
-| Steps Passed | {{passed}} |
-| Steps Failed | {{failed}} |
-| Time to Complete | {{time}} |
+| Goal | {{goal}} |
+| Completed | {{yes_no_partial}} |
+| Outcome | {{completed_abandoned_broken}} |
+| Total Steps Taken | {{total_steps}} |
+| Expected Steps | {{optimal_steps_estimate}} |
 | Confusion Points | {{confusion_count}} |
-| Dead Ends | {{dead_ends}} |
+| Blockers Hit | {{blocker_count}} |
+| Time Estimate | {{fast_moderate_slow_unreasonable}} |
 
-## Friction Map
+---
 
-{{friction_map}}
+## Step-by-Step Log
+
+### Step {{n}}: {{what_you_are_trying_to_do}}
+
+- **See:** {{what_is_on_screen}}
+- **Think:** {{what_you_expect_to_do_next}}
+- **Do:** {{what_you_clicked_typed_or_scrolled}}
+- **Result:** {{what_happened}}
+- **Feel:** {{confused_satisfied_frustrated_surprised_bored}}
+- **Screenshot:** {{screenshot_path}}
+- **Finding:** {{none_or_mild_surprise_confusion_frustration_blocker}}
+
+---
+
+## Friction Heatmap
+
+| Page / Screen | Friction (0-5) | Why |
+|---------------|----------------|-----|
+| {{page}} | {{score}} | {{reason}} |
+
+0 smooth, 1 minor hesitation, 2 had to think, 3 confusion, 4 frustration, 5 blocker.
+
+---
+
+## Top Issues
+
+1. **{{issue}}**
+   - What happened: {{what_happened}}
+   - Why it's a problem: {{impact}}
+   - Suggested fix: {{fix}}
+
+---
 
 ## Verdict
 
-**Flow Completable:** {{yes_no}}
-**Difficulty:** {{easy_medium_hard_impossible}}
-**User Satisfaction Prediction:** {{satisfaction}}
-
-## Recommendations
-
-{{recommendations}}
+{{one_paragraph_would_a_real_user_complete_this_goal_and_come_back}}

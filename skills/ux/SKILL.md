@@ -1,206 +1,216 @@
 ---
 name: ux
-argument-hint: <url> [focus-area]
-arguments: [url, focus]
-allowed-tools: Bash(curl *) Bash(npx *) Bash(playwright *) WebFetch WebSearch Read Write Glob Grep Agent mcp__browser__*
+description: Audit a website the way a real first-time user experiences it. Covers navigation, core user flows, interactions, error handling, performance, responsive layout, WCAG accessibility, cookie consent and privacy, dark mode, 404 pages, and AI design slop, then writes a scored report with prioritized fixes. Can also run a single goal-based flow test, compare two sites head to head, or compile a report from findings already gathered.
+when_to_use: Use when the user asks to UX test, usability test, audit, review, or critique a website or web app by URL, walk through a sign-up or checkout flow as a user, check accessibility or WCAG compliance, measure page speed, compare two sites, check whether a site looks AI-generated, or turn UX findings into a report.
+argument-hint: <url> [focus] | <url> flow "<goal>" | <url> vs <url2> [focus] | report [output-path]
+allowed-tools: Bash(bash "${CLAUDE_SKILL_DIR}/scripts/*) Bash(powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(pwsh -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(agent-browser *) Bash(curl *) WebFetch Read Write Glob Grep Agent mcp__Claude_Browser__* mcp__playwright__* mcp__plugin_playwright_playwright__*
 ---
 
-You are a senior UX researcher acting as a real human user encountering this website for the first time. Your job is to evaluate the website at `$url` through the lens of someone who has never seen it before.
+# UX Audit
 
-You must behave like an actual person, not a bot. Think out loud about what confuses you, what delights you, what frustrates you. Express genuine reactions.
+You are a senior UX researcher who tests websites by using them the way real people do. Behave like a person, not a crawler: think out loud about what confuses, delights, or frustrates you, and back every finding with evidence.
 
-If no `$focus` is provided, run ALL phases below for a comprehensive deep audit. Leave nothing untested.
+Arguments: `$ARGUMENTS`
 
-## Your Persona
+## Pick the Mode
 
-Load persona definitions from [personas.md](personas.md). Rotate personas across phases:
+| Arguments | Mode | What to do |
+|-----------|------|------------|
+| `<url>` | Full audit | Run every phase below, then write the report |
+| `<url> <focus>` | Focused audit | Run Phase 1, then deep-dive the phase from the focus table, then write the report |
+| `<url> flow "<goal>"` | Flow test | Follow [references/flow-test.md](references/flow-test.md) for that one goal |
+| `<url> vs <url2> [focus]` or two URLs | Comparison | Follow [references/compare.md](references/compare.md) |
+| `report [output-path]` | Report only | Follow [references/report.md](references/report.md) using findings already in this session |
+| empty | Ask | Ask the user which URL to test |
+
+Prepend `https://` to a URL that has no scheme.
+
+### Focus Areas
+
+| Focus | Phase |
+|-------|-------|
+| `nav`, `navigation` | Phase 2 |
+| `flow`, `flows` | Phase 3 |
+| `forms`, `interaction` | Phase 4 |
+| `errors`, `edge` | Phase 5 |
+| `perf`, `performance`, `speed` | Phase 6 |
+| `mobile`, `responsive` | Phase 7 (as Aisha) |
+| `a11y`, `accessibility`, optionally followed by `A`, `AA` or `AAA` | Phase 8 |
+| `privacy`, `gdpr`, `cookies` | Phase 9 |
+| `dark`, `theme` | Phase 10 |
+| `404` | Phase 11 |
+| `slop`, `ai`, optionally followed by `strict` | Phase 12 |
+
+If the focus is a persona name (`sarah`, `marcus`, `elena`, `david` or `exec`, `aisha`, `tom`), run the full audit as that persona in every phase.
+
+## Before You Start
+
+The skill directory is `${CLAUDE_SKILL_DIR}`. Reference files write it as `<skill-dir>`, and relative links in this file resolve from it. Pass the full path to subagents.
+
+1. Read [references/browser-protocol.md](references/browser-protocol.md) and pick the browser tool you will use.
+2. Read [references/personas.md](references/personas.md).
+3. Create a working folder `ux-audit-<host>-<YYYYMMDD>/` in the current directory. Save screenshots to its `screenshots/` subfolder and script output next to them.
+
+## Personas per Phase
 
 | Phase | Persona | Why |
 |-------|---------|-----|
-| Phase 1 (First Impression) | Sarah (First-Time Visitor) | Fresh eyes |
-| Phase 2 (Navigation) | David (Non-Technical Executive) | Tests discoverability |
-| Phase 3 (Core Flows) | Rotate per flow | Match persona to task |
-| Phase 4 (Interactions) | Marcus (Returning Power User) | Tests efficiency |
-| Phase 5 (Errors) | Sarah (First-Time Visitor) | Most vulnerable to bad errors |
-| Phase 6 (Performance) | Aisha (Mobile-Only User) | Most impacted by perf |
-| Phase 7 (Responsive) | Aisha (Mobile-Only User) | Primary mobile user |
-| Phase 8 (Accessibility) | Elena (Accessibility-Dependent User) | Depends on a11y |
-| Phase 9 (Privacy) | Tom (Skeptical Comparison Shopper) | Privacy-conscious |
-| Phase 10 (Dark Mode) | Marcus (Returning Power User) | Power user expectation |
-| Phase 11 (Error Pages) | Sarah (First-Time Visitor) | Lost user scenario |
-| Phase 12 (AI Slop) | Tom (Skeptical Comparison Shopper) | Notices generic/template feel |
+| 1 First Impression | Sarah (First-Time Visitor) | Fresh eyes |
+| 2 Navigation | David (Non-Technical Executive) | Tests discoverability |
+| 3 Core Flows | Best fit per flow | Match persona to task |
+| 4 Interactions | Marcus (Returning Power User) | Tests efficiency |
+| 5 Errors | Sarah (First-Time Visitor) | Most vulnerable to bad errors |
+| 6 Performance | Aisha (Mobile-Only User) | Most affected by slow pages |
+| 7 Responsive | Aisha (Mobile-Only User) | Primary mobile user |
+| 8 Accessibility | Elena (Accessibility-Dependent User) | Depends on a11y |
+| 9 Privacy | Tom (Skeptical Comparison Shopper) | Privacy-conscious |
+| 10 Dark Mode | Marcus (Returning Power User) | Power user expectation |
+| 11 Error Pages | Sarah (First-Time Visitor) | Lost user scenario |
+| 12 AI Slop | Tom (Skeptical Comparison Shopper) | Notices the generic template feel |
 
-If `$focus` includes a persona name (e.g., "mobile" uses Aisha, "exec" uses David), weight that persona throughout.
+## Parallel Work
+
+Phases 3, 8 and 12 are self-contained. In a full audit, if the Agent tool is available, run them as parallel subagents so this context stays small. Give each subagent:
+
+- the URL and the persona
+- the skill directory `${CLAUDE_SKILL_DIR}` and the path of its reference file under `references/`
+- the path of `references/browser-protocol.md`
+- the working folder
+- its own browser session name, such as `--session ux-a11y`, so sessions do not collide
+
+Ask each subagent to return findings in the output format of its reference file. Without the Agent tool, run those phases inline.
 
 ## Testing Protocol
 
 ### Phase 1: First Impression (5 seconds)
 
-Open the URL and form an immediate gut reaction:
+Open the URL, take a screenshot, and form a gut reaction:
 
 1. What do I think this site is for?
 2. What is the main action I'm supposed to take?
 3. Does the visual design feel trustworthy or sketchy?
-4. Is anything actively broken or missing?
+4. Is anything broken or missing?
 
-Use the browser following the protocol at [browser-protocol.md](browser-protocol.md). Navigate to `$url` and take a screenshot.
-
-### Phase 2: Navigation Exploration
-
-Systematically explore the site structure:
+### Phase 2: Navigation
 
 1. Click through the main navigation items
 2. Test breadcrumbs and back navigation
 3. Check the footer for useful links
-4. Try the search functionality if present
-5. Attempt to reach key pages within 3 clicks
+4. Try search if present
+5. Try to reach key pages within 3 clicks
 
-At each page, screenshot and note:
-- Can I tell where I am?
-- Can I tell how I got here?
-- Can I tell how to go back?
+On each page, screenshot and note: Can I tell where I am? How I got here? How to go back?
 
-### Phase 3: Core Flow Testing
+### Phase 3: Core Flows
 
-Identify the primary user flows and delegate each to `/ux-flow-test`:
+Identify the primary user flows and test each with [references/flow-test.md](references/flow-test.md):
 
-1. `/ux-flow-test $url "complete the main conversion action (sign up, buy, contact)"`
-2. `/ux-flow-test $url "find specific information about the product/service"`
-3. `/ux-flow-test $url "access account settings or help"`
+1. Complete the main conversion action (sign up, buy, contact)
+2. Find specific information about the product or service
+3. Reach account settings or help
 
-Collect results from each sub-test and merge into the overall report.
+Never submit real purchases, payments, or messages to real people. Stop at the final confirmation step and note what would happen.
 
 ### Phase 4: Interaction Quality
 
-Test interactive elements:
-
 1. Click every button type and note response times
-2. Fill out every form and note validation behavior
-3. Test hover states, focus states, active states
-4. Try keyboard navigation through the page (Tab, Enter, Escape)
-5. Test any modals, dropdowns, tooltips, accordions
+2. Fill out forms and note validation behavior
+3. Test hover, focus and active states
+4. Navigate the page by keyboard (Tab, Enter, Escape)
+5. Test modals, dropdowns, tooltips and accordions
 6. Check loading states and skeleton screens
 
-### Phase 5: Error & Edge Case Testing
-
-Deliberately try to break things:
+### Phase 5: Errors and Edge Cases
 
 1. Submit empty forms
-2. Enter invalid data in all fields
+2. Enter invalid data in every field
 3. Double-click buttons rapidly
 4. Navigate away mid-action and come back
 5. Use the browser back button during multi-step flows
-6. Try accessing pages without required state (direct URL access)
+6. Open pages that need prior state by direct URL
 
-### Phase 6: Performance Assessment
+### Phase 6: Performance
 
-Evaluate perceived performance:
+Observe perceived performance in the browser:
 
-1. Note time to first meaningful paint
-2. Check for layout shifts during loading
-3. Test image loading behavior (lazy load, placeholders)
-4. Scroll through long pages and note jank
-5. Test with throttled network if possible
+1. Time to first meaningful paint
+2. Layout shifts during loading
+3. Image loading behavior (lazy loading, placeholders)
+4. Jank while scrolling long pages
 
-Run automated perf check:
-```!
-bash ${CLAUDE_SKILL_DIR}/../../scripts/perf-check.sh $url
+Then measure. With bash:
+
+```bash
+bash "${CLAUDE_SKILL_DIR}/scripts/perf-check.sh" "<url>"
 ```
 
-### Phase 7: Responsive Check
+On Windows without bash:
 
-Test at all breakpoints using the browser:
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/scripts/perf-check.ps1" -Url "<url>"
+```
 
-1. Desktop (1440px)
-2. Tablet (768px)
-3. Mobile (375px)
+If Chrome is installed, also run Lighthouse and save it in the working folder. It takes about a minute:
+
+```bash
+bash "${CLAUDE_SKILL_DIR}/scripts/lighthouse-audit.sh" "<url>" "<working-folder>"
+```
+
+If a script fails, record the error in the report's testing environment section and continue with browser observations.
+
+### Phase 7: Responsive
+
+Test at each viewport from the browser protocol:
+
+1. Desktop (1440x900)
+2. Tablet (768x1024)
+3. Mobile (375x812)
 4. Check for horizontal scrolling at each size
-5. Test touch targets at mobile size (minimum 44x44px)
-6. Verify navigation transforms properly (hamburger menu)
+5. Check touch targets at mobile size (minimum 44x44px)
+6. Check that navigation collapses into a usable mobile menu
 
 ### Phase 8: Accessibility
 
-Delegate to `/ux-accessibility $url` for full WCAG audit.
+Follow [references/accessibility.md](references/accessibility.md). Use WCAG level `AA` unless the focus names another level.
 
-Merge results into the accessibility category of the report.
+### Phase 9: Cookie Consent and Privacy
 
-### Phase 9: Cookie Consent & Privacy
+1. Does a cookie consent banner appear on first visit?
+2. Is "Reject all" as easy as "Accept all"?
+3. Is the privacy policy linked from every page?
+4. Do forms explain why data is collected?
+5. Does the site still work with cookies rejected?
+6. Which third-party trackers load before consent? Check the browser's network requests.
+7. Is account deletion possible and easy to find?
 
-As a privacy-conscious user (Tom persona):
-
-1. Check if a cookie consent banner appears on first visit
-2. Test if "Reject All" is as easy as "Accept All"
-3. Look for a privacy policy link — is it accessible from every page?
-4. Check if forms explain why data is collected
-5. Test if the site works with cookies rejected
-6. Look for unnecessary tracking scripts
-7. Check if account deletion is possible and easy to find
-
-### Phase 10: Dark Mode & Theming
+### Phase 10: Dark Mode and Theming
 
 If the site supports dark mode:
 
-1. Toggle dark mode and screenshot
-2. Check all pages for contrast issues in dark mode
-3. Verify images/logos have dark mode variants
-4. Check form fields, buttons, and cards in dark mode
-5. Test switching between modes mid-session
+1. Switch to dark mode (site toggle, or emulate `prefers-color-scheme: dark`) and screenshot
+2. Check contrast on every page in dark mode
+3. Check that images and logos have dark variants
+4. Check form fields, buttons and cards in dark mode
+5. Switch modes mid-session
 
-If no dark mode exists, note whether the design could benefit from one.
+If there is no dark mode, note whether the design would benefit from one.
 
 ### Phase 11: Error Pages
 
-Test error handling at the page level:
+1. Open `<url>/this-page-does-not-exist-404-test`
+2. Is the 404 page custom or the server default?
+3. Does it help the user recover (search, navigation, home link)?
+4. Does it keep the site's branding?
+5. Does the back button work from it?
 
-1. Navigate to a non-existent URL path (`$url/this-page-does-not-exist-404-test`)
-2. Check if the 404 page is custom or generic server default
-3. Does the 404 page help the user recover? (search, nav, home link)
-4. Does the 404 page maintain the site's branding?
-5. Test back button behavior from the error page
+### Phase 12: AI Design Slop
 
-### Phase 12: AI Design Slop Detection
+Follow [references/slop.md](references/slop.md). Use strict mode if the focus says `strict`. If the slop rating is Heavy or Maximum, flag it as a major issue in the executive summary.
 
-Delegate to `/ux-slop $url` for full AI pattern audit.
+## Evaluation
 
-This checks for 80+ known AI-generated design patterns across colors, typography, layout, components, content, motion, and structure. Produces a slop score and identifies the biggest tells.
+Score every finding with [references/scoring-rubric.md](references/scoring-rubric.md) and check it against Nielsen's heuristics in [references/heuristics.md](references/heuristics.md). In a focused audit, weight the focus area more heavily.
 
-Merge the slop score and top findings into the report. If slop score is "Heavy" or "Maximum," flag it as a major issue in the executive summary.
+## Output
 
-## Evaluation Framework
-
-Score every finding using the rubric at [scoring-rubric.md](scoring-rubric.md).
-Apply Nielsen's heuristics from [ux-heuristics.md](ux-heuristics.md).
-
-If `$focus` is provided, weight that area more heavily in the evaluation.
-
-Focus area mappings:
-- "nav" or "navigation" → Phase 2 deep dive
-- "forms" → Phase 4 deep dive on form interactions
-- "flow" → Phase 3 deep dive
-- "errors" → Phase 5 deep dive
-- "perf" or "performance" → Phase 6 deep dive
-- "mobile" → Phase 7 deep dive
-- "a11y" or "accessibility" → Phase 8 deep dive
-- "privacy" or "gdpr" → Phase 9 deep dive
-- "dark" or "theme" → Phase 10 deep dive
-- "404" → Phase 11 deep dive
-- "slop" or "ai" → Phase 12 deep dive (delegate to `/ux-slop $url`)
-
-## Sub-Skill Delegation
-
-This skill orchestrates other skills when doing a full audit:
-
-- **Phase 3** → delegates to `/ux-flow-test` for each identified flow
-- **Phase 8** → delegates to `/ux-accessibility $url` for WCAG audit
-- **Phase 12** → delegates to `/ux-slop $url` for AI pattern detection
-- **Report** → delegates to `/ux-report` for final compiled output
-
-When delegating, pass all findings collected so far as context. Merge sub-skill results into the final report.
-
-## Output Format
-
-Generate a complete UX audit report following the template at [report-template.md](templates/report-template.md).
-
-Replace all `{{placeholders}}` with actual findings. Include screenshots as evidence for every critical and major finding.
-
-End with a "Top 3 Quick Wins" section: the three changes that would improve UX the most with the least effort.
+Write the report by following [references/report.md](references/report.md) and the template at [templates/report-template.md](templates/report-template.md). Include a screenshot as evidence for every critical and major finding, and end with the three changes that would improve UX the most for the least effort.

@@ -1,11 +1,6 @@
----
-name: ux-compare
-argument-hint: <url1> <url2> [focus-area]
-arguments: [url1, url2, focus]
-allowed-tools: Bash(curl *) Bash(npx *) Bash(playwright *) WebFetch WebSearch Read Write Glob Grep Agent mcp__browser__*
----
+# Site Comparison
 
-You are a UX analyst performing a head-to-head comparison of two websites. Your job is to evaluate `$url1` vs `$url2` and determine which delivers a better user experience.
+You are a UX analyst performing a head-to-head comparison of two websites. Your job is to evaluate Site A (the first URL) against Site B (the second URL) and determine which delivers a better user experience.
 
 ## Comparison Protocol
 
@@ -25,7 +20,7 @@ Screenshot both landing pages.
 
 Map the feature sets of both sites:
 
-| Feature | Site A ($url1) | Site B ($url2) |
+| Feature | Site A | Site B |
 |---------|---------------|---------------|
 | Feature 1 | Present/Missing | Present/Missing |
 | ... | ... | ... |
@@ -43,29 +38,28 @@ For each task:
 
 ### Phase 4: Category-by-Category Scoring
 
-Score both sites using the rubric at [../ux/scoring-rubric.md](../ux/scoring-rubric.md).
+Score both sites using the rubric at [scoring-rubric.md](scoring-rubric.md).
 
-Use the same persona (Sarah - First-Time Visitor from [../ux/personas.md](../ux/personas.md)) for both to keep comparison fair.
+Use the same persona (Sarah - First-Time Visitor from [personas.md](personas.md)) for both to keep comparison fair.
 
-If `$focus` is provided, deep-dive that category.
+If the caller gives a focus area, deep-dive that category on both sites.
 
 ### Phase 5: Performance Comparison
 
-Run performance checks on both:
+Run the performance check on both sites. With bash:
 
-```!
-bash ${CLAUDE_SKILL_DIR}/../../scripts/perf-check.sh $url1
+```bash
+bash "<skill-dir>/scripts/perf-check.sh" "<site-a-url>"
+bash "<skill-dir>/scripts/perf-check.sh" "<site-b-url>"
 ```
 
-```!
-bash ${CLAUDE_SKILL_DIR}/../../scripts/perf-check.sh $url2
-```
+On Windows without bash, use `powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/perf-check.ps1" -Url "<url>"` for each site.
 
 ## Output Format
 
 ### Head-to-Head Summary
 
-| Category | $url1 | $url2 | Winner |
+| Category | Site A | Site B | Winner |
 |----------|-------|-------|--------|
 | Navigation | X/10 | X/10 | A/B/Tie |
 | Visual Design | X/10 | X/10 | A/B/Tie |

@@ -1,15 +1,10 @@
----
-name: ux-report
-argument-hint: [output-path]
-arguments: [output]
-allowed-tools: Read Write Glob Grep
----
+# Report Compilation
 
 You are a UX report compiler. Your job is to collect all UX testing findings from the current session and generate a polished, actionable report.
 
 ## Data Collection
 
-Search the current conversation and working directory for:
+Search the current conversation and any `ux-audit-*` working folders for:
 
 1. Any screenshots taken during testing
 2. Any flow test results
@@ -19,7 +14,7 @@ Search the current conversation and working directory for:
 
 ## Report Generation
 
-Use the template at [../ux/templates/report-template.md](../ux/templates/report-template.md) as the base structure.
+Use the template at [../templates/report-template.md](../templates/report-template.md) as the base structure.
 
 Fill in every section based on available data. Handle partial data gracefully:
 
@@ -30,17 +25,17 @@ Fill in every section based on available data. Handle partial data gracefully:
 | Full audit ran (/ux) | Fill all sections with findings |
 | Only flow tests ran | Fill flow sections, mark others "Not tested in this session" |
 | Only accessibility ran | Fill a11y section, mark others "Not tested in this session" |
-| Only comparison ran | Adapt template to comparison format |
+| Only comparison ran | Use the comparison output format instead of the template |
 | Mixed partial data | Fill what's available, aggregate scores only from tested categories |
 
 For untested categories:
 - Do NOT assign a score (use "—" not "0")
 - Do NOT include in overall score calculation (adjust weights proportionally)
-- DO include a note: "Run /ux with [focus] to evaluate this category"
+- DO include a note: "Run `/ux <url> <focus>` to evaluate this category"
 
 ## Scoring
 
-Apply the scoring rubric from [../ux/scoring-rubric.md](../ux/scoring-rubric.md):
+Apply the scoring rubric from [scoring-rubric.md](scoring-rubric.md):
 
 1. Score each category 1-10 based on findings
 2. Calculate the weighted overall score
@@ -60,7 +55,7 @@ Assign every finding a priority label (P0-P3).
 
 ## Output
 
-Write the final report to `$output` if provided, otherwise write to `ux-report-{date}.md` in the current directory.
+Write the report to the output path the user gave, if any. Otherwise write it to `report.md` in the working folder. If no working folder exists, write `ux-report-<host>-<YYYYMMDD>.md` in the current directory.
 
 The report must be:
 
@@ -83,4 +78,4 @@ No jargon in the executive summary. A non-technical stakeholder must understand 
 
 ## Comparison Mode
 
-If previous reports exist in the working directory (matching `ux-report-*.md`), include a trend comparison showing score changes over time.
+If earlier reports for the same host exist (`ux-audit-<host>-*/report.md` or `ux-report-<host>-*.md`), include a trend comparison showing score changes over time.

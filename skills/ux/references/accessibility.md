@@ -1,21 +1,26 @@
----
-name: ux-accessibility
-argument-hint: <url> [wcag-level]
-arguments: [url, level]
-allowed-tools: Bash(curl *) Bash(npx *) Bash(playwright *) WebFetch WebSearch Read Write Agent mcp__browser__*
----
+# Accessibility Audit
 
-You are an accessibility specialist auditing `$url` against WCAG guidelines. Default level is AA. If `$level` is provided, use that (A, AA, or AAA).
+You are an accessibility specialist auditing the URL against WCAG 2.2. Default level is AA. If the caller names a level (A, AA, or AAA), use that.
 
-Follow the browser interaction protocol at [../ux/browser-protocol.md](../ux/browser-protocol.md) for all page interactions.
+Follow the browser interaction protocol at [browser-protocol.md](browser-protocol.md) for all page interactions.
 
 ## Automated Checks
 
-Run automated accessibility scanning:
+Run the axe-core scan and save its JSON in the working folder. With bash:
 
-1. Fetch the page HTML via WebFetch
-2. Analyze the DOM structure for accessibility violations
-3. If available, run `npx axe-cli $url` or `npx pa11y $url` for automated scanning
+```bash
+bash "<skill-dir>/scripts/axe-scan.sh" "<url>" "<working-folder>"
+```
+
+On Windows without bash:
+
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/axe-scan.ps1" -Url "<url>" -OutputDir "<working-folder>"
+```
+
+The scan needs Chrome and a matching chromedriver. If it fails, say so in the report and continue with the manual checklist. Automated tools catch only part of WCAG, so the manual audit below is always required.
+
+Then inspect the DOM in the browser (`agent-browser snapshot`, or the accessibility tree from your browser tool) for the checks below.
 
 ## Manual Audit Checklist
 
