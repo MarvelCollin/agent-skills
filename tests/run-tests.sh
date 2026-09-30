@@ -146,6 +146,43 @@ OUT=$(PATH="$FAKES:$PATH" FAKE_NPX_MODE=fail bash "$SCRIPTS/lighthouse-audit.sh"
 expect_exit "fails when no report is written" "$CODE" 1
 expect_contains "prints an error when no report is written" "$OUT" "ERROR: Lighthouse audit failed"
 
+RULES="$ROOT/tests/fixtures/rules"
+mkdir -p "$WORK/rules-project/node_modules/lib"
+cp "$RULES/good/page.html" "$WORK/rules-project/page.html"
+cp "$RULES/bad/dashboard.html" "$WORK/rules-project/node_modules/lib/dashboard.html"
+
+rule_scan_checks() {
+    local label="$1" bad_output="$2" good_output="$3" vendored_output="$4"
+    expect_contains "$label flags saturated fills" "$bad_output" "R1 saturated-fill dashboard.html:3:"
+    expect_contains "$label flags icon tiles" "$bad_output" "R3 icon-tile dashboard.html:3:"
+    expect_contains "$label flags pill badges" "$bad_output" "R4 pill-badge dashboard.html:7:"
+    expect_contains "$label flags tables without column filters" "$bad_output" "R5 table-without-column-filters dashboard.html:11:"
+    expect_contains "$label flags fixed-size overlays" "$bad_output" "R6 fixed-size-overlay dashboard.html:14:"
+    expect_contains "$label flags native date inputs" "$bad_output" "R7 native-control dashboard.html:8:"
+    expect_contains "$label flags native selects" "$bad_output" "R7 native-control dashboard.html:9:"
+    expect_contains "$label flags native checkboxes" "$bad_output" "R7 native-control dashboard.html:10:"
+    expect_contains "$label flags browser dialogs" "$bad_output" "R7 browser-dialog dashboard.html:16:"
+    expect_contains "$label flags default scrollbars" "$bad_output" "R7 default-scrollbar dashboard.html:15:"
+    expect_contains "$label flags em dashes" "$bad_output" "R9 em-dash dashboard.html:12:"
+    expect_contains "$label flags semicolons in markup copy" "$bad_output" "R9 semicolon-in-copy dashboard.html:13:"
+    expect_contains "$label flags semicolons in string files" "$bad_output" "R9 semicolon-in-copy strings.json:2:"
+    expect_contains "$label counts every finding" "$bad_output" "FINDINGS: 13"
+    expect_contains "$label passes clean UI" "$good_output" "FINDINGS: 0"
+    expect_contains "$label skips node_modules" "$vendored_output" "FINDINGS: 0"
+}
+
+echo "rule-scan.sh"
+BAD=$(bash "$SCRIPTS/rule-scan.sh" "$RULES/bad" 2>&1); CODE=$?
+expect_exit "exits 0 when it finds violations" "$CODE" 0
+GOOD=$(bash "$SCRIPTS/rule-scan.sh" "$RULES/good" 2>&1)
+VENDORED=$(bash "$SCRIPTS/rule-scan.sh" "$WORK/rules-project" 2>&1)
+rule_scan_checks "it" "$BAD" "$GOOD" "$VENDORED"
+OUT=$(bash "$SCRIPTS/rule-scan.sh" "$RULES/bad/strings.json" 2>&1)
+expect_contains "scans a single file" "$OUT" "R9 semicolon-in-copy strings.json:2:"
+OUT=$(bash "$SCRIPTS/rule-scan.sh" "$WORK/missing" 2>&1); CODE=$?
+expect_exit "fails on a missing path" "$CODE" 1
+expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+
 if [ -n "$POWERSHELL" ]; then
     echo "perf-check.ps1"
     OUT=$(run_ps "$SCRIPTS/perf-check.ps1" -Url "$BASE/" 2>&1 | tr -d '\r'); CODE=$?
@@ -188,6 +225,17 @@ if [ -n "$POWERSHELL" ]; then
     OUT=$(PATH="$FAKES:$PATH" FAKE_NPX_MODE=fail run_ps "$SCRIPTS/lighthouse-audit.ps1" -Url "$BASE/" -OutputDir "$WORK/lh-ps-fail" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails when no report is written" "$CODE" 1
     expect_contains "prints an error when no report is written" "$OUT" "ERROR: Lighthouse audit failed"
+    echo "rule-scan.ps1"
+    BAD=$(run_ps "$SCRIPTS/rule-scan.ps1" -Path "$RULES/bad" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "exits 0 when it finds violations" "$CODE" 0
+    GOOD=$(run_ps "$SCRIPTS/rule-scan.ps1" -Path "$RULES/good" 2>&1 | tr -d '\r')
+    VENDORED=$(run_ps "$SCRIPTS/rule-scan.ps1" -Path "$WORK/rules-project" 2>&1 | tr -d '\r')
+    rule_scan_checks "it" "$BAD" "$GOOD" "$VENDORED"
+    OUT=$(run_ps "$SCRIPTS/rule-scan.ps1" -Path "$RULES/bad/strings.json" 2>&1 | tr -d '\r')
+    expect_contains "scans a single file" "$OUT" "R9 semicolon-in-copy strings.json:2:"
+    OUT=$(run_ps "$SCRIPTS/rule-scan.ps1" -Path "$WORK/missing" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "fails on a missing path" "$CODE" 1
+    expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
 else
     echo "PowerShell not found, skipping .ps1 tests"
 fi

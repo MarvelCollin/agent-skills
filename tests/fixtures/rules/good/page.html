@@ -1,0 +1,16 @@
+<style>
+  .scroll { overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+  .dialog { width: fit-content; max-width: min(40rem, 100vw - 2rem); }
+</style>
+<table data-table>
+  <thead>
+    <tr><th>Name <input class="column-filter" aria-label="Filter by Name"></th></tr>
+  </thead>
+</table>
+<p>Scores are saved. You can leave now.</p>
+<span class="status status-late">Late</span>
+<input type="checkbox" class="sr-only" id="agree">
+<div class="scroll">rows</div>
+<script>
+  const visible = rows.filter((row) => row.score > 50); render(visible);
+</script>
