@@ -208,6 +208,35 @@ scope_checks() {
     $runner "$SECFIX/scope/missing.md" "http://localhost" >/dev/null 2>&1; expect_exit "$label missing scope file exits 3" "$?" 3
 }
 
+scope_init_checks() {
+    local label="$1" runner="$2" checker="$3" out_flag="$4"
+    local dir="$WORK/init-$label" out code scope
+    mkdir -p "$dir"
+    out=$($runner "http://localhost:3000/login" $out_flag "$dir" 2>&1 | tr -d '\r'); code=$?
+    expect_exit "$label local url exits 0" "$code" 0
+    expect_contains "$label reports created" "$out" "SCOPE_STATUS: created"
+    expect_contains "$label reports host" "$out" "HOST: localhost"
+    expect_matches "$label names folder by host and port" "$out" "ENGAGEMENT_DIR: .*security-localhost-3000-[0-9]{8}$"
+    scope="$(printf '%s\n' "$out" | sed -n 's/^SCOPE_FILE: //p')"
+    expect_contains "$label writes in-scope host" "$(cat "$scope" 2>/dev/null)" "- In scope: localhost"
+    expect_contains "$label records local authorization" "$(cat "$scope" 2>/dev/null)" "- Authorization: local dev build"
+    $checker "$scope" "http://localhost:3000/api" >/dev/null 2>&1; expect_exit "$label scope passes scope-check" "$?" 0
+    $checker "$scope" "https://evil.com" >/dev/null 2>&1; expect_exit "$label scope rejects other hosts" "$?" 1
+    out=$($runner "http://localhost:3000" $out_flag "$dir" 2>&1 | tr -d '\r')
+    expect_contains "$label keeps an existing scope" "$out" "SCOPE_STATUS: existing"
+    out=$($runner "192.168.1.20:8080" $out_flag "$dir" 2>&1 | tr -d '\r'); code=$?
+    expect_exit "$label private host exits 0" "$code" 0
+    out=$($runner "$CODE_DIR" $out_flag "$dir" 2>&1 | tr -d '\r'); code=$?
+    expect_exit "$label source path exits 0" "$code" 0
+    expect_contains "$label reports source kind" "$out" "KIND: source"
+    expect_matches "$label names folder by source dir" "$out" "ENGAGEMENT_DIR: .*security-code-[0-9]{8}$"
+    out=$($runner "https://example.com" $out_flag "$dir" 2>&1 | tr -d '\r'); code=$?
+    expect_exit "$label public host exits 1" "$code" 1
+    expect_contains "$label prints an error for a public host" "$out" "ERROR: example.com is not a local"
+    out=$($runner "http://localhost" $out_flag "$WORK/nope-init" 2>&1 | tr -d '\r'); code=$?
+    expect_exit "$label missing output dir exits 1" "$code" 1
+}
+
 audit_checks() {
     local label="$1" audit_output="$2" safe_output="$3"
     expect_contains "$label flags hardcoded secrets" "$audit_output" "[hardcoded-secret] app.py:2:"
@@ -224,6 +253,9 @@ audit_checks() {
 
 echo "scope-check.sh"
 scope_checks "sh" "bash $SECSCRIPTS/scope-check.sh"
+
+echo "scope-init.sh"
+scope_init_checks "sh" "bash $SECSCRIPTS/scope-init.sh" "bash $SECSCRIPTS/scope-check.sh" ""
 
 echo "grep-audit.sh"
 AUDIT=$(bash "$SECSCRIPTS/grep-audit.sh" "$CODE_DIR" 2>&1); CODE=$?
@@ -289,6 +321,9 @@ if [ -n "$POWERSHELL" ]; then
     expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
     echo "scope-check.ps1"
     scope_checks "ps1" "run_ps $SECSCRIPTS/scope-check.ps1 -ScopeFile"
+
+    echo "scope-init.ps1"
+    scope_init_checks "ps1" "run_ps $SECSCRIPTS/scope-init.ps1 -Target" "run_ps $SECSCRIPTS/scope-check.ps1 -ScopeFile" "-OutputDir"
 
     echo "grep-audit.ps1"
     AUDIT=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$CODE_DIR" 2>&1 | tr -d '\r'); CODE=$?
