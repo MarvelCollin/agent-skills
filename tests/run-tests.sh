@@ -237,6 +237,31 @@ scope_init_checks() {
     expect_exit "$label missing output dir exits 1" "$code" 1
 }
 
+DEVPROJ="$WORK/devproj"
+mkdir -p "$DEVPROJ" "$WORK/emptyproj"
+printf '{\n  "scripts": { "dev": "vite" },\n  "dependencies": { "express": "^4.0.0" },\n  "devDependencies": { "vite": "^5.0.0" }\n}\n' >"$DEVPROJ/package.json"
+
+dev_detect_checks() {
+    local label="$1" runner="$2" path_flag="$3" ports_flag="$4"
+    local out code
+    out=$($runner $path_flag "$DEVPROJ" $ports_flag "1,$PORT" 2>&1 | tr -d '\r'); code=$?
+    expect_exit "$label succeeds on a project" "$code" 0
+    expect_contains "$label detects the stack" "$out" "STACK: node, vite, express"
+    expect_contains "$label finds the dev command" "$out" "DEV_COMMAND: npm run dev"
+    expect_contains "$label finds the running server" "$out" "LISTENING: http://127.0.0.1:$PORT (HTTP 200)"
+    expect_contains "$label skips closed ports" "$out" "LISTENING_COUNT: 1"
+    expect_contains "$label suggests the running server" "$out" "SUGGESTED_TARGET: http://127.0.0.1:$PORT"
+    out=$($runner $path_flag "$WORK/emptyproj" $ports_flag "1" 2>&1 | tr -d '\r'); code=$?
+    expect_exit "$label succeeds with nothing running" "$code" 0
+    expect_contains "$label reports an unknown stack" "$out" "STACK: unknown"
+    expect_contains "$label reports no target" "$out" "SUGGESTED_TARGET: none"
+    out=$($runner $path_flag "$WORK/nope-dev" 2>&1 | tr -d '\r'); code=$?
+    expect_exit "$label fails on a missing project" "$code" 1
+    expect_contains "$label prints an error for a missing project" "$out" "ERROR:"
+    out=$($runner $path_flag "$DEVPROJ" $ports_flag "80;rm" 2>&1 | tr -d '\r'); code=$?
+    expect_exit "$label rejects a bad port list" "$code" 1
+}
+
 audit_checks() {
     local label="$1" audit_output="$2" safe_output="$3"
     expect_contains "$label flags hardcoded secrets" "$audit_output" "[hardcoded-secret] app.py:2:"
@@ -256,6 +281,9 @@ scope_checks "sh" "bash $SECSCRIPTS/scope-check.sh"
 
 echo "scope-init.sh"
 scope_init_checks "sh" "bash $SECSCRIPTS/scope-init.sh" "bash $SECSCRIPTS/scope-check.sh" ""
+
+echo "dev-detect.sh"
+dev_detect_checks "sh" "bash $SECSCRIPTS/dev-detect.sh" "" ""
 
 echo "grep-audit.sh"
 AUDIT=$(bash "$SECSCRIPTS/grep-audit.sh" "$CODE_DIR" 2>&1); CODE=$?
@@ -324,6 +352,9 @@ if [ -n "$POWERSHELL" ]; then
 
     echo "scope-init.ps1"
     scope_init_checks "ps1" "run_ps $SECSCRIPTS/scope-init.ps1 -Target" "run_ps $SECSCRIPTS/scope-check.ps1 -ScopeFile" "-OutputDir"
+
+    echo "dev-detect.ps1"
+    dev_detect_checks "ps1" "run_ps $SECSCRIPTS/dev-detect.ps1" "-Path" "-Ports"
 
     echo "grep-audit.ps1"
     AUDIT=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$CODE_DIR" 2>&1 | tr -d '\r'); CODE=$?
