@@ -58,7 +58,7 @@ On Windows without bash:
 powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/scripts/dev-detect.ps1" -Path "<path>"
 ```
 
-If the user gave a local URL, use it as the target. Otherwise use `SUGGESTED_TARGET`. If it is `none`, tell the user the `DEV_COMMAND` that starts the server, and do the code review of `<path>` meanwhile so the run still produces results.
+If the user gave a local URL, use it as the target. Otherwise use `SUGGESTED_TARGET`. If it is `none`, tell the user the `DEV_COMMAND` that starts the server, and use `<path>` as the target. The run then becomes a code review following [references/code-review.md](references/code-review.md), so it still produces results.
 
 2. Write the scope with no questions. It refuses any host that is not local:
 
