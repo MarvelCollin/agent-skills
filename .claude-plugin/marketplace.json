@@ -12,7 +12,7 @@
       "name": "agent-skills",
       "source": "./",
       "description": "A growing set of Claude Code skills. /uiux builds UI under strict UX rules and reviews it or audits a live site. /security runs an authorized security review of an app you own.",
-      "version": "0.4.0"
+      "version": "0.5.0"
     }
   ]
 }

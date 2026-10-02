@@ -90,11 +90,15 @@ claude --plugin-dir ./agent-skills
 An authorized security review of a web app you own or are cleared to test. It is built for your own and local or dev builds first (localhost, private hosts, your own source), and refuses targets you cannot show authorization for.
 
 ```
+/security dev                            # find your running dev server and screen it, no setup questions
+/security dev ./app                      # same, for a project in another folder
 /security ./src                          # static secure-code review, runs nothing live
 /security http://localhost:3000          # full review of your local app
 /security http://localhost:3000 recon    # one phase
 /security review ./api                    # code review of a folder
 ```
+
+**Dev mode** is the quickest way to screen your own build. A `dev-detect` script finds the dev server running on 127.0.0.1 and reads the stack and dev command from the project. A `scope-init` script then writes the engagement folder and `scope.md` with safe default rules for a local build, so there are no setup questions. The skill runs every phase white-box, reading your source next to the live app, and stops only at the end with the report. `scope-init` refuses any host that is not local, so a public site still needs your stated authorization. The skill pins itself to Opus 5.5 at high effort while it runs.
 
 It works in phases, based on the OWASP WSTG and ASVS:
 
@@ -125,7 +129,7 @@ skills/
     references/               Authorization, recon, validation, reporting, code review,
                               testing/ (10 vulnerability classes)
     templates/                Report and finding templates
-    scripts/                  scope-check, grep-audit (.sh + .ps1)
+    scripts/                  dev-detect, scope-init, scope-check, grep-audit (.sh + .ps1)
 evals/                        Cases for claude plugin eval
 tests/                        Unit tests for the scripts
 ```
