@@ -1,0 +1,12 @@
+{
+  "name": "notes-api",
+  "private": true,
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.0",
+    "jsonwebtoken": "^9.0.0",
+    "sqlite3": "^5.1.0"
+  }
+}
