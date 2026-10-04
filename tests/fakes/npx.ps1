@@ -3,6 +3,7 @@ $mode = if ($env:FAKE_NPX_MODE) { $env:FAKE_NPX_MODE } else { "ok" }
 $dir = "."
 $save = $null
 $outputPath = $null
+$autocannon = $false
 
 for ($i = 0; $i -lt $args.Count; $i++) {
     $arg = [string]$args[$i]
@@ -12,6 +13,8 @@ for ($i = 0; $i -lt $args.Count; $i++) {
     } elseif ($arg -eq "--save") {
         $save = $args[$i + 1]
         $i++
+    } elseif ($arg -eq "autocannon") {
+        $autocannon = $true
     } elseif ($arg.StartsWith("--output-path=")) {
         $outputPath = $arg.Substring("--output-path=".Length)
     }
@@ -20,6 +23,11 @@ for ($i = 0; $i -lt $args.Count; $i++) {
 if ($mode -eq "fail") {
     [Console]::Error.WriteLine("fake npx failure")
     exit 1
+}
+
+if ($autocannon) {
+    Get-Content -Raw (Join-Path $fixtures "autocannon.json")
+    exit 0
 }
 
 if ($save) {

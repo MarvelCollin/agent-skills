@@ -6,12 +6,14 @@ MODE="${FAKE_NPX_MODE:-ok}"
 DIR="."
 SAVE=""
 OUTPUT_PATH=""
+AUTOCANNON=0
 
 while [ $# -gt 0 ]; do
     case "$1" in
         --dir) DIR="$2"; shift 2 ;;
         --save) SAVE="$2"; shift 2 ;;
         --output-path=*) OUTPUT_PATH="${1#--output-path=}"; shift ;;
+        autocannon) AUTOCANNON=1; shift ;;
         *) shift ;;
     esac
 done
@@ -19,6 +21,11 @@ done
 if [ "$MODE" = "fail" ]; then
     echo "fake npx failure" >&2
     exit 1
+fi
+
+if [ "$AUTOCANNON" -eq 1 ]; then
+    cat "$FIXTURES/autocannon.json"
+    exit 0
 fi
 
 if [ -n "$SAVE" ]; then

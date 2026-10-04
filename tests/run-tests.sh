@@ -4,6 +4,8 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SCRIPTS="$ROOT/skills/uiux/scripts"
 SECSCRIPTS="$ROOT/skills/security/scripts"
+BACKSCRIPTS="$ROOT/skills/backend/scripts"
+BACKFIX="$ROOT/tests/fixtures/backend"
 SECFIX="$ROOT/tests/fixtures/security"
 FAKES="$ROOT/tests/fakes"
 WORK="$(mktemp -d)"
@@ -276,6 +278,68 @@ audit_checks() {
     expect_matches "$label leaves safe code clean" "$safe_output" "safe\.py"
 }
 
+mkdir -p "$WORK/backend-project/node_modules/lib" "$WORK/backend-project/tests" "$WORK/backend-project/src"
+cp "$BACKFIX/bad/orders.js" "$WORK/backend-project/node_modules/lib/orders.js"
+cp "$BACKFIX/bad/orders.js" "$WORK/backend-project/tests/orders.js"
+cp "$BACKFIX/bad/orders.js" "$WORK/backend-project/src/orders.test.js"
+cp "$BACKFIX/good/orders.js" "$WORK/backend-project/src/orders.js"
+
+backend_scan_checks() {
+    local label="$1" bad="$2" good="$3" vendored="$4"
+    expect_contains "$label flags weak password hashing" "$bad" "B1 weak-password-hash app.py:22:"
+    expect_contains "$label flags unscoped lookups in js" "$bad" "B2 unscoped-lookup orders.js:14:"
+    expect_contains "$label flags unscoped lookups in python" "$bad" "B2 unscoped-lookup app.py:21:"
+    expect_contains "$label flags client supplied roles" "$bad" "B2 client-authority orders.js:20:"
+    expect_contains "$label flags mass assignment" "$bad" "B2 mass-assignment orders.js:19:"
+    expect_contains "$label flags a query in a for loop" "$bad" "B4 query-in-loop orders.js:6:"
+    expect_contains "$label flags an orm call in a python loop" "$bad" "B4 query-in-loop app.py:8:"
+    expect_contains "$label flags a query in a comprehension" "$bad" "B4 query-in-loop app.py:9:"
+    expect_contains "$label flags http calls in a map" "$bad" "B4 http-in-loop orders.js:8:"
+    expect_contains "$label flags unbounded prisma queries" "$bad" "B5 unbounded-query orders.js:4:"
+    expect_contains "$label flags unbounded django queries" "$bad" "B5 unbounded-query app.py:6:"
+    expect_contains "$label flags select star" "$bad" "B5 select-star schema.sql:7:"
+    expect_contains "$label flags offset pagination" "$bad" "B5 offset-pagination orders.js:30:"
+    expect_contains "$label flags blocking index builds" "$bad" "B6 blocking-index schema.sql:6:"
+    expect_contains "$label flags requests without a timeout" "$bad" "B8 no-timeout app.py:11:"
+    expect_contains "$label flags fetch without a signal" "$bad" "B8 no-timeout orders.js:8:"
+    expect_contains "$label flags console logging" "$bad" "B9 unstructured-log orders.js:9:"
+    expect_contains "$label flags print logging" "$bad" "B9 unstructured-log app.py:10:"
+    expect_contains "$label flags secrets in logs" "$bad" "B9 sensitive-log orders.js:29:"
+    expect_contains "$label flags empty one-line catches" "$bad" "B11 swallowed-error orders.js:28:"
+    expect_contains "$label flags empty multi-line catches" "$bad" "B11 swallowed-error orders.js:39:"
+    expect_contains "$label flags except pass" "$bad" "B11 swallowed-error app.py:15:"
+    expect_contains "$label flags bare except" "$bad" "B11 bare-except app.py:15:"
+    expect_contains "$label flags raw errors sent to clients" "$bad" "B11 leaked-error orders.js:33:"
+    expect_contains "$label flags str(e) in responses" "$bad" "B11 leaked-error app.py:29:"
+    expect_contains "$label flags sync file reads" "$bad" "B12 blocking-call orders.js:31:"
+    expect_contains "$label flags time.sleep" "$bad" "B12 blocking-call app.py:23:"
+    expect_contains "$label flags credentials in connection strings" "$bad" "B13 credentials-in-dsn app.py:24:"
+    expect_contains "$label flags secret fallbacks in js" "$bad" "B13 secret-fallback orders.js:32:"
+    expect_contains "$label flags secret fallbacks in python" "$bad" "B13 secret-fallback app.py:25:"
+    expect_contains "$label flags parseFloat on money" "$bad" "B14 float-money orders.js:26:"
+    expect_contains "$label flags float money columns" "$bad" "B14 float-money schema.sql:3:"
+    expect_contains "$label flags naive datetimes" "$bad" "B14 naive-datetime app.py:12:"
+    expect_contains "$label flags timestamp without time zone" "$bad" "B14 naive-datetime schema.sql:4:"
+    expect_contains "$label counts every lead" "$bad" "FINDINGS: 35"
+    expect_contains "$label counts leads per rule" "$bad" "B11: 6"
+    expect_contains "$label passes clean code" "$good" "FINDINGS: 0"
+    expect_contains "$label skips vendored and test files" "$vendored" "FINDINGS: 0"
+    expect_contains "$label still scans source next to tests" "$vendored" "FILES_SCANNED: 1"
+}
+
+load_test_checks() {
+    local label="$1" ok="$2" strict="$3"
+    expect_contains "$label reports total requests" "$ok" "REQUESTS: 2505"
+    expect_contains "$label reports average rps" "$ok" "RPS_AVG: 250.5"
+    expect_contains "$label reports p50" "$ok" "LATENCY_P50_MS: 35"
+    expect_contains "$label reports p99" "$ok" "LATENCY_P99_MS: 640"
+    expect_contains "$label reports non-2xx responses" "$ok" "NON_2XX: 7"
+    expect_contains "$label computes the error rate" "$ok" "ERROR_RATE_PCT: 0.40"
+    expect_contains "$label reports no rate cap" "$ok" "RATE_CAP: none"
+    expect_contains "$label passes within thresholds" "$ok" "RESULT: pass"
+    expect_contains "$label fails over the p99 threshold" "$strict" "RESULT: fail"
+}
+
 echo "scope-check.sh"
 scope_checks "sh" "bash $SECSCRIPTS/scope-check.sh"
 
@@ -293,6 +357,37 @@ audit_checks "sh" "$AUDIT" "$([ "$SAFE" = "0" ] && echo "safe.py-clean" || echo 
 OUT=$(bash "$SECSCRIPTS/grep-audit.sh" "$WORK/nope-audit" 2>&1); CODE=$?
 expect_exit "fails on a missing path" "$CODE" 1
 expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+
+echo "backend-scan.sh"
+BAD=$(bash "$BACKSCRIPTS/backend-scan.sh" "$BACKFIX/bad" 2>&1); CODE=$?
+expect_exit "exits 0 when it finds leads" "$CODE" 0
+GOOD=$(bash "$BACKSCRIPTS/backend-scan.sh" "$BACKFIX/good" 2>&1)
+VENDORED=$(bash "$BACKSCRIPTS/backend-scan.sh" "$WORK/backend-project" 2>&1)
+backend_scan_checks "it" "$BAD" "$GOOD" "$VENDORED"
+OUT=$(bash "$BACKSCRIPTS/backend-scan.sh" "$BACKFIX/bad/app.py" 2>&1)
+expect_contains "scans a single file" "$OUT" "FINDINGS: 14"
+OUT=$(bash "$BACKSCRIPTS/backend-scan.sh" "$WORK/nope-backend" 2>&1); CODE=$?
+expect_exit "fails on a missing path" "$CODE" 1
+expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+
+echo "load-test.sh"
+OK=$(PATH="$FAKES:$PATH" bash "$BACKSCRIPTS/load-test.sh" "http://127.0.0.1:$PORT/" -d 5 -c 4 -H "Authorization: Bearer test" -o "$WORK/load" 2>&1); CODE=$?
+expect_exit "succeeds against a local host" "$CODE" 0
+STRICT=$(PATH="$FAKES:$PATH" bash "$BACKSCRIPTS/load-test.sh" "http://localhost:$PORT/" --p99 500 -o "$WORK/load" 2>&1)
+load_test_checks "it" "$OK" "$STRICT"
+OUT=$(PATH="$FAKES:$PATH" bash "$BACKSCRIPTS/load-test.sh" "https://example.com/" -o "$WORK/load" 2>&1); CODE=$?
+expect_exit "refuses a remote host without authorization" "$CODE" 2
+expect_contains "explains the authorization requirement" "$OUT" "needs the owner's authorization"
+PATH="$FAKES:$PATH" bash "$BACKSCRIPTS/load-test.sh" "https://example.com/" --authorized -o "$WORK/load" >/dev/null 2>&1; CODE=$?
+expect_exit "requires a rate cap for a remote host" "$CODE" 1
+OUT=$(PATH="$FAKES:$PATH" bash "$BACKSCRIPTS/load-test.sh" "https://example.com/" --authorized -r 10 -o "$WORK/load" 2>&1); CODE=$?
+expect_exit "runs an authorized remote host with a rate cap" "$CODE" 0
+expect_contains "reports the remote scope" "$OUT" "SCOPE: remote (authorized)"
+PATH="$FAKES:$PATH" bash "$BACKSCRIPTS/load-test.sh" "http://localhost/" -c 5000 >/dev/null 2>&1; CODE=$?
+expect_exit "rejects too many connections" "$CODE" 1
+OUT=$(PATH="$FAKES:$PATH" FAKE_NPX_MODE=fail bash "$BACKSCRIPTS/load-test.sh" "http://localhost/" -o "$WORK/load" 2>&1); CODE=$?
+expect_exit "fails when autocannon fails" "$CODE" 1
+expect_contains "prints an error when autocannon fails" "$OUT" "ERROR: load test failed"
 
 if [ -n "$POWERSHELL" ]; then
     echo "perf-check.ps1"
@@ -364,6 +459,37 @@ if [ -n "$POWERSHELL" ]; then
     OUT=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$WORK/nope-audit" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails on a missing path" "$CODE" 1
     expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+
+    echo "backend-scan.ps1"
+    BAD=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$BACKFIX/bad" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "exits 0 when it finds leads" "$CODE" 0
+    GOOD=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$BACKFIX/good" 2>&1 | tr -d '\r')
+    VENDORED=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$WORK/backend-project" 2>&1 | tr -d '\r')
+    backend_scan_checks "it" "$BAD" "$GOOD" "$VENDORED"
+    OUT=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$BACKFIX/bad/app.py" 2>&1 | tr -d '\r')
+    expect_contains "scans a single file" "$OUT" "FINDINGS: 14"
+    OUT=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$WORK/nope-backend" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "fails on a missing path" "$CODE" 1
+    expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+
+    echo "load-test.ps1"
+    OK=$(PATH="$FAKES:$PATH" run_ps "$BACKSCRIPTS/load-test.ps1" -Url "http://127.0.0.1:$PORT/" -Duration 5 -Connections 4 -Header "Authorization: Bearer test" -OutputDir "$WORK/load-ps" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "succeeds against a local host" "$CODE" 0
+    STRICT=$(PATH="$FAKES:$PATH" run_ps "$BACKSCRIPTS/load-test.ps1" -Url "http://localhost:$PORT/" -P99 500 -OutputDir "$WORK/load-ps" 2>&1 | tr -d '\r')
+    load_test_checks "it" "$OK" "$STRICT"
+    OUT=$(PATH="$FAKES:$PATH" run_ps "$BACKSCRIPTS/load-test.ps1" -Url "https://example.com/" -OutputDir "$WORK/load-ps" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "refuses a remote host without authorization" "$CODE" 2
+    expect_contains "explains the authorization requirement" "$OUT" "needs the owner's authorization"
+    PATH="$FAKES:$PATH" run_ps "$BACKSCRIPTS/load-test.ps1" -Url "https://example.com/" -Authorized -OutputDir "$WORK/load-ps" >/dev/null 2>&1; CODE=$?
+    expect_exit "requires a rate cap for a remote host" "$CODE" 1
+    OUT=$(PATH="$FAKES:$PATH" run_ps "$BACKSCRIPTS/load-test.ps1" -Url "https://example.com/" -Authorized -Rate 10 -OutputDir "$WORK/load-ps" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "runs an authorized remote host with a rate cap" "$CODE" 0
+    expect_contains "reports the remote scope" "$OUT" "SCOPE: remote (authorized)"
+    PATH="$FAKES:$PATH" run_ps "$BACKSCRIPTS/load-test.ps1" -Url "http://localhost/" -Connections 5000 >/dev/null 2>&1; CODE=$?
+    expect_exit "rejects too many connections" "$CODE" 1
+    OUT=$(PATH="$FAKES:$PATH" FAKE_NPX_MODE=fail run_ps "$BACKSCRIPTS/load-test.ps1" -Url "http://localhost/" -OutputDir "$WORK/load-ps" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "fails when autocannon fails" "$CODE" 1
+    expect_contains "prints an error when autocannon fails" "$OUT" "ERROR: load test failed"
 else
     echo "PowerShell not found, skipping .ps1 tests"
 fi
