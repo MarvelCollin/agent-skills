@@ -11,6 +11,27 @@ Choose the simplest architecture that meets today's needs with a clear path to t
 - **Dependencies injected** (clients, clock, config) so they can be replaced in tests
 - **No database access from serializers, views or templates**
 
+## Domain Modeling
+
+For business logic that is more than CRUD, model the domain explicitly. For plain CRUD, skip this. It is overhead there.
+
+- **Bounded contexts:** split the domain into areas that each have one consistent model and vocabulary (billing, catalog, shipping). The same word can mean different things in different contexts, and that is fine. These are also the natural module and service boundaries
+- **Ubiquitous language:** names in code match the words domain experts use
+- **Entities** have identity that persists as they change (an order). **Value objects** are defined by their values and are immutable (Money, EmailAddress, DateRange). Validate value objects at construction so an invalid one cannot exist
+- **Aggregates** are consistency boundaries: a root entity plus what must change with it (an order and its lines). Change one aggregate per transaction, reach inner objects only through the root, and refer to other aggregates by id
+- **Domain events** record what happened (`OrderPlaced`) and coordinate between aggregates and contexts, published through the outbox
+- **Repositories** load and save whole aggregates. One per aggregate root, not one per table
+
+### Hexagonal Architecture (Ports and Adapters)
+
+- The domain core has no framework, database or HTTP imports
+- **Ports** are interfaces the core defines: `OrderRepository`, `PaymentGateway`, `Clock`
+- **Adapters** implement them: a Postgres repository, a Stripe gateway, an HTTP controller
+- Dependencies point inward. The core never imports an adapter
+- Unit tests swap in in-memory adapters, so business rules are tested without a database. Integration tests cover the real adapters
+
+Clean Architecture and Onion Architecture are variations of the same idea. Pick one vocabulary per codebase and keep it.
+
 ## Monolith First
 
 - Start with a modular monolith: one deployable, clear internal modules with explicit interfaces, no reaching into another module's tables

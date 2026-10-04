@@ -47,7 +47,9 @@ Reviews and reports you write use no semicolons and no em dashes (the plugin cop
 | `errors`, `error handling`, `exceptions` | [references/topics/errors.md](references/topics/errors.md) |
 | `test`, `testing`, `integration tests` | [references/topics/testing.md](references/topics/testing.md) |
 | `config`, `secrets`, `deploy`, `docker`, `ci` | [references/topics/config-deploy.md](references/topics/config-deploy.md) |
-| `architecture`, `scaling`, `microservices`, `events` | [references/topics/architecture.md](references/topics/architecture.md) |
+| `architecture`, `scaling`, `monolith`, `ddd`, `hexagonal` | [references/topics/architecture.md](references/topics/architecture.md) |
+| `microservices`, `saga`, `events`, `event sourcing`, `cqrs`, `temporal` | [references/topics/distributed-systems.md](references/topics/distributed-systems.md) |
+| `websocket`, `sse`, `realtime`, `streaming`, `push` | [references/topics/realtime.md](references/topics/realtime.md) |
 | `security`, `owasp`, `ssrf`, `privacy`, `pii` | [references/topics/security-baseline.md](references/topics/security-baseline.md) |
 | `stress`, `load`, `benchmark`, `k6` | [references/load-testing.md](references/load-testing.md) |
 
