@@ -2,7 +2,7 @@
 name: backend
 description: Build, review and load test backend services to an expert standard. When writing or changing server code, apply hard rules (authenticate every route, authorize every object and field, validate input at the boundary, no N+1 queries, bounded paginated queries, indexes and constraints in the database, transactions and idempotency, timeouts retries and rate limits, structured logs without secrets, metrics traces and health checks, safe consistent errors, slow work in background jobs, config validated at startup with graceful shutdown, correct money and time types, tests that prove it). Review an existing backend for performance, authorization, reliability and operability with a static scan and a scored report. Run smoke, load, stress, spike, soak and breakpoint tests against a service the user owns and find the bottleneck.
 when_to_use: Use when creating or changing API endpoints, services, database queries, ORM models, migrations, background jobs, caching or server config, when asked to optimize, speed up, scale or harden a backend, fix slow queries or N+1 problems, add authorization, logging, rate limiting, caching or monitoring, review backend code for best practices or production readiness, or load test or stress test an API the user owns.
-argument-hint: '[what to build] | review <path> | load <url> [smoke|load|stress|spike|soak|breakpoint] | <topic>'
+argument-hint: '[what to build] | design <system> | review <path> | load <url> [smoke|load|stress|spike|soak|breakpoint] | <topic>'
 allowed-tools: Bash(bash "${CLAUDE_SKILL_DIR}/scripts/*) Bash(powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(pwsh -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(curl *) Bash(k6 *) Read Write Edit Glob Grep Agent WebFetch
 ---
 
@@ -21,6 +21,7 @@ Reviews and reports you write use no semicolons and no em dashes (the plugin cop
 | Arguments | Mode | What to do |
 |-----------|------|------------|
 | A description of backend work, or none while you are writing server code | Build | Follow Build Mode below |
+| `design <system or feature>`, or a question about how to architect or build something new | Design | Follow [references/design.md](references/design.md) |
 | `review <path>` or a request to review backend code | Review | Follow [references/review.md](references/review.md) |
 | `load <url> [type]` or a request to load or stress test | Load test | Follow [references/load-testing.md](references/load-testing.md). Authorization rules there are mandatory |
 | A topic from the table below | Topic | Read the topic file, audit the current code for that topic only, then propose or apply fixes |
@@ -57,6 +58,7 @@ For framework-specific fixes (ORM eager loading, loggers, validators, job queues
 
 ## Build Mode
 
+0. If the work is a new service, touches several tables, services or queues, or makes a choice that is costly to undo (database, public API shape, sync or async), run Design Mode first and get the design approved.
 1. Detect the stack from the manifest files (`package.json`, `pyproject.toml`, `requirements.txt`, `go.mod`, `pom.xml`, `build.gradle`, `*.csproj`, `Gemfile`, `composer.json`) and read its section in [references/stack-notes.md](references/stack-notes.md).
 2. Read [references/build-rules.md](references/build-rules.md) (hard rules B1 to B15). Open the topic files for the areas the change touches.
 3. Before writing code, settle and state briefly:
@@ -74,6 +76,10 @@ For framework-specific fixes (ORM eager loading, loggers, validators, job queues
    - run the project's tests
    - when the app runs locally, hit the new endpoints once with SQL logging on and count queries per request
 7. Give the user a short Rules Check: one line per rule (pass, not applicable, or still open with the reason), then anything still open.
+
+## Design Mode
+
+Follow [references/design.md](references/design.md). Ask the forcing questions you cannot answer from the code (traffic, data size, tenancy, data sensitivity, consistency, latency and SLO targets, RPO and RTO, team), each with a recommended answer. Estimate capacity, choose the simplest shape the numbers support, model data from access patterns, write the API contract from [templates/openapi-starter.yaml](templates/openapi-starter.yaml), plan failure modes, and record decisions as ADRs. Write the doc from [templates/design-template.md](templates/design-template.md) to `backend-design-<slug>-<YYYYMMDD>/design.md` (gitignored) or where the user keeps design docs. Stop for approval before building anything costly to undo.
 
 ## Review Mode
 
