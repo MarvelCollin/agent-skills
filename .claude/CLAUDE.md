@@ -9,6 +9,7 @@ Claude Code plugin that bundles a growing set of skills. Each skill lives in its
 .claude-plugin/marketplace.json  Marketplace entry for installing from GitHub
 skills/uiux/                     /uiux UI build rules, UI review and UX audit
 skills/security/                 /security authorized security review and code review
+skills/backend/                  /backend build rules, backend review and load testing
   SKILL.md                       Entry point (each skill)
   references/                    Loaded on demand by SKILL.md
   templates/                     Report templates
@@ -46,6 +47,15 @@ tests/                           Script unit tests, fixture server, fake npx
 - Scoring uses the weighted rubric in `skills/uiux/references/scoring-rubric.md`
 - Browser interactions follow `skills/uiux/references/browser-protocol.md`
 - Never submit real purchases, payments or messages during a test
+
+## /backend Principles
+
+- Build mode hard rules B1 to B15 live in `skills/backend/references/build-rules.md`. Each rule names its `backend-scan` checks. Keep `scripts/backend-scan.*` and the scan tags in sync when a rule changes
+- Topic depth lives in `skills/backend/references/topics/`, one file per area. SKILL.md maps topic words to files
+- Scan output is leads, not findings. A finding needs a reachable path, real impact, evidence and a concrete fix (five gates in `references/review.md`)
+- Measure before and after. Query counts, EXPLAIN plans, traces and load numbers beat opinions
+- Load tests only against targets the user owns or is authorized to test. Local and private hosts are the default. `load-test.*` refuses remote hosts without `--authorized` and a rate cap. Never load test third parties
+- Same copy rule as the other skills: no semicolons or em dashes in prose or reports. Code examples follow the target project's style
 
 ## Checks
 

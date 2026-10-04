@@ -9,6 +9,7 @@ A growing set of skills for Claude Code, packaged as one plugin.
 |-------|-------|--------------|
 | `/uiux` | `/uiux [what to build]` or `/uiux <url> [focus]` | Builds UI that follows strict UX rules and reviews it, or audits a live site as a real user |
 | `/security` | `/security <target-or-path> [phase]` | Runs an authorized security review of an app you own or are cleared to test, or a static code review |
+| `/backend` | `/backend [what to build]`, `/backend review <path>`, `/backend load <url>` or `/backend <topic>` | Builds backend code under expert rules, reviews a backend for production readiness, or load tests a service you own |
 
 More skills are on the way.
 
@@ -110,6 +111,55 @@ It works in phases, based on the OWASP WSTG and ASVS:
 
 A `grep-audit` script speeds up code review by flagging risky sinks and hardcoded secrets for a human to read. The skill only tests targets the user owns or is authorized to test, and never helps evade detection, target at scale, run denial-of-service, or attack third parties.
 
+## `/backend`
+
+Backend engineering at a staff level: correct under concurrency, fast at real data volume, safe by default, and easy to operate.
+
+```
+/backend add a paginated orders endpoint       # build under the hard rules
+/backend review ./api                          # scored production-readiness review
+/backend load http://localhost:3000/api/orders # load or stress test your own service
+/backend n+1                                   # one topic: explain, audit this code for it, fix
+```
+
+Claude also loads the skill on its own when you write endpoints, queries, migrations or jobs, or ask to optimize or harden a backend.
+
+### Build
+
+Every build follows these hard rules, then ends with a Rules Check that says pass, not applicable or still open for each one:
+
+| Rule | What it means |
+|------|---------------|
+| B1 Authenticate every route | Global auth with a public allowlist, argon2id or bcrypt, rate-limited login, short tokens fully verified |
+| B2 Authorize every object, function and field | Owner or tenant scope inside the query, server-side permission checks, write allowlists and read DTOs, identity never from the client |
+| B3 Validate at the boundary | A schema on every input, global size limits, problem details on failure, a DTO on every response |
+| B4 No N+1 queries | Eager loading or batching, DataLoader for GraphQL, lazy-load guards in dev, query-count tests |
+| B5 Bounded, paginated, lean queries | Default and max page size, keyset pagination for big lists, no `SELECT *` |
+| B6 Index and constrain in the database | Indexes that match hot queries checked with EXPLAIN, indexed foreign keys, constraints, safe online migrations |
+| B7 Transactions, concurrency, idempotency | Short transactions, atomic updates or locks instead of check-then-act, idempotency keys, outbox |
+| B8 Timeouts, retries and limits | A timeout on every outbound call, bounded retries with jitter, circuit breakers, rate limits |
+| B9 Structured logs | JSON logs with request and trace ids, redaction of secrets, one log per error, audit log |
+| B10 Metrics, traces, health | RED metrics, OpenTelemetry tracing, separate liveness and readiness |
+| B11 Safe errors | One handler, RFC 9457 problem details, nothing leaked, nothing swallowed |
+| B12 Slow work off the request path | Durable idempotent jobs, nothing that blocks the event loop |
+| B13 Config and shutdown | Typed config validated at startup, no secret fallbacks, graceful shutdown |
+| B14 Correct types | Money as integer cents or decimal, UTC `timestamptz`, UUIDv7 or bigint keys |
+| B15 Prove it with tests | Real-database integration tests, authorization matrix, query counts, parallel and idempotency tests |
+
+The rules link to 18 topic guides: API design, authentication, authorization, validation, database and N+1, migrations, concurrency, caching, performance, resilience, background jobs, logging, observability, errors, testing, config and deploy, architecture, and a security baseline mapped to the OWASP API Security Top 10 (2023). A stack guide covers the concrete fixes for Node, Python, Rails, Laravel, Spring, .NET, Go and GraphQL.
+
+### Review
+
+`/backend review <path>` maps the system, runs the `backend-scan` script, walks 13 areas against the rules, measures query counts and plans when the app runs locally, and confirms every finding through five gates before it is reported. The report has a weighted score out of 100, a severity for each finding, and a fix plan ranked by impact over effort.
+
+`backend-scan` flags leads with a rule tag: N+1 calls inside loops, maps and comprehensions, unscoped id lookups, client-supplied roles, mass assignment, unbounded queries, `SELECT *`, offset pagination, blocking index builds, HTTP calls without timeouts, unstructured or secret-leaking logs, swallowed and leaked errors, blocking calls, credentials in connection strings, secret fallbacks, float money and naive timestamps. It skips tests, vendored code and build output.
+
+### Load test
+
+`/backend load <url> [smoke|load|stress|spike|soak|breakpoint]` plans the traffic mix and pass criteria, runs the test, watches the server side, and names the bottleneck with evidence. The `load-test` script wraps autocannon (it needs Node.js) and reports requests, RPS, p50, p90, p99, error rate and a pass or fail against thresholds. For ramps and mixed traffic the skill writes a k6 script.
+
+Load tests only run against services you own. Local and private hosts are allowed by default. Any other host needs you to state your authorization, and the script refuses it without `--authorized` and a rate cap. The skill never load tests third parties.
+
 ## Project Structure
 
 ```
@@ -130,6 +180,12 @@ skills/
                               testing/ (10 vulnerability classes)
     templates/                Report and finding templates
     scripts/                  dev-detect, scope-init, scope-check, grep-audit (.sh + .ps1)
+  backend/
+    SKILL.md                  Entry point: build, review, load test and topic modes
+    references/               Build rules B1 to B15, review, load testing, stack notes,
+                              topics/ (18 backend topic guides)
+    templates/                Review and load test report templates
+    scripts/                  backend-scan, load-test (.sh + .ps1)
 evals/                        Cases for claude plugin eval
 tests/                        Unit tests for the scripts
 ```

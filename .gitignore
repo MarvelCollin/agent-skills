@@ -1,5 +1,8 @@
 uiux-audit-*/
 security-*/
+backend-review-*/
+backend-load-*/
+load-results/
 uiux-report-*.md
 screenshots/
 *.report.json
@@ -14,3 +17,5 @@ Thumbs.db
 !tests/fixtures/**
 !evals/security-*/
 !evals/security-*/**
+!evals/backend-*/
+!evals/backend-*/**
