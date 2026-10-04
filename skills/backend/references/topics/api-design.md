@@ -132,6 +132,8 @@ Clients retry. Networks drop responses after the server committed. For unsafe PO
 - WebSockets for two-way. Authenticate on connect, recheck when the token expires, send heartbeats, bound the per-connection send buffer (backpressure), and limit message size and rate
 - Scale out with a pub/sub backbone (Redis, NATS, Kafka) so any instance can push to any client
 
+Details on transports, reconnection, delivery guarantees and scaling: [realtime.md](realtime.md).
+
 ## Rate Limit Headers
 
 Return `429` with `Retry-After`. Advertise quotas with the `RateLimit` and `RateLimit-Policy` fields from the IETF httpapi draft, or the widely deployed `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset`.
