@@ -28,8 +28,8 @@ if ($files.Count -eq 0) {
 $results = New-Object System.Collections.Generic.List[string]
 $paths = @($files | ForEach-Object { $_.FullName })
 
-function Flag([string]$Category, [string]$Pattern) {
-    $hits = Select-String -LiteralPath $paths -Pattern $Pattern -Encoding UTF8 -ErrorAction SilentlyContinue
+function Flag([string]$Category, [string]$Pattern, [switch]$CaseSensitive) {
+    $hits = Select-String -LiteralPath $paths -Pattern $Pattern -Encoding UTF8 -CaseSensitive:$CaseSensitive -ErrorAction SilentlyContinue
     foreach ($hit in @($hits)) {
         $rel = $hit.Path
         if ($rel.StartsWith($target)) { $rel = $rel.Substring($target.Length).TrimStart('\', '/') }
@@ -41,7 +41,7 @@ function Flag([string]$Category, [string]$Pattern) {
 Flag "sql-concat"        "(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE)[^;]*[""'][ \t]*\+|\+[ \t]*[""'][^""']*(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE)"
 Flag "sql-interp"        "(execute|query|exec|cursor|raw|prepare)[ \t]*\(.*(\$\{|%s|f[""']).*(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE)"
 Flag "command-exec"      "(os\.system|subprocess\.(call|run|Popen).*shell[ \t]*=[ \t]*True|child_process|exec\(|execSync|popen|Runtime\.getRuntime|ProcessBuilder|shell_exec|passthru)"
-Flag "code-eval"         "(^|[^.\w])(eval|Function|setTimeout[ \t]*\([ \t]*[""'])|pickle\.loads|yaml\.load[ \t]*\(|Marshal\.load|ObjectInputStream"
+Flag "code-eval"         "(^|[^.\w])(eval|new[ \t]+Function|Function[ \t]*\(|setTimeout[ \t]*\([ \t]*[""'])|pickle\.loads|yaml\.load[ \t]*\(|Marshal\.load|ObjectInputStream" -CaseSensitive
 Flag "dangerous-dom"     "(innerHTML|outerHTML|document\.write|insertAdjacentHTML|dangerouslySetInnerHTML|v-html)"
 Flag "deserialize"       "(pickle\.loads|unserialize\(|Marshal\.load)"
 Flag "weak-crypto"       "(\bMD5\b|\bSHA1\b|\bDES\b|\bRC4\b|Math\.random\(\).*(token|password|secret|key)|createCipher\()"
