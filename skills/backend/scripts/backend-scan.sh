@@ -13,11 +13,7 @@ if [ ! -e "$TARGET" ]; then
 fi
 
 FILES=()
-SQL_FILES=()
 add_file() {
-    case "$1" in
-        *.sql) SQL_FILES+=("$1") ;;
-    esac
     FILES+=("$1")
 }
 
@@ -31,7 +27,7 @@ if [ -d "$TARGET" ]; then
             -o -name test -o -name tests -o -name __tests__ -o -name spec -o -name e2e \) -prune \) \
         -o \( -type d -path '*/storage/framework' -prune \) \
         -o \( -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' -o -name '*.ts' -o -name '*.py' -o -name '*.rb' \
-            -o -name '*.php' -o -name '*.go' -o -name '*.java' -o -name '*.kt' -o -name '*.cs' -o -name '*.sql' -o -name '*.prisma' \) \
+            -o -name '*.php' -o -name '*.go' -o -name '*.java' -o -name '*.kt' -o -name '*.cs' \) \
             ! -name '*.min.*' ! -name '*.d.ts' ! -name '*.test.*' ! -name '*.spec.*' ! -name '*_test.go' ! -name '*_test.py' \
             ! -name 'test_*.py' ! -name '*_spec.rb' ! -name '*Test.java' ! -name '*Tests.cs' -print0 \))
 else
@@ -74,12 +70,6 @@ scan_i() {
     fi
 }
 
-scan_sql_i() {
-    if [ "${#SQL_FILES[@]}" -gt 0 ]; then
-        grep -inHE -- "$1" "${SQL_FILES[@]}" 2>/dev/null || true
-    fi
-}
-
 scan_i "pass(word|wd)?.*(md5|sha1|sha256|sha512|createhash)|(md5|sha1|sha256|sha512|createhash).*pass(word|wd)?" \
     | report B1 weak-password-hash
 
@@ -97,8 +87,6 @@ scan_i "select[[:space:]]+[*][[:space:]]+from" \
 scan_i "offset[[:space:]]+([$][0-9]|:[a-z_]+|[?]|%s|[0-9]+)|[.](skip|offset)[(]" \
     | report B5 offset-pagination
 
-scan_sql_i "create[[:space:]]+(unique[[:space:]]+)?index[[:space:]]" \
-    | report B6 blocking-index "concurrently"
 scan "add_index[[:space:]]" \
     | report B6 blocking-index "concurrently"
 
@@ -134,8 +122,6 @@ scan_i "(secret|key|token|password|passwd)[a-z_]*[[:space:]]*(\|\||[?][?])[[:spa
 scan_i "$MONEY[a-z_]*[[:space:]]*[:=][[:space:]]*(parsefloat|float)[(]|$MONEY[a-z_]*[[:space:]]+(float|double|real|float32|float64)([^a-z0-9]|$)|(float|double|float64)[[:space:]]+$MONEY|$MONEY[a-z_]*[[:space:]]*=[[:space:]]*(models[.]floatfield|column[(][[:space:]]*float|db[.]column[(][[:space:]]*db[.]float|mapped_column[(][[:space:]]*float)" \
     | report B14 float-money
 scan "datetime[.](utcnow|now)[(][[:space:]]*[)]|DateTime[.]Now([^A-Za-z]|$)" \
-    | report B14 naive-datetime
-scan_sql_i "[[:space:]]timestamp([[:space:]]*,|[[:space:]]+(not|null|default)|[[:space:]]*$)" \
     | report B14 naive-datetime
 
 if [ "${#FILES[@]}" -gt 0 ]; then

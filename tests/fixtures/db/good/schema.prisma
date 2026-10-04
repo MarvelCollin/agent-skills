@@ -1,0 +1,19 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Invoice {
+  id          String   @id @default(uuid(7))
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  amountCents Int
+  issuedAt    DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([customerId, issuedAt])
+}
+
+model Customer {
+  id       String    @id
+  invoices Invoice[]
+}

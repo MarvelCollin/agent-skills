@@ -6,6 +6,7 @@ SCRIPTS="$ROOT/skills/uiux/scripts"
 SECSCRIPTS="$ROOT/skills/security/scripts"
 BACKSCRIPTS="$ROOT/skills/backend/scripts"
 BACKFIX="$ROOT/tests/fixtures/backend"
+DBFIX="$ROOT/tests/fixtures/db"
 SECFIX="$ROOT/tests/fixtures/security"
 FAKES="$ROOT/tests/fakes"
 WORK="$(mktemp -d)"
@@ -297,9 +298,8 @@ backend_scan_checks() {
     expect_contains "$label flags http calls in a map" "$bad" "B4 http-in-loop orders.js:8:"
     expect_contains "$label flags unbounded prisma queries" "$bad" "B5 unbounded-query orders.js:4:"
     expect_contains "$label flags unbounded django queries" "$bad" "B5 unbounded-query app.py:6:"
-    expect_contains "$label flags select star" "$bad" "B5 select-star schema.sql:7:"
     expect_contains "$label flags offset pagination" "$bad" "B5 offset-pagination orders.js:30:"
-    expect_contains "$label flags blocking index builds" "$bad" "B6 blocking-index schema.sql:6:"
+    expect_contains "$label flags select star" "$bad" "B5 select-star orders.js:6:"
     expect_contains "$label flags requests without a timeout" "$bad" "B8 no-timeout app.py:11:"
     expect_contains "$label flags fetch without a signal" "$bad" "B8 no-timeout orders.js:8:"
     expect_contains "$label flags console logging" "$bad" "B9 unstructured-log orders.js:9:"
@@ -317,14 +317,43 @@ backend_scan_checks() {
     expect_contains "$label flags secret fallbacks in js" "$bad" "B13 secret-fallback orders.js:32:"
     expect_contains "$label flags secret fallbacks in python" "$bad" "B13 secret-fallback app.py:25:"
     expect_contains "$label flags parseFloat on money" "$bad" "B14 float-money orders.js:26:"
-    expect_contains "$label flags float money columns" "$bad" "B14 float-money schema.sql:3:"
     expect_contains "$label flags naive datetimes" "$bad" "B14 naive-datetime app.py:12:"
-    expect_contains "$label flags timestamp without time zone" "$bad" "B14 naive-datetime schema.sql:4:"
-    expect_contains "$label counts every lead" "$bad" "FINDINGS: 35"
+    expect_contains "$label counts every lead" "$bad" "FINDINGS: 31"
     expect_contains "$label counts leads per rule" "$bad" "B11: 6"
     expect_contains "$label passes clean code" "$good" "FINDINGS: 0"
     expect_contains "$label skips vendored and test files" "$vendored" "FINDINGS: 0"
     expect_contains "$label still scans source next to tests" "$vendored" "FILES_SCANNED: 1"
+}
+
+db_lint_checks() {
+    local label="$1" bad="$2" good="$3"
+    expect_contains "$label flags indexes built under lock" "$bad" "B6 index-not-concurrent 002_changes.sql:11:"
+    expect_contains "$label exempts indexes on tables created in the same file" "$(printf '%s\n' "$bad" | grep -c '001_init.sql:20' || true)" "0"
+    expect_contains "$label flags concurrent index in a transaction" "$bad" "B6 concurrent-in-transaction 002_changes.sql:10:"
+    expect_contains "$label flags constraints validated under lock" "$bad" "B6 constraint-validates-under-lock 002_changes.sql:8:"
+    expect_contains "$label flags unique constraints built under lock" "$bad" "B6 unique-under-lock 002_changes.sql:9:"
+    expect_contains "$label flags set not null" "$bad" "B6 set-not-null 002_changes.sql:4:"
+    expect_contains "$label flags column type changes" "$bad" "B6 column-type-change 002_changes.sql:5:"
+    expect_contains "$label flags volatile defaults" "$bad" "B6 volatile-default 002_changes.sql:3:"
+    expect_contains "$label flags not null columns without default" "$bad" "B6 not-null-without-default 002_changes.sql:2:"
+    expect_contains "$label flags renames" "$bad" "B6 rename 002_changes.sql:6:"
+    expect_contains "$label flags dropped columns" "$bad" "B6 drop 002_changes.sql:7:"
+    expect_contains "$label flags unbatched writes" "$bad" "B6 unbatched-write 002_changes.sql:12:"
+    expect_contains "$label flags heavy locks" "$bad" "B6 heavy-lock 002_changes.sql:13:"
+    expect_contains "$label flags migrations without lock timeout" "$bad" "B6 no-lock-timeout 002_changes.sql:2:"
+    expect_contains "$label flags unindexed foreign keys in sql" "$bad" "B6 fk-without-index 001_init.sql:10:"
+    expect_contains "$label flags unindexed relations in prisma" "$bad" "B6 fk-without-index schema.prisma:9:"
+    expect_contains "$label flags tables without a primary key" "$bad" "B6 missing-primary-key 001_init.sql:15:"
+    expect_contains "$label flags json columns" "$bad" "B6 json-not-jsonb 001_init.sql:12:"
+    expect_contains "$label flags char columns" "$bad" "B6 char-column 001_init.sql:4:"
+    expect_contains "$label flags float money in sql" "$bad" "B14 float-money 001_init.sql:11:"
+    expect_contains "$label flags float money in prisma" "$bad" "B14 float-money schema.prisma:10:"
+    expect_contains "$label flags timestamp without time zone" "$bad" "B14 timestamp-without-tz 001_init.sql:5:"
+    expect_contains "$label flags prisma datetime without timestamptz" "$bad" "B14 timestamp-without-tz schema.prisma:11:"
+    expect_contains "$label flags random uuid keys in sql" "$bad" "B14 random-uuid-key 001_init.sql:2:"
+    expect_contains "$label flags random uuid keys in prisma" "$bad" "B14 random-uuid-key schema.prisma:7:"
+    expect_contains "$label counts every lead" "$bad" "FINDINGS: 24"
+    expect_contains "$label passes clean migrations and schema" "$good" "FINDINGS: 0"
 }
 
 load_test_checks() {
@@ -367,6 +396,17 @@ backend_scan_checks "it" "$BAD" "$GOOD" "$VENDORED"
 OUT=$(bash "$BACKSCRIPTS/backend-scan.sh" "$BACKFIX/bad/app.py" 2>&1)
 expect_contains "scans a single file" "$OUT" "FINDINGS: 14"
 OUT=$(bash "$BACKSCRIPTS/backend-scan.sh" "$WORK/nope-backend" 2>&1); CODE=$?
+expect_exit "fails on a missing path" "$CODE" 1
+expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+
+echo "db-lint.sh"
+BAD=$(bash "$BACKSCRIPTS/db-lint.sh" "$DBFIX/bad" 2>&1); CODE=$?
+expect_exit "exits 0 when it finds leads" "$CODE" 0
+GOOD=$(bash "$BACKSCRIPTS/db-lint.sh" "$DBFIX/good" 2>&1)
+db_lint_checks "it" "$BAD" "$GOOD"
+OUT=$(bash "$BACKSCRIPTS/db-lint.sh" "$DBFIX/bad/002_changes.sql" 2>&1)
+expect_contains "lints a single migration" "$OUT" "FINDINGS: 14"
+OUT=$(bash "$BACKSCRIPTS/db-lint.sh" "$WORK/nope-db" 2>&1); CODE=$?
 expect_exit "fails on a missing path" "$CODE" 1
 expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
 
@@ -469,6 +509,17 @@ if [ -n "$POWERSHELL" ]; then
     OUT=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$BACKFIX/bad/app.py" 2>&1 | tr -d '\r')
     expect_contains "scans a single file" "$OUT" "FINDINGS: 14"
     OUT=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$WORK/nope-backend" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "fails on a missing path" "$CODE" 1
+    expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+
+    echo "db-lint.ps1"
+    BAD=$(run_ps "$BACKSCRIPTS/db-lint.ps1" -Path "$DBFIX/bad" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "exits 0 when it finds leads" "$CODE" 0
+    GOOD=$(run_ps "$BACKSCRIPTS/db-lint.ps1" -Path "$DBFIX/good" 2>&1 | tr -d '\r')
+    db_lint_checks "it" "$BAD" "$GOOD"
+    OUT=$(run_ps "$BACKSCRIPTS/db-lint.ps1" -Path "$DBFIX/bad/002_changes.sql" 2>&1 | tr -d '\r')
+    expect_contains "lints a single migration" "$OUT" "FINDINGS: 14"
+    OUT=$(run_ps "$BACKSCRIPTS/db-lint.ps1" -Path "$WORK/nope-db" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails on a missing path" "$CODE" 1
     expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
 

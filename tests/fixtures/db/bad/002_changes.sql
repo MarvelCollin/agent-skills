@@ -1,0 +1,14 @@
+BEGIN;
+ALTER TABLE orders ADD COLUMN status text NOT NULL;
+ALTER TABLE orders ADD COLUMN token uuid DEFAULT gen_random_uuid();
+ALTER TABLE orders ALTER COLUMN status SET NOT NULL;
+ALTER TABLE orders ALTER COLUMN total_price TYPE numeric(19,4);
+ALTER TABLE orders RENAME COLUMN meta TO metadata;
+ALTER TABLE orders DROP COLUMN legacy_code;
+ALTER TABLE orders ADD CONSTRAINT orders_customer_fk FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE orders ADD CONSTRAINT orders_token_key UNIQUE (token);
+CREATE INDEX CONCURRENTLY orders_status_idx ON orders (status);
+CREATE INDEX customers_email_idx ON customers (email);
+UPDATE orders SET status = 'paid';
+VACUUM FULL orders;
+COMMIT;

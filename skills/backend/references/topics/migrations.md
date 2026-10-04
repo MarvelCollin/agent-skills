@@ -53,7 +53,7 @@ Run migrations at low traffic for anything that rewrites data, and watch for lon
 
 - Migrations run once per deploy from one place (a release job or init container), not on every app instance at startup
 - Never edit a migration that has run anywhere shared. Add a new one
-- Every migration is reviewed for locks and rewrites. Lint it: `squawk` for Postgres SQL, `strong_migrations` for Rails, `django-pg-zero-downtime-migrations` for Django
+- Every migration is reviewed for locks and rewrites. Run the bundled linter on SQL migrations and Prisma schemas: `bash "<skill-dir>/scripts/db-lint.sh" <migrations-dir>` (or `db-lint.ps1 -Path`). In CI, add `squawk` for Postgres SQL, `strong_migrations` for Rails, `django-pg-zero-downtime-migrations` for Django
 - Test on a copy of production-sized data and time it
 - Prefer forward fixes over down migrations for data changes. Keep down migrations for pure schema additions
 - Back up before destructive changes and know the restore time

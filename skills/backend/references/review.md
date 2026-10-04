@@ -36,6 +36,14 @@ On Windows without bash:
 powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/backend-scan.ps1" -Path "<path>"
 ```
 
+Then lint the migrations and schema files (SQL and Prisma) the same way:
+
+```bash
+bash "<skill-dir>/scripts/db-lint.sh" "<migrations-or-schema-path>" >> "<review-dir>/scan.txt"
+```
+
+On Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/db-lint.ps1" -Path "<path>"`. It flags migrations that lock or rewrite live tables, foreign keys without an index, tables without a primary key, and wrong types for money, time and keys.
+
 Each line is `<rule> <check> <file>:<line>: <code>`. These are leads, not findings. The scan skips tests, vendored code and build output. It cannot see lazy-loaded relations in templates or serializers, missing indexes, or missing authorization on routes that do no lookup, so the manual walk in step 3 is where most real findings come from.
 
 ## 3. Walk Each Area

@@ -9,7 +9,7 @@ if (-not (Test-Path -LiteralPath $Path)) {
 
 $target = (Resolve-Path -LiteralPath $Path).Path
 $excludedDirs = @("node_modules", ".git", "dist", "build", ".next", "vendor", "coverage", ".venv", "venv", "__pycache__", "target", "bin", "obj", "test", "tests", "__tests__", "spec", "e2e")
-$extensions = @(".js", ".mjs", ".cjs", ".ts", ".py", ".rb", ".php", ".go", ".java", ".kt", ".cs", ".sql", ".prisma")
+$extensions = @(".js", ".mjs", ".cjs", ".ts", ".py", ".rb", ".php", ".go", ".java", ".kt", ".cs")
 $excludedNames = @("*.min.*", "*.d.ts", "*.test.*", "*.spec.*", "*_test.go", "*_test.py", "test_*.py", "*_spec.rb", "*Test.java", "*Tests.cs")
 
 if (Test-Path -LiteralPath $target -PathType Container) {
@@ -28,7 +28,6 @@ if (Test-Path -LiteralPath $target -PathType Container) {
     $root = Split-Path -Parent $target
     $files = @(Get-Item -LiteralPath $target)
 }
-$sqlFiles = @($files | Where-Object { $_.Extension -eq ".sql" })
 
 $results = New-Object System.Collections.Generic.List[string]
 
@@ -72,7 +71,6 @@ Add-Findings (Find-Lines $files '[.](findMany|findAll)[(]\s*[)]|[.]find[(]\s*(\{
 Add-Findings (Find-Lines $files 'select\s+[*]\s+from' -IgnoreCase) "B5" "select-star" 'exists\s*[(]'
 Add-Findings (Find-Lines $files 'offset\s+([$][0-9]|:[a-z_]+|[?]|%s|[0-9]+)|[.](skip|offset)[(]' -IgnoreCase) "B5" "offset-pagination"
 
-Add-Findings (Find-Lines $sqlFiles 'create\s+(unique\s+)?index\s' -IgnoreCase) "B6" "blocking-index" 'concurrently'
 Add-Findings (Find-Lines $files 'add_index\s') "B6" "blocking-index" 'concurrently'
 
 Add-Findings (Find-Lines $files '(requests|httpx)[.](get|post|put|patch|delete|head|request)[(]') "B8" "no-timeout" 'timeout'
@@ -94,7 +92,6 @@ Add-Findings (Find-Lines $files "(secret|key|token|password|passwd)[a-z_]*\s*(\|
 
 Add-Findings (Find-Lines $files "$money[a-z_]*\s*[:=]\s*(parsefloat|float)[(]|$money[a-z_]*\s+(float|double|real|float32|float64)([^a-z0-9]|$)|(float|double|float64)\s+$money|$money[a-z_]*\s*=\s*(models[.]floatfield|column[(]\s*float|db[.]column[(]\s*db[.]float|mapped_column[(]\s*float)" -IgnoreCase) "B14" "float-money"
 Add-Findings (Find-Lines $files 'datetime[.](utcnow|now)[(]\s*[)]|DateTime[.]Now([^A-Za-z]|$)') "B14" "naive-datetime"
-Add-Findings (Find-Lines $sqlFiles '\stimestamp(\s*,|\s+(not|null|default)|\s*$)' -IgnoreCase) "B14" "naive-datetime"
 
 $db = 'prisma[.][A-Za-z_]+[.][A-Za-z]+[(]|[.]objects[.](get|filter|exclude|count|create)[(]|session[.](query|get|execute|scalar|scalars)[(]|cursor[.]execute[(]|[.](query|execute|raw)[(]|[.](findOne|findById|findByPk|findUnique|findFirst|findMany|findAll|find_by|countDocuments|aggregate|populate|where)[(]|[Rr]epo(sitory)?[.](find|get|count|exists|load)|(ToListAsync|FirstOrDefaultAsync|SingleOrDefaultAsync|FindAsync|CountAsync)[(]|db[.](First|Find|Where|Raw|Get|Select|Query|QueryRow|Exec)[(]|knex[(]|[A-Z][A-Za-z0-9_]*[.](find|find_by)[(]'
 $http = '(^|[^A-Za-z0-9_.])fetch[(]|axios([.](get|post|put|patch|delete|request))?[(]|(requests|httpx)[.](get|post|put|patch|delete)[(]|http[.](Get|Post)[(]|[.](GetAsync|PostAsync|getForObject|getForEntity)[(]'

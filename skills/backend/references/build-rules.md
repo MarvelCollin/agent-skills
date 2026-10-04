@@ -2,7 +2,7 @@
 
 These rules apply whenever you create or change server code: endpoints, services, queries, models, migrations, jobs, config. B1 to B15 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the Rules Check.
 
-The scan tag after each rule title is what `scripts/backend-scan.*` reports for it. Rules with no tag need a human read.
+The scan tags after each rule title are what `scripts/backend-scan.*` reports for application code and what `scripts/db-lint.*` reports for SQL migrations and Prisma schemas. Rules with no tag need a human read.
 
 ## B1: Authenticate Every Route, Deny by Default
 
@@ -64,7 +64,7 @@ Details: [topics/database.md](topics/database.md), [topics/api-design.md](topics
 
 ## B6: Index and Constrain in the Database
 
-Scan: `blocking-index`
+Scan: `blocking-index`. DB lint: `index-not-concurrent`, `concurrent-in-transaction`, `constraint-validates-under-lock`, `unique-under-lock`, `set-not-null`, `column-type-change`, `volatile-default`, `not-null-without-default`, `rename`, `drop`, `unbatched-write`, `heavy-lock`, `no-lock-timeout`, `fk-without-index`, `missing-primary-key`, `json-not-jsonb`, `char-column`
 
 - Every hot query has an index that matches its `WHERE`, `JOIN` and `ORDER BY`, checked with `EXPLAIN` (`EXPLAIN ANALYZE` on a realistic data volume). Composite indexes put equality columns first, then the sort or range column
 - Foreign key columns are indexed (Postgres does not do it for you)
@@ -152,7 +152,7 @@ Details: [topics/config-deploy.md](topics/config-deploy.md), [topics/resilience.
 
 ## B14: Correct Types for Money, Time and Identity
 
-Scan: `float-money`, `naive-datetime`
+Scan: `float-money`, `naive-datetime`. DB lint: `float-money`, `timestamp-without-tz`, `random-uuid-key`
 
 - Money is an integer count of minor units (cents) or a fixed-point `DECIMAL` or `NUMERIC`, always paired with a currency code. Never a float. Rounding is explicit and happens once
 - Timestamps are stored in UTC with a time zone aware type (`timestamptz` in Postgres) and exchanged as ISO 8601 with an offset. Convert to local time only at the edge. Durations use a monotonic clock

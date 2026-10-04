@@ -73,6 +73,7 @@ For framework-specific fixes (ORM eager loading, loggers, validators, job queues
 5. Build it, with tests that prove the rules that matter for the change (B15).
 6. Self-review before you report:
    - run the scan on the changed paths: `bash "<skill-dir>/scripts/backend-scan.sh" "<path>"` (or `powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/backend-scan.ps1" -Path "<path>"`) and read each lead in context
+   - when the change adds migrations or schema changes, lint them: `bash "<skill-dir>/scripts/db-lint.sh" "<migrations-path>"` (or `db-lint.ps1 -Path`)
    - run the project's tests
    - when the app runs locally, hit the new endpoints once with SQL logging on and count queries per request
 7. Give the user a short Rules Check: one line per rule (pass, not applicable, or still open with the reason), then anything still open.
