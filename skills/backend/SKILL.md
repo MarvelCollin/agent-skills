@@ -35,6 +35,7 @@ Reviews and reports you write use no semicolons and no em dashes (the plugin cop
 | `authz`, `authorization`, `rbac`, `permissions`, `idor`, `tenant` | [references/topics/authorization.md](references/topics/authorization.md) |
 | `validation`, `input`, `dto`, `upload` | [references/topics/validation.md](references/topics/validation.md) |
 | `n+1`, `query`, `queries`, `index`, `database`, `sql`, `orm`, `pool` | [references/topics/database.md](references/topics/database.md) |
+| `postgres`, `explain`, `vacuum`, `rls`, `mysql` | [references/postgres.md](references/postgres.md) (ranked rules with wrong and right SQL) |
 | `migration`, `migrations`, `schema change` | [references/topics/migrations.md](references/topics/migrations.md) |
 | `transaction`, `race`, `concurrency`, `locking`, `idempotency`, `outbox` | [references/topics/concurrency.md](references/topics/concurrency.md) |
 | `cache`, `caching`, `redis`, `cdn` | [references/topics/caching.md](references/topics/caching.md) |

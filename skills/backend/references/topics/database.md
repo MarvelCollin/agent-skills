@@ -1,6 +1,6 @@
 # Database Access and Design
 
-Most backend latency is in the database, and most database problems are in a few query shapes. This file covers N+1 queries, query design, pagination, indexing, connection pools, schema and data types.
+Most backend latency is in the database, and most database problems are in a few query shapes. This file covers N+1 queries, query design, pagination, indexing, connection pools, schema and data types. For Postgres-specific rules ranked by impact, with wrong and right SQL, plan reading, RLS performance and vacuum, see [../postgres.md](../postgres.md).
 
 ## N+1 Queries
 
