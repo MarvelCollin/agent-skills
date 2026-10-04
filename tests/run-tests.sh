@@ -386,6 +386,10 @@ audit_checks "sh" "$AUDIT" "$([ "$SAFE" = "0" ] && echo "safe.py-clean" || echo 
 OUT=$(bash "$SECSCRIPTS/grep-audit.sh" "$WORK/nope-audit" 2>&1); CODE=$?
 expect_exit "fails on a missing path" "$CODE" 1
 expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+FPCNT=$(bash "$SECSCRIPTS/grep-audit.sh" "$BACKFIX/good" 2>&1 | grep -c "code-eval" || true)
+expect_exit "sh does not flag the function keyword as code-eval" "$FPCNT" 0
+REALEVAL=$(bash "$SECSCRIPTS/grep-audit.sh" "$CODE_DIR" 2>&1 | grep -c "\[code-eval\] sub/ui.js:3:" || true)
+expect_exit "sh still flags real eval" "$REALEVAL" 1
 
 echo "backend-scan.sh"
 BAD=$(bash "$BACKSCRIPTS/backend-scan.sh" "$BACKFIX/bad" 2>&1); CODE=$?
@@ -395,6 +399,9 @@ VENDORED=$(bash "$BACKSCRIPTS/backend-scan.sh" "$WORK/backend-project" 2>&1)
 backend_scan_checks "it" "$BAD" "$GOOD" "$VENDORED"
 OUT=$(bash "$BACKSCRIPTS/backend-scan.sh" "$BACKFIX/bad/app.py" 2>&1)
 expect_contains "scans a single file" "$OUT" "FINDINGS: 14"
+OUT=$(bash "$BACKSCRIPTS/backend-scan.sh" "$BACKFIX/bad/app.py" "$BACKFIX/bad/orders.js" "$ROOT/README.md" 2>&1)
+expect_contains "scans several paths and skips non-source files" "$OUT" "FILES_SCANNED: 2"
+expect_contains "reports leads from every path" "$OUT" "FINDINGS: 31"
 OUT=$(bash "$BACKSCRIPTS/backend-scan.sh" "$WORK/nope-backend" 2>&1); CODE=$?
 expect_exit "fails on a missing path" "$CODE" 1
 expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
@@ -406,6 +413,8 @@ GOOD=$(bash "$BACKSCRIPTS/db-lint.sh" "$DBFIX/good" 2>&1)
 db_lint_checks "it" "$BAD" "$GOOD"
 OUT=$(bash "$BACKSCRIPTS/db-lint.sh" "$DBFIX/bad/002_changes.sql" 2>&1)
 expect_contains "lints a single migration" "$OUT" "FINDINGS: 14"
+OUT=$(bash "$BACKSCRIPTS/db-lint.sh" "$DBFIX/bad/001_init.sql" "$DBFIX/bad/002_changes.sql" 2>&1)
+expect_contains "lints several paths" "$OUT" "FINDINGS: 20"
 OUT=$(bash "$BACKSCRIPTS/db-lint.sh" "$WORK/nope-db" 2>&1); CODE=$?
 expect_exit "fails on a missing path" "$CODE" 1
 expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
@@ -499,6 +508,10 @@ if [ -n "$POWERSHELL" ]; then
     OUT=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$WORK/nope-audit" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails on a missing path" "$CODE" 1
     expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+    FPCNT=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$BACKFIX/good" 2>&1 | tr -d '\r' | grep -c "code-eval" || true)
+    expect_exit "ps1 does not flag the function keyword as code-eval" "$FPCNT" 0
+    REALEVAL=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$CODE_DIR" 2>&1 | tr -d '\r' | grep -c "\[code-eval\] sub/ui.js:3:" || true)
+    expect_exit "ps1 still flags real eval" "$REALEVAL" 1
 
     echo "backend-scan.ps1"
     BAD=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$BACKFIX/bad" 2>&1 | tr -d '\r'); CODE=$?
@@ -508,6 +521,9 @@ if [ -n "$POWERSHELL" ]; then
     backend_scan_checks "it" "$BAD" "$GOOD" "$VENDORED"
     OUT=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$BACKFIX/bad/app.py" 2>&1 | tr -d '\r')
     expect_contains "scans a single file" "$OUT" "FINDINGS: 14"
+    OUT=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" "$BACKFIX/bad/app.py" "$BACKFIX/bad/orders.js" "$ROOT/README.md" 2>&1 | tr -d '\r')
+    expect_contains "scans several paths and skips non-source files" "$OUT" "FILES_SCANNED: 2"
+    expect_contains "reports leads from every path" "$OUT" "FINDINGS: 31"
     OUT=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$WORK/nope-backend" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails on a missing path" "$CODE" 1
     expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
@@ -519,6 +535,8 @@ if [ -n "$POWERSHELL" ]; then
     db_lint_checks "it" "$BAD" "$GOOD"
     OUT=$(run_ps "$BACKSCRIPTS/db-lint.ps1" -Path "$DBFIX/bad/002_changes.sql" 2>&1 | tr -d '\r')
     expect_contains "lints a single migration" "$OUT" "FINDINGS: 14"
+    OUT=$(run_ps "$BACKSCRIPTS/db-lint.ps1" "$DBFIX/bad/001_init.sql" "$DBFIX/bad/002_changes.sql" 2>&1 | tr -d '\r')
+    expect_contains "lints several paths" "$OUT" "FINDINGS: 20"
     OUT=$(run_ps "$BACKSCRIPTS/db-lint.ps1" -Path "$WORK/nope-db" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails on a missing path" "$CODE" 1
     expect_contains "prints an error for a missing path" "$OUT" "ERROR:"

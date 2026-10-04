@@ -1,6 +1,8 @@
 param(
-    [Parameter(Mandatory=$true)][string[]]$Path
+    [Parameter(Mandatory=$true, Position=0, ValueFromRemainingArguments=$true)][string[]]$Path
 )
+
+$Path = @($Path | ForEach-Object { $_ -split ',' } | Where-Object { $_ -ne "" })
 
 $excludedDirs = @("node_modules", ".git", "vendor", "dist", "build", ".venv", "venv")
 $files = New-Object System.Collections.Generic.List[string]

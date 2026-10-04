@@ -1,38 +1,53 @@
 param(
-    [Parameter(Mandatory=$true)][string]$Path
+    [Parameter(Mandatory=$true, Position=0, ValueFromRemainingArguments=$true)][string[]]$Path
 )
 
-if (-not (Test-Path -LiteralPath $Path)) {
-    [Console]::Error.WriteLine("ERROR: $Path does not exist.")
-    exit 1
-}
+$Path = @($Path | ForEach-Object { $_ -split ',' } | Where-Object { $_ -ne "" })
 
-$target = (Resolve-Path -LiteralPath $Path).Path
 $excludedDirs = @("node_modules", ".git", "dist", "build", ".next", "vendor", "coverage", ".venv", "venv", "__pycache__", "target", "bin", "obj", "test", "tests", "__tests__", "spec", "e2e")
 $extensions = @(".js", ".mjs", ".cjs", ".ts", ".py", ".rb", ".php", ".go", ".java", ".kt", ".cs")
 $excludedNames = @("*.min.*", "*.d.ts", "*.test.*", "*.spec.*", "*_test.go", "*_test.py", "test_*.py", "*_spec.rb", "*Test.java", "*Tests.cs")
 
-if (Test-Path -LiteralPath $target -PathType Container) {
-    $root = $target.TrimEnd('\', '/')
-    $files = @(Get-ChildItem -LiteralPath $target -Recurse -File -Force -ErrorAction SilentlyContinue | Where-Object {
-        $relative = $_.FullName.Substring($root.Length) -replace '\\', '/'
-        $segments = $relative.TrimStart('/') -split '/'
-        $dirSegments = if ($segments.Count -gt 1) { $segments[0..($segments.Count - 2)] } else { @() }
-        $name = $_.Name
-        ($extensions -contains $_.Extension.ToLower()) -and
-        -not ($dirSegments | Where-Object { $excludedDirs -contains $_ }) -and
-        $relative -notmatch '/storage/framework/' -and
-        -not ($excludedNames | Where-Object { $name -like $_ })
-    })
-} else {
-    $root = Split-Path -Parent $target
-    $files = @(Get-Item -LiteralPath $target)
+function Test-Wanted($Item) {
+    $name = $Item.Name
+    return ($extensions -contains $Item.Extension.ToLower()) -and -not ($excludedNames | Where-Object { $name -like $_ })
 }
+
+$root = $null
+$fileList = New-Object System.Collections.Generic.List[object]
+foreach ($p in $Path) {
+    if (-not (Test-Path -LiteralPath $p)) {
+        [Console]::Error.WriteLine("ERROR: $p does not exist.")
+        exit 1
+    }
+    $target = (Resolve-Path -LiteralPath $p).Path
+    if (Test-Path -LiteralPath $target -PathType Container) {
+        $base = $target.TrimEnd('\', '/')
+        if (-not $root) { $root = $base }
+        $found = @(Get-ChildItem -LiteralPath $target -Recurse -File -Force -ErrorAction SilentlyContinue | Where-Object {
+            $relative = $_.FullName.Substring($base.Length) -replace '\\', '/'
+            $segments = $relative.TrimStart('/') -split '/'
+            $dirSegments = if ($segments.Count -gt 1) { $segments[0..($segments.Count - 2)] } else { @() }
+            (Test-Wanted $_) -and
+            -not ($dirSegments | Where-Object { $excludedDirs -contains $_ }) -and
+            $relative -notmatch '/storage/framework/'
+        })
+        foreach ($f in $found) { $fileList.Add($f) }
+    } else {
+        if (-not $root) { $root = Split-Path -Parent $target }
+        $item = Get-Item -LiteralPath $target
+        if (Test-Wanted $item) { $fileList.Add($item) }
+    }
+}
+$files = $fileList.ToArray()
 
 $results = New-Object System.Collections.Generic.List[string]
 
 function Get-RelativePath([string]$FullPath) {
-    return $FullPath.Substring($root.Length).TrimStart('\', '/') -replace '\\', '/'
+    if ($FullPath.StartsWith($root + '\') -or $FullPath.StartsWith($root + '/')) {
+        return $FullPath.Substring($root.Length + 1) -replace '\\', '/'
+    }
+    return $FullPath -replace '\\', '/'
 }
 
 function Format-Code([string]$Code) {
@@ -142,7 +157,7 @@ foreach ($file in $files) {
 
 $rules = @("B1", "B2", "B4", "B5", "B6", "B8", "B9", "B11", "B12", "B13", "B14")
 
-Write-Output "BACKEND SCAN: $Path"
+Write-Output "BACKEND SCAN: $($Path -join ' ')"
 Write-Output "FILES_SCANNED: $($files.Count)"
 Write-Output ""
 $results | Sort-Object @{ Expression = { [int]($_.Split(' ')[0].Substring(1)) } }, @{ Expression = { $_.Split(' ')[1] } }, @{ Expression = { $_.Split(' ')[2] } } | ForEach-Object { Write-Output $_ }

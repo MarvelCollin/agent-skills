@@ -2,7 +2,7 @@
 name: backend
 description: Build, review and load test backend services to an expert standard. When writing or changing server code, apply hard rules (authenticate every route, authorize every object and field, validate input at the boundary, no N+1 queries, bounded paginated queries, indexes and constraints in the database, transactions and idempotency, timeouts retries and rate limits, structured logs without secrets, metrics traces and health checks, safe consistent errors, slow work in background jobs, config validated at startup with graceful shutdown, correct money and time types, tests that prove it). Review an existing backend for performance, authorization, reliability and operability with a static scan and a scored report. Run smoke, load, stress, spike, soak and breakpoint tests against a service the user owns and find the bottleneck.
 when_to_use: Use when creating or changing API endpoints, services, database queries, ORM models, migrations, background jobs, caching or server config, when asked to optimize, speed up, scale or harden a backend, fix slow queries or N+1 problems, add authorization, logging, rate limiting, caching or monitoring, review backend code for best practices or production readiness, or load test or stress test an API the user owns.
-argument-hint: '[what to build] | design <system> | review <path> | load <url> [smoke|load|stress|spike|soak|breakpoint] | <topic>'
+argument-hint: '[what to build] | design <system> | review <path> | review diff [base] | load <url> [smoke|load|stress|spike|soak|breakpoint] | <topic>'
 allowed-tools: Bash(bash "${CLAUDE_SKILL_DIR}/scripts/*) Bash(powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(pwsh -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(curl *) Bash(k6 *) Read Write Edit Glob Grep Agent WebFetch
 ---
 
@@ -23,6 +23,7 @@ Reviews and reports you write use no semicolons and no em dashes (the plugin cop
 | A description of backend work, or none while you are writing server code | Build | Follow Build Mode below |
 | `design <system or feature>`, or a question about how to architect or build something new | Design | Follow [references/design.md](references/design.md) |
 | `review <path>` or a request to review backend code | Review | Follow [references/review.md](references/review.md) |
+| `review diff [base]`, or a request to review a branch, PR or the current changes | Diff review | Follow Diff Review in [references/review.md](references/review.md) |
 | `load <url> [type]` or a request to load or stress test | Load test | Follow [references/load-testing.md](references/load-testing.md). Authorization rules there are mandatory |
 | A topic from the table below | Topic | Read the topic file, audit the current code for that topic only, then propose or apply fixes |
 | empty, and nothing is being built | Ask | Ask what to build, which path to review, or which service to load test |

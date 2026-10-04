@@ -10,6 +10,16 @@ Create `backend-review-<slug>-<YYYYMMDD>/` in the current directory (gitignored)
 - `evidence/`: query logs, EXPLAIN output, traces, load numbers
 - `report.md`: the final report from [../templates/review-template.md](../templates/review-template.md)
 
+## Diff Review
+
+For `review diff [base]` (a branch or PR before merge), review only what changed. No review folder and no score.
+
+1. List the changed files: `git diff --name-only --diff-filter=AMR <base>...HEAD` plus uncommitted changes from `git diff --name-only HEAD`. The base defaults to the main branch
+2. Scan them in one call. Pass the source files to `backend-scan` and the migration or schema files to `db-lint` (several paths are allowed: separate arguments, or `-Path "a,b"` on PowerShell). Non-source files are skipped
+3. Read the full diff, then the surrounding code each change depends on: the route's middleware, the query's callers, the migration's table
+4. Check every changed endpoint, query, migration and job against B1 to B15, and confirm each finding with the five gates below
+5. Report: findings most severe first in the finding format, then what looks good, then a verdict: **approve**, **approve with fixes** (Low and Medium only), or **changes requested** (any Critical or High)
+
 ## 1. Map the System
 
 Before judging anything, write `map.md`:

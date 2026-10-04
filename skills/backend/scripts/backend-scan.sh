@@ -1,39 +1,50 @@
 #!/bin/bash
 set -euo pipefail
 
-TARGET="${1:?Usage: backend-scan.sh <path>}"
-
-if command -v cygpath &>/dev/null; then
-    TARGET="$(cygpath -u "$TARGET")"
-fi
-
-if [ ! -e "$TARGET" ]; then
-    echo "ERROR: $TARGET does not exist." >&2
+if [ $# -lt 1 ]; then
+    echo "Usage: backend-scan.sh <path> [path...]" >&2
     exit 1
 fi
 
-FILES=()
-add_file() {
-    FILES+=("$1")
+wanted() {
+    local name="${1##*/}"
+    case "$name" in
+        *.min.*|*.d.ts|*.test.*|*.spec.*|*_test.go|*_test.py|test_*.py|*_spec.rb|*Test.java|*Tests.cs) return 1 ;;
+        *.js|*.mjs|*.cjs|*.ts|*.py|*.rb|*.php|*.go|*.java|*.kt|*.cs) return 0 ;;
+    esac
+    return 1
 }
 
-if [ -d "$TARGET" ]; then
-    ROOT="${TARGET%/}"
-    while IFS= read -r -d '' file; do
-        add_file "$file"
-    done < <(find "$TARGET" -mindepth 1 \
-        \( -type d \( -name node_modules -o -name .git -o -name dist -o -name build -o -name .next -o -name vendor \
-            -o -name coverage -o -name .venv -o -name venv -o -name __pycache__ -o -name target -o -name bin -o -name obj \
-            -o -name test -o -name tests -o -name __tests__ -o -name spec -o -name e2e \) -prune \) \
-        -o \( -type d -path '*/storage/framework' -prune \) \
-        -o \( -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' -o -name '*.ts' -o -name '*.py' -o -name '*.rb' \
-            -o -name '*.php' -o -name '*.go' -o -name '*.java' -o -name '*.kt' -o -name '*.cs' \) \
-            ! -name '*.min.*' ! -name '*.d.ts' ! -name '*.test.*' ! -name '*.spec.*' ! -name '*_test.go' ! -name '*_test.py' \
-            ! -name 'test_*.py' ! -name '*_spec.rb' ! -name '*Test.java' ! -name '*Tests.cs' -print0 \))
-else
-    ROOT="$(dirname "$TARGET")"
-    add_file "$TARGET"
-fi
+FILES=()
+ROOT=""
+for TARGET in "$@"; do
+    if command -v cygpath &>/dev/null; then
+        TARGET="$(cygpath -u "$TARGET")"
+    fi
+    if [ ! -e "$TARGET" ]; then
+        echo "ERROR: $TARGET does not exist." >&2
+        exit 1
+    fi
+    if [ -d "$TARGET" ]; then
+        [ -z "$ROOT" ] && ROOT="${TARGET%/}"
+        while IFS= read -r -d '' file; do
+            FILES+=("$file")
+        done < <(find "$TARGET" -mindepth 1 \
+            \( -type d \( -name node_modules -o -name .git -o -name dist -o -name build -o -name .next -o -name vendor \
+                -o -name coverage -o -name .venv -o -name venv -o -name __pycache__ -o -name target -o -name bin -o -name obj \
+                -o -name test -o -name tests -o -name __tests__ -o -name spec -o -name e2e \) -prune \) \
+            -o \( -type d -path '*/storage/framework' -prune \) \
+            -o \( -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' -o -name '*.ts' -o -name '*.py' -o -name '*.rb' \
+                -o -name '*.php' -o -name '*.go' -o -name '*.java' -o -name '*.kt' -o -name '*.cs' \) \
+                ! -name '*.min.*' ! -name '*.d.ts' ! -name '*.test.*' ! -name '*.spec.*' ! -name '*_test.go' ! -name '*_test.py' \
+                ! -name 'test_*.py' ! -name '*_spec.rb' ! -name '*Test.java' ! -name '*Tests.cs' -print0 \))
+    else
+        [ -z "$ROOT" ] && ROOT="$(dirname "$TARGET")"
+        if wanted "$TARGET"; then
+            FILES+=("$TARGET")
+        fi
+    fi
+done
 
 RESULTS="$(mktemp)"
 trap 'rm -f "$RESULTS"' EXIT
@@ -179,7 +190,7 @@ if [ "${#FILES[@]}" -gt 0 ]; then
     ' "${FILES[@]}" >>"$RESULTS"
 fi
 
-echo "BACKEND SCAN: $TARGET"
+echo "BACKEND SCAN: $*"
 echo "FILES_SCANNED: ${#FILES[@]}"
 echo ""
 sort -t " " -k1.2,1n -k2,2 -k3,3 "$RESULTS"
