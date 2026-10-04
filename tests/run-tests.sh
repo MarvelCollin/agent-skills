@@ -7,6 +7,7 @@ SECSCRIPTS="$ROOT/skills/security/scripts"
 BACKSCRIPTS="$ROOT/skills/backend/scripts"
 BACKFIX="$ROOT/tests/fixtures/backend"
 DBFIX="$ROOT/tests/fixtures/db"
+CONVFIX="$ROOT/tests/fixtures/conventions"
 SECFIX="$ROOT/tests/fixtures/security"
 FAKES="$ROOT/tests/fakes"
 WORK="$(mktemp -d)"
@@ -356,6 +357,33 @@ db_lint_checks() {
     expect_contains "$label passes clean migrations and schema" "$good" "FINDINGS: 0"
 }
 
+mkdir -p "$WORK/conv"
+cp -r "$CONVFIX/project" "$WORK/conv/project"
+cp -r "$CONVFIX/plain" "$WORK/conv/plain"
+mkdir -p "$WORK/conv/project/node_modules/Bad_Lib"
+echo "export const x = 1;" >"$WORK/conv/project/node_modules/Bad_Lib/BadName.ts"
+
+conventions_checks() {
+    local label="$1" project="$2" plain="$3"
+    expect_contains "$label counts source files and skips node_modules" "$project" "FILES_SCANNED: 12"
+    expect_contains "$label reports naming per extension" "$project" "  .tsx: PascalCase 4, kebab-case 1"
+    expect_contains "$label picks the dominant multi-word style" "$project" "DOMINANT_FILE_NAMING: .ts=kebab-case .tsx=PascalCase"
+    expect_contains "$label reports folder naming" "$project" "DOMINANT_DIR_NAMING: kebab-case"
+    expect_contains "$label reports role suffixes" "$project" "ROLE_SUFFIXES: .service 2, .types 1"
+    expect_contains "$label reports test layout" "$project" "TEST_LAYOUT: colocated 1, test-dir 1"
+    expect_contains "$label reports test naming" "$project" "TEST_NAMING: .test. 2"
+    expect_contains "$label reports top folders" "$project" "TOP_DIRS: src 11, src/components 5, src/lib 3"
+    expect_contains "$label finds formatters" "$project" "FORMATTERS: prettier editorconfig"
+    expect_contains "$label reads semicolons from prettier" "$project" "SEMICOLONS: no (prettier config)"
+    expect_contains "$label reads quotes from prettier" "$project" "QUOTES: single (prettier config)"
+    expect_contains "$label detects two space indent" "$project" "INDENT: 2 spaces"
+    expect_contains "$label reads the import alias" "$project" "IMPORT_ALIAS: @/"
+    expect_contains "$label samples semicolons without config" "$plain" "SEMICOLONS: yes (4 of 4 statements)"
+    expect_contains "$label samples quotes without config" "$plain" "QUOTES: double (2 of 2 imports)"
+    expect_contains "$label detects four space indent" "$plain" "INDENT: 4 spaces"
+    expect_contains "$label reports no formatter" "$plain" "FORMATTERS: none"
+}
+
 load_test_checks() {
     local label="$1" ok="$2" strict="$3"
     expect_contains "$label reports total requests" "$ok" "REQUESTS: 2505"
@@ -418,6 +446,22 @@ expect_contains "lints several paths" "$OUT" "FINDINGS: 20"
 OUT=$(bash "$BACKSCRIPTS/db-lint.sh" "$WORK/nope-db" 2>&1); CODE=$?
 expect_exit "fails on a missing path" "$CODE" 1
 expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+
+for skill in backend uiux; do
+    echo "conventions.sh ($skill)"
+    PROJECT=$(bash "$ROOT/skills/$skill/scripts/conventions.sh" "$WORK/conv/project" 2>&1); CODE=$?
+    expect_exit "exits 0" "$CODE" 0
+    PLAIN=$(bash "$ROOT/skills/$skill/scripts/conventions.sh" "$WORK/conv/plain" 2>&1)
+    conventions_checks "it" "$PROJECT" "$PLAIN"
+    OUT=$(bash "$ROOT/skills/$skill/scripts/conventions.sh" "$WORK/nope-conv" 2>&1); CODE=$?
+    expect_exit "fails on a missing path" "$CODE" 1
+    expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+done
+if cmp -s "$ROOT/skills/backend/scripts/conventions.sh" "$ROOT/skills/uiux/scripts/conventions.sh" && cmp -s "$ROOT/skills/backend/scripts/conventions.ps1" "$ROOT/skills/uiux/scripts/conventions.ps1"; then
+    pass "backend and uiux ship the same conventions scripts"
+else
+    fail "backend and uiux conventions scripts differ"
+fi
 
 echo "load-test.sh"
 OK=$(PATH="$FAKES:$PATH" bash "$BACKSCRIPTS/load-test.sh" "http://127.0.0.1:$PORT/" -d 5 -c 4 -H "Authorization: Bearer test" -o "$WORK/load" 2>&1); CODE=$?
@@ -540,6 +584,17 @@ if [ -n "$POWERSHELL" ]; then
     OUT=$(run_ps "$BACKSCRIPTS/db-lint.ps1" -Path "$WORK/nope-db" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails on a missing path" "$CODE" 1
     expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+
+    for skill in backend uiux; do
+        echo "conventions.ps1 ($skill)"
+        PROJECT=$(run_ps "$ROOT/skills/$skill/scripts/conventions.ps1" -Path "$WORK/conv/project" 2>&1 | tr -d '\r'); CODE=$?
+        expect_exit "exits 0" "$CODE" 0
+        PLAIN=$(run_ps "$ROOT/skills/$skill/scripts/conventions.ps1" -Path "$WORK/conv/plain" 2>&1 | tr -d '\r')
+        conventions_checks "it" "$PROJECT" "$PLAIN"
+        OUT=$(run_ps "$ROOT/skills/$skill/scripts/conventions.ps1" -Path "$WORK/nope-conv" 2>&1 | tr -d '\r'); CODE=$?
+        expect_exit "fails on a missing path" "$CODE" 1
+        expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
+    done
 
     echo "load-test.ps1"
     OK=$(PATH="$FAKES:$PATH" run_ps "$BACKSCRIPTS/load-test.ps1" -Url "http://127.0.0.1:$PORT/" -Duration 5 -Connections 4 -Header "Authorization: Bearer test" -OutputDir "$WORK/load-ps" 2>&1 | tr -d '\r'); CODE=$?
