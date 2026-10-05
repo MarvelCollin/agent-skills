@@ -12,7 +12,7 @@
       "name": "agent-skills",
       "source": "./",
       "description": "A growing set of Claude Code skills in one plugin.",
-      "version": "0.7.0"
+      "version": "0.8.0"
     }
   ]
 }

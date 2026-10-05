@@ -10,6 +10,7 @@ A growing set of skills for Claude Code, packaged as one plugin. Each skill live
 | `/backend` | `/backend [what to build]`, `/backend design <system>`, `/backend review <path>`, `/backend checklist [path]`, `/backend load <url>` or `/backend <topic>` | Designs and builds backend code under expert rules, reviews it for production readiness, runs the essentials checklist, or load tests a service you own |
 | `/uiux` | `/uiux [what to build]` or `/uiux <url> [focus]` | Builds UI/UX frontend that follows strict UX rules and reviews it, or audits a live site as a real user |
 | `/security` | `/security <target-or-path> [phase]` | Runs an authorized security review of an app you own or are cleared to test, or a static code review |
+| `/explain` | `/explain <topic>`, `/explain simpler`, `/explain deeper`, `/explain teach <topic>`, `/explain quiz` or `/explain back <topic>` | Explains anything in the simplest true way, easy to understand and remember, teaches step by step, quizzes you, or checks your own explanation |
 
 ## Installation
 
@@ -20,7 +21,7 @@ claude plugin marketplace add MarvelCollin/agent-skills
 claude plugin install agent-skills@agent-skills
 ```
 
-Or copy one skill into your personal skills folder. Each skill keeps everything it needs inside its own folder, so it works on its own. Swap `backend` for `uiux` or `security`:
+Or copy one skill into your personal skills folder. Each skill keeps everything it needs inside its own folder, so it works on its own. Swap `backend` for `uiux`, `security` or `explain`:
 
 ```bash
 git clone https://github.com/MarvelCollin/agent-skills
@@ -181,6 +182,37 @@ The rules link to 21 topic guides: API design, authentication, authorization, va
 
 Load tests only run against services you own. Local and private hosts are allowed by default. Any other host needs you to state your authorization, and the script refuses it without `--authorized` and a rate cap. The skill never load tests third parties.
 
+## `/explain`
+
+Explains anything you do not understand in the simplest true way, so it is easy to understand and easy to remember. Claude also loads it on its own when you say you do not get something or ask for a simple explanation.
+
+```
+/explain what is a database index
+/explain this error: ECONNREFUSED 127.0.0.1:5432
+/explain src/auth/session.ts     # explains your own code with your own names
+/explain simpler                 # same idea from a new, simpler angle
+/explain deeper                  # one layer down, real terms tied to the first picture
+/explain example                 # another example and a near miss
+/explain teach recursion         # short lesson, one chunk per turn with a check
+/explain quiz                    # questions on what was explained, one at a time
+/explain back closures           # you explain it, Claude finds the gaps
+```
+
+A default explanation is 80 to 200 words with this shape, and any part that adds nothing is dropped:
+
+| Part | What it does |
+|------|--------------|
+| Core | The answer in one plain sentence, by what it does or why it exists |
+| Picture | One everyday comparison with the parts mapped and its limit stated |
+| Example | One real case before any definition, your own code when there is some |
+| How it works | At most three steps, with a small text diagram for flows |
+| Watch out | The common wrong idea and where it fails |
+| The name | The real term last, so you can search it |
+| Remember | One bold line to keep |
+| Your turn | One small question that makes it stick, never "does that make sense?" |
+
+Every explanation follows rules E1 to E14 (answer first, plain words, what it does before what it is called, concrete before abstract, three new ideas at most, one picture with its limit, cut everything extra, simple but true, name the trap, short by default, respect the reader, leave one thing to do, match the learner, clean copy). The rules come from research on cognitive load, worked examples, analogies, misconceptions, retrieval practice and AI tutoring, plus the methods of explainers like Feynman, 3Blue1Brown and Julia Evans. Sources are in [skills/explain/references/research.md](skills/explain/references/research.md).
+
 ## Project Structure
 
 ```
@@ -207,6 +239,9 @@ skills/
                               Postgres guide, stack notes, topics/ (21 backend topic guides)
     templates/                Design, review and load test report templates, OpenAPI starter
     scripts/                  backend-scan, db-lint, conventions, load-test (.sh + .ps1)
+  explain/
+    SKILL.md                  Entry point: explain, simpler, deeper, example, teach, quiz and explain back
+    references/               Rules E1 to E14, plain words, pictures and examples, teach mode, research sources
 evals/                        Cases for claude plugin eval
 tests/                        Unit tests for the scripts
 ```
