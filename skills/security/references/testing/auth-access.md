@@ -21,6 +21,8 @@ Use two test accounts you are allowed to use (for example a low-privilege user a
 
 Read the code where you can: the presence of an ownership or role check on the route is the fastest confirmation either way.
 
+For a role, owner or tenant that the client sends (body, header, cookie, JWT claim), see [tampering.md](tampering.md).
+
 ## Confirmed Finding Looks Like
 
 Test account A reached account B's data or action, or a normal user reached an admin function, reproduced twice, with both requests saved and the missing check identified.

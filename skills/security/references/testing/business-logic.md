@@ -15,6 +15,7 @@ Flaws in how the app's rules work, not in a single technical sink. Scanners miss
 - Walk the intended flow first, then try to break the assumptions: change a value the server should own, repeat a one-time action, skip a step by calling the later endpoint directly.
 - For race conditions, send a small number of parallel requests, not a flood. Enough to prove the window, no more.
 - Use your test account and test data. If a test would move real money or change real state, stop and confirm with the user first, or prove it on seeded data only.
+- For values the client controls (price, total, role, owner, status, step), follow the edit-and-resend method in [tampering.md](tampering.md).
 
 ## Confirmed Finding Looks Like
 

@@ -23,6 +23,7 @@ Drive the app in the browser (see [browser-protocol.md] equivalents in the uiux 
 - Note every endpoint, parameter, and content type actually used
 - Note security headers, cookie flags, CORS behavior, and error verbosity
 - Note client-side routes and any API the front end calls
+- Record what the browser receives: the JavaScript bundles and whether their `.js.map` files are reachable, local and session storage, cookies with their flags, SSR state in the page source (`__NEXT_DATA__`, `__NUXT__`), and the fields in each response including ones the UI never shows. See [testing/client-exposure.md](testing/client-exposure.md)
 
 Keep external, noisy scanning to a minimum. If you use a scanner, keep it rate-limited and inside scope. Prefer targeted checks over broad fuzzing.
 
@@ -46,6 +47,12 @@ Keep external, noisy scanning to a minimum. If you use a scanner, keep it rate-l
 
 ## Inputs to sinks (leads)
 - <input> -> <sink> in <file:line or endpoint>, validation: <none/partial/encoded>
+
+## What the browser receives
+- Bundles and source maps: <urls, whether .map files are reachable>
+- Storage and cookies: <keys, token-like values, cookie flags>
+- SSR state and inline config: <__NEXT_DATA__, window state, data attributes>
+- Response fields the UI does not show: <endpoint, field>
 
 ## Observations
 - Headers, CORS, cookie flags, error verbosity, anything odd

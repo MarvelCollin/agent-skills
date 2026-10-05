@@ -103,11 +103,11 @@ It works in phases, based on the OWASP WSTG and ASVS:
 
 1. **Scope.** Confirms authorization and writes the rules of engagement. Nothing active runs before this. A `scope-check` script verifies each target is in scope, and flags out-of-scope hosts.
 2. **Recon.** Maps the attack surface inside scope, preferring the app's own source and traffic over noisy scanning.
-3. **Testing.** Works through vulnerability classes matched to what recon found: injection, broken auth and access control, SSRF and server-side, XSS and client-side, session and tokens, business logic, misconfiguration, exposed secrets, API, and LLM features. Lightest touch that proves the issue, nothing destructive.
+3. **Testing.** Works through vulnerability classes matched to what recon found: injection, broken auth and access control, SSRF and server-side, XSS and client-side, session and tokens, business logic, misconfiguration, exposed secrets, client exposure (env values in the bundle, tokens in storage, over-fetched responses, public source maps), client tampering (an edited request that forges a role, owner, price or status), API, and LLM features. Lightest touch that proves the issue, nothing destructive.
 4. **Validation.** Six gates kill false positives. A finding ships only when reproduced with evidence and real impact.
 5. **Report.** Every finding gets severity, evidence, impact and a concrete fix, mapped to OWASP and CWE, with fixes ranked by risk over effort.
 
-A `grep-audit` script speeds up code review by flagging risky sinks and hardcoded secrets for a human to read. The skill only tests targets the user owns or is authorized to test, and never helps evade detection, target at scale, run denial-of-service, or attack third parties.
+A `grep-audit` script speeds up code review by flagging risky sinks and hardcoded secrets for a human to read, including secrets behind public env prefixes, tokens in web storage, public source maps, decoded but unverified JWTs, cookies without `HttpOnly`, and roles, prices and identity headers taken from the client. The skill only tests targets the user owns or is authorized to test, and never helps evade detection, target at scale, run denial-of-service, or attack third parties.
 
 ## `/backend`
 
@@ -198,7 +198,7 @@ skills/
   security/
     SKILL.md                  Entry point: scope, recon, test, validate, report, code review
     references/               Authorization, recon, validation, reporting, code review,
-                              testing/ (10 vulnerability classes)
+                              testing/ (12 vulnerability classes)
     templates/                Report and finding templates
     scripts/                  dev-detect, scope-init, scope-check, grep-audit (.sh + .ps1)
   backend/

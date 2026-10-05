@@ -6,7 +6,7 @@ Keys, tokens, passwords, and connection strings that should never be readable en
 
 - **In source and config:** hardcoded API keys, passwords, private keys, connection strings, cloud credentials.
 - **In version control history:** secrets committed once and "removed" later, still in history.
-- **In client bundles:** keys shipped to the browser in JavaScript, or in source maps.
+- **In client bundles:** keys shipped to the browser in JavaScript, or in source maps. Variables with public prefixes (`NEXT_PUBLIC_`, `VITE_`, `REACT_APP_` and similar) are inlined into the bundle. See [client-exposure.md](client-exposure.md) for how to check what the browser receives.
 - **In responses and errors:** internal tokens, credentials, or PII returned by an endpoint or leaked in a stack trace.
 - **In logs:** secrets or tokens written to logs the app exposes.
 

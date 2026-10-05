@@ -20,6 +20,8 @@ Work from input to sink. A vulnerability is almost always untrusted input reachi
 - **Secrets:** hardcoded keys, tokens, passwords, connection strings. Check config, source, and history. See [testing/secrets.md](testing/secrets.md).
 - **Config and defaults:** debug mode on, verbose errors, permissive CORS, missing security headers, default credentials. See [testing/config.md](testing/config.md).
 - **Business logic:** steps that can be skipped or replayed, amounts and quantities trusted from the client, missing server-side checks. See [testing/business-logic.md](testing/business-logic.md).
+- **Client exposure:** secrets in public-prefixed env vars (`NEXT_PUBLIC_`, `VITE_`, `REACT_APP_`, `EXPO_PUBLIC_`, `NUXT_PUBLIC_`, `VUE_APP_`, `GATSBY_`, `PUBLIC_`), hardcoded keys in client code, production source maps, whole rows serialized into SSR state or API responses, tokens in `localStorage` or script-set cookies, session cookies without `HttpOnly`, endpoints that print the environment. See [testing/client-exposure.md](testing/client-exposure.md).
+- **Client-controlled values:** role, owner, tenant, price, total, status or step taken from the body, query, headers or a decoded but unverified JWT, mass assignment, authorization enforced only in the UI, webhooks and queue messages accepted without verification. See [testing/tampering.md](testing/tampering.md).
 - **Dependencies:** known-vulnerable versions in the lockfile. Note them with the advisory id.
 
 ## Speed It Up with Grep
@@ -36,7 +38,7 @@ On Windows without bash:
 powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/grep-audit.ps1" -Path "<path>"
 ```
 
-The script flags likely dangerous sinks and hardcoded secrets by file and line. Every hit needs a human read. Many are safe in context.
+The script flags likely dangerous sinks and hardcoded secrets by file and line. It also flags client exposure and client trust leads under these categories: `client-env-secret` (secret-named env vars behind public prefixes), `client-token-storage` (tokens in `localStorage`, `sessionStorage` or script-set cookies), `sourcemap-public`, `env-dump` (the whole environment sent or logged), `jwt-unverified` (decode without verify, ignored expiry, `none`), `cookie-flags` (cookie set without `HttpOnly`), `client-authority` (role, owner or tenant read from the request), `client-value` (price, status or step read from the request) and `client-header` (identity from `X-User`, `X-Role` and similar headers). Every hit needs a human read. Many are safe in context.
 
 ## Output
 

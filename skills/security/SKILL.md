@@ -1,6 +1,6 @@
 ---
 name: security
-description: Run an authorized security review of a web app you own or are cleared to test, especially local and dev builds. Dev mode finds the running dev server, writes the scope itself and screens the build end to end with no setup questions. Works in phases that confirm authorization and scope, map the attack surface, then test for common vulnerability classes (injection, broken auth and access control, SSRF and server-side, XSS and client-side, session handling, business logic, misconfiguration, exposed secrets, API and LLM issues) against the OWASP WSTG and ASVS, verify each finding with evidence to kill false positives, then write a report with severity and remediation. Can also do a static secure-code review without running anything.
+description: Run an authorized security review of a web app you own or are cleared to test, especially local and dev builds. Dev mode finds the running dev server, writes the scope itself and screens the build end to end with no setup questions. Works in phases that confirm authorization and scope, map the attack surface, then test for common vulnerability classes (injection, broken auth and access control, SSRF and server-side, XSS and client-side, session handling, business logic, misconfiguration, exposed secrets, secrets and tokens visible in the browser, client-controlled values like role and price, API and LLM issues) against the OWASP WSTG and ASVS, verify each finding with evidence to kill false positives, then write a report with severity and remediation. Can also do a static secure-code review without running anything.
 when_to_use: Use when the user asks to security test, pentest, do a security review or vulnerability assessment, screen or harden their own or their company's web app or API, check a local or dev build for security issues, screen their dev server before shipping, review code for vulnerabilities, or write up security findings. Only for targets the user owns or is authorized to test.
 argument-hint: 'dev [path] | <target-or-path> [phase] | scope | recon | test [class] | review <path> | validate | report'
 model: claude-opus-5-5
@@ -96,7 +96,7 @@ Follow [references/authorization.md](references/authorization.md). Output `scope
 
 ### 2. Recon
 
-Follow [references/recon.md](references/recon.md). Map only what is in scope: routes, parameters, inputs, auth flows, roles, technologies, and where user input reaches a sink. Prefer reading the app's own source and the browser's network panel over noisy external scanning. Output `recon.md`.
+Follow [references/recon.md](references/recon.md). Map only what is in scope: routes, parameters, inputs, auth flows, roles, technologies, and where user input reaches a sink. Prefer reading the app's own source and the browser's network panel over noisy external scanning. Also record what the browser receives: bundled JavaScript, source maps, storage, cookies, SSR state and the fields in each response. See [testing/client-exposure.md](references/testing/client-exposure.md). Output `recon.md`.
 
 ### 3. Testing
 
@@ -110,6 +110,8 @@ Work through the vulnerability classes in [references/testing/](references/testi
 - [business-logic.md](references/testing/business-logic.md): workflow abuse, race conditions, price and quantity tampering
 - [config.md](references/testing/config.md): headers, TLS, CORS, exposed admin, default creds, verbose errors
 - [secrets.md](references/testing/secrets.md): exposed keys, tokens and credentials in code, config and responses
+- [client-exposure.md](references/testing/client-exposure.md): secrets, env values, tokens and sessions visible in the browser, source maps, SSR state, over-fetched responses
+- [tampering.md](references/testing/tampering.md): client-controlled role, price, owner and state, mass assignment, UI-only checks, forged tokens and webhooks
 - [api.md](references/testing/api.md): REST and GraphQL: authz per object, mass assignment, rate limits
 - [llm.md](references/testing/llm.md): prompt injection, output handling, data leakage in AI features
 
