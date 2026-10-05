@@ -5,14 +5,14 @@
     "url": "https://github.com/MarvelCollin"
   },
   "metadata": {
-    "description": "Claude Code skills by MarvelCollin."
+    "description": "Claude Code skills for backend, UI/UX frontend and security, by MarvelCollin."
   },
   "plugins": [
     {
       "name": "agent-skills",
       "source": "./",
-      "description": "A growing set of Claude Code skills. /uiux builds UI under strict UX rules and reviews it or audits a live site. /security runs an authorized security review of an app you own. /backend builds and reviews backends to an expert standard (authorization, N+1 queries, indexing, resilience, logging, observability) and load tests services you own.",
-      "version": "0.6.0"
+      "description": "A growing set of Claude Code skills in one plugin. Backend engineering, UI/UX frontend and security today, with more on the way.",
+      "version": "0.7.0"
     }
   ]
 }

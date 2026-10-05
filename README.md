@@ -1,17 +1,37 @@
 # Agent Skills
 ![License](https://img.shields.io/github/license/MarvelCollin/agent-skills) ![Last commit](https://img.shields.io/github/last-commit/MarvelCollin/agent-skills) ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 
-A growing set of skills for Claude Code, packaged as one plugin.
+A growing set of skills for Claude Code, packaged as one plugin. Today it covers backend engineering, UI/UX frontend work and security, and more areas are on the way. Each skill lives in its own folder under `skills/` and becomes one slash command.
 
 ## Skills
 
 | Skill | Usage | What it does |
 |-------|-------|--------------|
-| `/uiux` | `/uiux [what to build]` or `/uiux <url> [focus]` | Builds UI that follows strict UX rules and reviews it, or audits a live site as a real user |
+| `/backend` | `/backend [what to build]`, `/backend design <system>`, `/backend review <path>`, `/backend checklist [path]`, `/backend load <url>` or `/backend <topic>` | Designs and builds backend code under expert rules, reviews it for production readiness, runs the essentials checklist, or load tests a service you own |
+| `/uiux` | `/uiux [what to build]` or `/uiux <url> [focus]` | Builds UI/UX frontend that follows strict UX rules and reviews it, or audits a live site as a real user |
 | `/security` | `/security <target-or-path> [phase]` | Runs an authorized security review of an app you own or are cleared to test, or a static code review |
-| `/backend` | `/backend [what to build]`, `/backend review <path>`, `/backend load <url>` or `/backend <topic>` | Builds backend code under expert rules, reviews a backend for production readiness, or load tests a service you own |
 
-More skills are on the way.
+## Installation
+
+As a plugin, which installs every skill:
+
+```bash
+claude plugin marketplace add MarvelCollin/agent-skills
+claude plugin install agent-skills@agent-skills
+```
+
+Or copy one skill into your personal skills folder. Each skill keeps everything it needs inside its own folder, so it works on its own. Swap `backend` for `uiux` or `security`:
+
+```bash
+git clone https://github.com/MarvelCollin/agent-skills
+cp -r agent-skills/skills/backend ~/.claude/skills/backend
+```
+
+To try a local checkout without installing it:
+
+```bash
+claude --plugin-dir ./agent-skills
+```
 
 ## `/uiux`
 
@@ -64,28 +84,6 @@ Focus areas: `nav`, `flow`, `forms`, `errors`, `perf`, `mobile`, `a11y [A|AA|AAA
 - bash or PowerShell for the scripts
 - Node.js and Chrome for the axe-core and Lighthouse scans (optional)
 
-## Installation
-
-As a plugin:
-
-```bash
-claude plugin marketplace add MarvelCollin/agent-skills
-claude plugin install agent-skills@agent-skills
-```
-
-Or copy the skill into your personal skills folder:
-
-```bash
-git clone https://github.com/MarvelCollin/agent-skills
-cp -r agent-skills/skills/uiux ~/.claude/skills/uiux
-```
-
-To try a local checkout without installing it:
-
-```bash
-claude --plugin-dir ./agent-skills
-```
-
 ## `/security`
 
 An authorized security review of a web app you own or are cleared to test. It is built for your own and local or dev builds first (localhost, private hosts, your own source), and refuses targets you cannot show authorization for.
@@ -117,9 +115,11 @@ Backend engineering at a staff level: correct under concurrency, fast at real da
 
 ```
 /backend add a paginated orders endpoint       # build under the hard rules
+/backend design a multi-tenant billing service # design doc first, then build
 /backend review ./api                          # scored production-readiness review
+/backend review diff main                      # review a branch or the current changes
+/backend checklist ./api security              # stress test first, then the essentials checklist
 /backend load http://localhost:3000/api/orders # load or stress test your own service
-/backend checklist ./api security              # essentials checklist, one group or all five
 /backend n+1                                   # one topic: explain, audit this code for it, fix
 ```
 
@@ -147,13 +147,19 @@ Every build follows these hard rules, then ends with a Rules Check that says pas
 | B14 Correct types | Money as integer cents or decimal, UTC `timestamptz`, UUIDv7 or bigint keys |
 | B15 Prove it with tests | Real-database integration tests, authorization matrix, query counts, parallel and idempotency tests |
 
-The rules link to 18 topic guides: API design, authentication, authorization, validation, database and N+1, migrations, concurrency, caching, performance, resilience, background jobs, logging, observability, errors, testing, config and deploy, architecture, and a security baseline mapped to the OWASP API Security Top 10 (2023). A stack guide covers the concrete fixes for Node, Python, Rails, Laravel, Spring, .NET, Go and GraphQL.
+The rules link to 20 topic guides: API design, authentication, authorization, validation, database and N+1, migrations, concurrency, caching, performance, resilience, background jobs, logging, observability, errors, testing, config and deploy, architecture, distributed systems, real-time, and a security baseline mapped to the OWASP API Security Top 10 (2023). A Postgres guide ranks its rules by impact with wrong and right SQL, and a stack guide covers the concrete fixes for Node, Python, Rails, Laravel, Spring, .NET, Go and GraphQL.
+
+### Design
+
+`/backend design <system>` is for a new service or a change that is costly to undo. It asks only the questions the code cannot answer (traffic, data size, tenancy, consistency, latency and recovery targets), each with a recommended answer. It then estimates capacity, picks the simplest shape the numbers support, models data from access patterns, drafts the API contract and records decisions as ADRs. It stops for your approval before building anything expensive to reverse.
 
 ### Review
 
 `/backend review <path>` maps the system, runs the `backend-scan` script, walks 13 areas against the rules, measures query counts and plans when the app runs locally, and confirms every finding through five gates before it is reported. The report has a weighted score out of 100, a severity for each finding, and a fix plan ranked by impact over effort.
 
-`backend-scan` flags leads with a rule tag: N+1 calls inside loops, maps and comprehensions, unscoped id lookups, client-supplied roles, mass assignment, unbounded queries, `SELECT *`, offset pagination, blocking index builds, HTTP calls without timeouts, unstructured or secret-leaking logs, swallowed and leaked errors, blocking calls, credentials in connection strings, secret fallbacks, float money and naive timestamps. It skips tests, vendored code and build output.
+`backend-scan` flags leads with a rule tag: N+1 calls inside loops, maps and comprehensions, unscoped id lookups, client-supplied roles, mass assignment, unbounded queries, `SELECT *`, offset pagination, blocking index builds, HTTP calls without timeouts, unstructured or secret-leaking logs, swallowed and leaked errors, blocking calls, credentials in connection strings, secret fallbacks, float money and naive timestamps. It skips tests, vendored code and build output. `/backend review diff [base]` reviews only a branch, pull request or the current changes.
+
+`db-lint` does the same for SQL migrations and Prisma schemas: blocking index builds, constraints validated under lock, `NOT NULL` without a default, column type changes, unbatched backfills, foreign keys without an index, float money, timestamps without a time zone and random UUID keys.
 
 ### Checklist
 
@@ -186,7 +192,7 @@ skills/
                               browser protocol, personas, rubric, heuristics, flow test,
                               accessibility, comparison, slop catalog, report
     templates/                Report and flow test templates
-    scripts/                  rule-scan, perf-check, axe-scan, lighthouse-audit (.sh + .ps1)
+    scripts/                  rule-scan, perf-check, axe-scan, lighthouse-audit, conventions (.sh + .ps1)
   security/
     SKILL.md                  Entry point: scope, recon, test, validate, report, code review
     references/               Authorization, recon, validation, reporting, code review,
@@ -194,11 +200,11 @@ skills/
     templates/                Report and finding templates
     scripts/                  dev-detect, scope-init, scope-check, grep-audit (.sh + .ps1)
   backend/
-    SKILL.md                  Entry point: build, review, load test and topic modes
-    references/               Build rules B1 to B15, review, load testing, stack notes,
-                              topics/ (18 backend topic guides)
-    templates/                Review and load test report templates
-    scripts/                  backend-scan, load-test (.sh + .ps1)
+    SKILL.md                  Entry point: build, design, review, checklist, load test and topic modes
+    references/               Build rules B1 to B15, design, review, essentials checklist, load testing,
+                              Postgres guide, stack notes, topics/ (20 backend topic guides)
+    templates/                Design, review and load test report templates, OpenAPI starter
+    scripts/                  backend-scan, db-lint, conventions, load-test (.sh + .ps1)
 evals/                        Cases for claude plugin eval
 tests/                        Unit tests for the scripts
 ```

@@ -52,6 +52,7 @@ tests/                           Script unit tests, fixture server, fake npx
 
 - Build mode hard rules B1 to B15 live in `skills/backend/references/build-rules.md`. Each rule names its `backend-scan` checks. Keep `scripts/backend-scan.*` and the scan tags in sync when a rule changes
 - Topic depth lives in `skills/backend/references/topics/`, one file per area. SKILL.md maps topic words to files
+- Checklist mode (`references/checklist.md`) stress tests first and ranks fixes by the measured bottleneck. Keep its items in sync with the build rules and the topic files they link to
 - Scan output is leads, not findings. A finding needs a reachable path, real impact, evidence and a concrete fix (five gates in `references/review.md`)
 - Measure before and after. Query counts, EXPLAIN plans, traces and load numbers beat opinions
 - Load tests only against targets the user owns or is authorized to test. Local and private hosts are the default. `load-test.*` refuses remote hosts without `--authorized` and a rate cap. Never load test third parties
