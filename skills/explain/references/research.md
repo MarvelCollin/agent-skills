@@ -36,6 +36,8 @@ The evidence the rules E1 to E14 and the modes rest on. Read this when changing 
 | Smooth teaching feels like learning while teaching less | E12, never ask "does that make sense?" | Deslauriers, https://www.pnas.org/doi/10.1073/pnas.1821936116 |
 | Memory is the residue of thought. Stories are remembered better (g = 0.55) | Leave one thing to do, stories | Willingham, https://www.aft.org/ae/summer2021/willingham |
 | Keyword mnemonics fade fast | Mnemonics only for arbitrary lists | Dunlosky |
+| Spaced recall with growing gaps beats one long session | Remember mode schedule | Cepeda, https://augmentingcognition.com/assets/Cepeda2006.pdf |
+| Fading support step by step builds independent recall | Remember mode four levels | Worked example fading, Renkl |
 | Understanding means being able to explain, predict and apply to a new case | Check questions are predict, why, new case | Perkins, SOLO taxonomy |
 
 ## How good teachers teach

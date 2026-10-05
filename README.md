@@ -10,7 +10,7 @@ A growing set of skills for Claude Code, packaged as one plugin. Each skill live
 | `/backend` | `/backend [what to build]`, `/backend design <system>`, `/backend review <path>`, `/backend checklist [path]`, `/backend load <url>` or `/backend <topic>` | Designs and builds backend code under expert rules, reviews it for production readiness, runs the essentials checklist, or load tests a service you own |
 | `/uiux` | `/uiux [what to build]` or `/uiux <url> [focus]` | Builds UI/UX frontend that follows strict UX rules and reviews it, or audits a live site as a real user |
 | `/security` | `/security <target-or-path> [phase]` | Runs an authorized security review of an app you own or are cleared to test, or a static code review |
-| `/explain` | `/explain <topic>`, `/explain simpler`, `/explain deeper`, `/explain teach <topic>`, `/explain quiz` or `/explain back <topic>` | Explains anything in the simplest true way, easy to understand and remember, teaches step by step, quizzes you, or checks your own explanation |
+| `/explain` | `/explain <topic>`, `/explain simpler`, `/explain deeper`, `/explain teach <topic>`, `/explain quiz`, `/explain back <topic>` or `/explain remember <thing>` | Explains anything in the simplest true way, easy to understand and remember, teaches step by step, quizzes you, checks your own explanation, or drills something into memory |
 
 ## Installation
 
@@ -196,6 +196,7 @@ Explains anything you do not understand in the simplest true way, so it is easy 
 /explain teach recursion         # short lesson, one chunk per turn with a check
 /explain quiz                    # questions on what was explained, one at a time
 /explain back closures           # you explain it, Claude finds the gaps
+/explain remember <paste text>   # logic map, fading cues, recall drills, spacing schedule
 ```
 
 A default explanation is 80 to 200 words with this shape, and any part that adds nothing is dropped:
@@ -212,6 +213,8 @@ A default explanation is 80 to 200 words with this shape, and any part that adds
 | Your turn | One small question that makes it stick, never "does that make sense?" |
 
 Every explanation follows rules E1 to E14 (answer first, plain words, what it does before what it is called, concrete before abstract, three new ideas at most, one picture with its limit, cut everything extra, simple but true, name the trap, short by default, respect the reader, leave one thing to do, match the learner, clean copy). The rules come from research on cognitive load, worked examples, analogies, misconceptions, retrieval practice and AI tutoring, plus the methods of explainers like Feynman, 3Blue1Brown and Julia Evans. Sources are in [skills/explain/references/research.md](skills/explain/references/research.md).
+
+`/explain remember` is for things you need to memorize, like an essay template, a formula or a list. It explains the meaning first, builds a logic map that says the job of each part, then drills you through four levels (full text, first words only, the logic chain only, blank page) with feedback on each attempt. It gives a spacing schedule (day 1, 2, 4, 7, 14 and 30) and ends with practice using the material on new content, because rereading feels like learning but fades fast.
 
 ## Project Structure
 
@@ -240,8 +243,9 @@ skills/
     templates/                Design, review and load test report templates, OpenAPI starter
     scripts/                  backend-scan, db-lint, conventions, load-test (.sh + .ps1)
   explain/
-    SKILL.md                  Entry point: explain, simpler, deeper, example, teach, quiz and explain back
-    references/               Rules E1 to E14, plain words, pictures and examples, teach mode, research sources
+    SKILL.md                  Entry point: explain, simpler, deeper, example, teach, quiz, explain back and remember
+    references/               Rules E1 to E14, plain words, pictures and examples, teach mode, remember mode,
+                              research sources
 evals/                        Cases for claude plugin eval
 tests/                        Unit tests for the scripts
 ```

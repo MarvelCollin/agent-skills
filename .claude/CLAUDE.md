@@ -10,7 +10,7 @@ Claude Code plugin that bundles a growing set of skills. Each skill lives in its
 skills/uiux/                     /uiux UI build rules, UI review and UX audit
 skills/security/                 /security authorized security review and code review
 skills/backend/                  /backend build rules, backend review and load testing
-skills/explain/                  /explain simple explanations, teach, quiz and explain back
+skills/explain/                  /explain simple explanations, teach, quiz, explain back, remember
   SKILL.md                       Entry point (each skill)
   references/                    Loaded on demand by SKILL.md
   templates/                     Report templates

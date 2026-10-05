@@ -1,8 +1,8 @@
 ---
 name: explain
-description: Explain anything the user does not understand in the simplest true way, so it is easy to understand and easy to remember. Gives the core idea in one plain sentence, one everyday picture with its limit stated, a concrete example before any definition, at most three new ideas, the common wrong idea named, and one small question that makes the idea stick. Plain words, short sentences, every needed term defined in plain words, no filler. Built on learning science (cognitive load, worked examples, concrete before abstract, analogy research, fixing misconceptions, retrieval practice, self-explanation) and the methods of great explainers. Also teaches a topic step by step, quizzes the user, or checks the user's own explanation for gaps.
-when_to_use: Use when the user says they do not understand something, asks to explain something simply or in plain words, asks for ELI5 or an explanation for a beginner, says an explanation was too complex or full of jargon, asks what a concept, term, error message or piece of code means and seems new to it, asks to be taught a topic step by step, asks to be quizzed, or wants to check their own understanding. Do not use for quick facts the user plainly already understands or for writing code.
-argument-hint: '[topic or question] | simpler | deeper | example | teach <topic> | quiz [topic] | back <topic>'
+description: Explain anything the user does not understand in the simplest true way, so it is easy to understand and easy to remember. Gives the core idea in one plain sentence, one everyday picture with its limit stated, a concrete example before any definition, at most three new ideas, the common wrong idea named, and one small question that makes the idea stick. Plain words, short sentences, every needed term defined in plain words, no filler. Built on learning science (cognitive load, worked examples, concrete before abstract, analogy research, fixing misconceptions, retrieval practice, self-explanation) and the methods of great explainers. Also teaches a topic step by step, quizzes the user, checks the user's own explanation for gaps, or helps the user memorize something (a template, formula, list or steps) with a logic map, fading cues, recall drills and a spacing schedule.
+when_to_use: Use when the user says they do not understand something, asks to explain something simply or in plain words, asks for ELI5 or an explanation for a beginner, says an explanation was too complex or full of jargon, asks what a concept, term, error message or piece of code means and seems new to it, asks to be taught a topic step by step, asks to be quizzed, wants to check their own understanding, or asks how to remember or memorize something. Do not use for quick facts the user plainly already understands or for writing code.
+argument-hint: '[topic or question] | simpler | deeper | example | teach <topic> | quiz [topic] | back <topic> | remember <thing>'
 allowed-tools: Read Glob Grep WebFetch WebSearch
 ---
 
@@ -25,6 +25,7 @@ The skill directory is `${CLAUDE_SKILL_DIR}`. Reference files write it as `<skil
 | `teach <topic>`, "teach me X step by step" | Teach | Follow Teach in [references/teach-mode.md](references/teach-mode.md) |
 | `quiz [topic]`, "quiz me", "test me" | Quiz | Follow Quiz in [references/teach-mode.md](references/teach-mode.md) |
 | `back <topic>`, or the user gives their own explanation to check | Explain back | Follow Explain Back in [references/teach-mode.md](references/teach-mode.md) |
+| `remember <thing>`, "help me memorize", "how do I remember this" | Remember | Follow [references/remember-mode.md](references/remember-mode.md) |
 | empty | Ask | If something was explained earlier in the session, offer `simpler`, `deeper`, `example` or `quiz` on it. Otherwise ask what they want explained, in one short line |
 
 ## Explain Mode
