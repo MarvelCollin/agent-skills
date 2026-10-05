@@ -8,7 +8,7 @@ Authentication says who the caller is. Authorization decides what they may do to
 - **Enforce on the server, every request.** Hiding a button is UX, not security
 - **One policy layer.** Decisions go through one place (`can(user, action, resource)`, a policy class, or a policy engine), not ad hoc `if` checks scattered across handlers
 - **Enforce in the domain or service layer**, not only in route middleware, so GraphQL resolvers, websockets, jobs, admin scripts and internal calls all get the same checks
-- **Identity from the session.** User id, role and tenant come from the verified principal. Never from the body, query string, or a client-set header like `X-User-Id`
+- **Identity from the session.** User id, role and tenant come from the verified principal. Never from the body, query string, or a client-set header like `X-User-Id`. A user can edit any request in DevTools or `curl` and send `role: admin`, so a forged field must change nothing (see [client-trust.md](client-trust.md))
 - **Least privilege.** Grant the smallest role that does the job. Service accounts and database users too
 
 ## The Three Levels

@@ -34,7 +34,7 @@ Establish who the caller is, reliably, and keep that proof safe for its lifetime
 
 ## Tokens and JWT
 
-- Use JWTs where stateless verification earns its keep: between services, or short-lived API access. For a browser app talking to its own backend, a session cookie is simpler and revocable. If a SPA needs tokens, a backend-for-frontend that holds them server-side and gives the browser a cookie is the safest pattern. Do not keep tokens in `localStorage`
+- Use JWTs where stateless verification earns its keep: between services, or short-lived API access. For a browser app talking to its own backend, a session cookie is simpler and revocable. If a SPA needs tokens, a backend-for-frontend that holds them server-side and gives the browser a cookie is the safest pattern. Do not keep tokens in `localStorage`, `sessionStorage` or a script-set cookie, because one XSS reads them (see [client-trust.md](client-trust.md))
 - Access tokens live 5 to 15 minutes. Refresh tokens are opaque, stored hashed, rotated on every use, and reuse of an old one revokes the whole family (reuse detection)
 - Verify every token fully: signature with an allowlist of algorithms (never `none`, never accept HS256 when you expect RS256), `exp`, `nbf`, `iss`, `aud`, with a small clock skew allowance (about 60 seconds)
 - Rotate signing keys with a `kid` header and a JWKS endpoint. Keep the private key in a KMS or secrets manager

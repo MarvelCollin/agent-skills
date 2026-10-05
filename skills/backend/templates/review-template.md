@@ -27,7 +27,7 @@
 | Area | Rules | Weight | Grade (0 to 4) | Points | Note |
 |------|-------|--------|----------------|--------|------|
 | Authentication | B1 | 8 | {{g}} | {{p}} | {{one_line}} |
-| Authorization | B2 | 12 | {{g}} | {{p}} | {{one_line}} |
+| Authorization | B2, B17 | 12 | {{g}} | {{p}} | {{one_line}} |
 | Input and API contract | B3 | 8 | {{g}} | {{p}} | {{one_line}} |
 | Data access and queries | B4, B5 | 12 | {{g}} | {{p}} | {{one_line}} |
 | Schema, indexes and migrations | B6 | 8 | {{g}} | {{p}} | {{one_line}} |
@@ -37,7 +37,7 @@
 | Logging | B9 | 8 | {{g}} | {{p}} | {{one_line}} |
 | Observability | B10 | 6 | {{g}} | {{p}} | {{one_line}} |
 | Error handling | B11 | 6 | {{g}} | {{p}} | {{one_line}} |
-| Config and operations | B13, B14 | 5 | {{g}} | {{p}} | {{one_line}} |
+| Config and operations | B13, B14, B16 | 5 | {{g}} | {{p}} | {{one_line}} |
 | Testing | B15 | 5 | {{g}} | {{p}} | {{one_line}} |
 
 {{note_any_area_not_assessed_and_how_the_score_was_scaled}}

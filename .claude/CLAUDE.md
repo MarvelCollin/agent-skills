@@ -50,7 +50,7 @@ tests/                           Script unit tests, fixture server, fake npx
 
 ## /backend Principles
 
-- Build mode hard rules B1 to B15 live in `skills/backend/references/build-rules.md`. Each rule names its `backend-scan` checks. Keep `scripts/backend-scan.*` and the scan tags in sync when a rule changes
+- Build mode hard rules B1 to B17 live in `skills/backend/references/build-rules.md`. Each rule names its `backend-scan` checks. Keep `scripts/backend-scan.*` and the scan tags in sync when a rule changes
 - Topic depth lives in `skills/backend/references/topics/`, one file per area. SKILL.md maps topic words to files
 - Checklist mode (`references/checklist.md`) stress tests first and ranks fixes by the measured bottleneck. Keep its items in sync with the build rules and the topic files they link to
 - Scan output is leads, not findings. A finding needs a reachable path, real impact, evidence and a concrete fix (five gates in `references/review.md`)

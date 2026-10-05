@@ -145,9 +145,11 @@ Every build follows these hard rules, then ends with a Rules Check that says pas
 | B12 Slow work off the request path | Durable idempotent jobs, nothing that blocks the event loop |
 | B13 Config and shutdown | Typed config validated at startup, no secret fallbacks, graceful shutdown |
 | B14 Correct types | Money as integer cents or decimal, UTC `timestamptz`, UUIDv7 or bigint keys |
-| B15 Prove it with tests | Real-database integration tests, authorization matrix, query counts, parallel and idempotency tests |
+| B15 Prove it with tests | Real-database integration tests, authorization matrix, query counts, parallel and idempotency tests, tamper tests, a build check for leaked secrets |
+| B16 Nothing secret reaches the client | No secret behind a public env prefix or in the bundle, no public source maps or debug pages, an opaque `HttpOnly` session cookie, no tokens in web storage, DTO responses with no hashes or config |
+| B17 The server decides | Role, owner, price, total and status come from the server and a forged field changes nothing, hidden UI is never the check, tokens are verified and not only decoded |
 
-The rules link to 20 topic guides: API design, authentication, authorization, validation, database and N+1, migrations, concurrency, caching, performance, resilience, background jobs, logging, observability, errors, testing, config and deploy, architecture, distributed systems, real-time, and a security baseline mapped to the OWASP API Security Top 10 (2023). A Postgres guide ranks its rules by impact with wrong and right SQL, and a stack guide covers the concrete fixes for Node, Python, Rails, Laravel, Spring, .NET, Go and GraphQL.
+The rules link to 21 topic guides: API design, authentication, authorization, validation, database and N+1, migrations, concurrency, caching, performance, resilience, background jobs, logging, observability, errors, testing, config and deploy, architecture, distributed systems, real-time, client trust (secrets out of the browser, never trust client values), and a security baseline mapped to the OWASP API Security Top 10 (2023). A Postgres guide ranks its rules by impact with wrong and right SQL, and a stack guide covers the concrete fixes for Node, Python, Rails, Laravel, Spring, .NET, Go and GraphQL.
 
 ### Design
 
@@ -157,18 +159,18 @@ The rules link to 20 topic guides: API design, authentication, authorization, va
 
 `/backend review <path>` maps the system, runs the `backend-scan` script, walks 13 areas against the rules, measures query counts and plans when the app runs locally, and confirms every finding through five gates before it is reported. The report has a weighted score out of 100, a severity for each finding, and a fix plan ranked by impact over effort.
 
-`backend-scan` flags leads with a rule tag: N+1 calls inside loops, maps and comprehensions, unscoped id lookups, client-supplied roles, mass assignment, unbounded queries, `SELECT *`, offset pagination, blocking index builds, HTTP calls without timeouts, unstructured or secret-leaking logs, swallowed and leaked errors, blocking calls, credentials in connection strings, secret fallbacks, float money and naive timestamps. It skips tests, vendored code and build output. `/backend review diff [base]` reviews only a branch, pull request or the current changes.
+`backend-scan` flags leads with a rule tag: N+1 calls inside loops, maps and comprehensions, unscoped id lookups, client-supplied roles, mass assignment, unbounded queries, `SELECT *`, offset pagination, blocking index builds, HTTP calls without timeouts, unstructured or secret-leaking logs, swallowed and leaked errors, blocking calls, credentials in connection strings, secret fallbacks, float money, naive timestamps, decoded but unverified JWTs, cookies without `HttpOnly`, secrets behind public env prefixes, public source maps, the whole environment sent in a response, tokens in web storage, and client-sent prices, status and identity headers. It skips tests, vendored code and build output. `/backend review diff [base]` reviews only a branch, pull request or the current changes.
 
 `db-lint` does the same for SQL migrations and Prisma schemas: blocking index builds, constraints validated under lock, `NOT NULL` without a default, column type changes, unbatched backfills, foreign keys without an index, float money, timestamps without a time zone and random UUID keys.
 
 ### Checklist
 
-`/backend checklist [path] [maintenance|security|db|caching|speed]` is the fast pass for the essentials. It stress tests first, when it has a runnable target you own, to find the real bottleneck, then grades 46 items in five groups and ranks the fixes so the ones that explain the bottleneck come first. Each item links to its rule and topic file, and every `pass` needs proof (file and line, config value, command output). With no runnable target the baseline is reported as `not measured`, never invented. Items that live outside the repo, such as backups, CDN and HTTPS at the load balancer, are marked `unverified` instead of guessed.
+`/backend checklist [path] [maintenance|security|db|caching|speed]` is the fast pass for the essentials. It stress tests first, when it has a runnable target you own, to find the real bottleneck, then grades 48 items in five groups and ranks the fixes so the ones that explain the bottleneck come first. Each item links to its rule and topic file, and every `pass` needs proof (file and line, config value, command output). With no runnable target the baseline is reported as `not measured`, never invented. Items that live outside the repo, such as backups, CDN and HTTPS at the load balancer, are marked `unverified` instead of guessed.
 
 | Group | Items |
 |-------|-------|
 | Maintenance | Migrations, health check, logging, error monitoring, database backups, tests, profiling slow endpoints |
-| Security | Password hashing, rate limiting, parameterized queries, input validation, secrets in env vars, HTTPS, CORS whitelist, httpOnly and secure cookies, JWT expiry with refresh tokens, no stack traces to users |
+| Security | Password hashing, rate limiting, parameterized queries, input validation, secrets in env vars, HTTPS, CORS whitelist, httpOnly and secure cookies, JWT expiry with refresh tokens, no stack traces to users, secrets and sessions kept out of the browser, no trust in client-sent roles or prices |
 | Database speed | Indexes, composite and covering indexes, N+1, selected columns, `LIMIT`, cursor pagination, batching, pooling, precomputed counts, denormalized hot reads, `EXPLAIN`, query timeouts, transactions |
 | Caching | Redis for reads and sessions, HTTP cache headers, CDN, TTL, invalidation on update |
 | Response speed | Compression, small payloads, pagination, HTTP/2 and keep-alive, async I/O, background jobs, parallel calls, request timeouts, image resizing on upload |
@@ -201,8 +203,8 @@ skills/
     scripts/                  dev-detect, scope-init, scope-check, grep-audit (.sh + .ps1)
   backend/
     SKILL.md                  Entry point: build, design, review, checklist, load test and topic modes
-    references/               Build rules B1 to B15, design, review, essentials checklist, load testing,
-                              Postgres guide, stack notes, topics/ (20 backend topic guides)
+    references/               Build rules B1 to B17, design, review, essentials checklist, load testing,
+                              Postgres guide, stack notes, topics/ (21 backend topic guides)
     templates/                Design, review and load test report templates, OpenAPI starter
     scripts/                  backend-scan, db-lint, conventions, load-test (.sh + .ps1)
 evals/                        Cases for claude plugin eval

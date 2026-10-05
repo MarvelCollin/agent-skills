@@ -25,6 +25,7 @@ Build once, configure per environment, deploy without downtime, roll back fast.
 - Never in source, Dockerfiles, CI logs, images, or committed `.env` files. Add secret scanning (gitleaks, trufflehog, GitHub push protection) to CI and pre-commit
 - Rotate on a schedule and immediately on exposure. Design for two valid secrets during rotation
 - Prefer short-lived credentials: cloud IAM roles, workload identity, database IAM auth, over long-lived keys
+- Server-only means server-only. A variable behind a public prefix (`NEXT_PUBLIC_`, `VITE_`, `REACT_APP_`, `EXPO_PUBLIC_`, `NUXT_PUBLIC_`, `PUBLIC_`) is inlined into the client bundle and visible to anyone in DevTools. Never put a secret there, and search the production build for your secret values in CI (see [client-trust.md](client-trust.md))
 - Each service gets its own credentials with least privilege. The app's database user cannot drop tables or alter schema. Migrations use a separate role
 
 ## Feature Flags
