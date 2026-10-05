@@ -113,6 +113,7 @@ Offset is acceptable for small bounded sets and admin screens where users jump t
 
 - **Read replicas** for heavy reads. Replicas lag, so read-your-own-writes paths (show the order just placed) go to the primary for a short window
 - **Materialized views or summary tables** for dashboards and reports, refreshed on a schedule or incrementally
+- **Precompute counts and totals** that are read far more often than they change (comment count, order total, unread badge). Keep a counter column updated in the same transaction as the write (`SET count = count + 1`), or a summary row rebuilt by a job. A `COUNT(*)` or `SUM` over a large table on every request is a scan each time. For a rough total on a huge table, the planner estimate (`reltuples`) is often enough
 - **Partition** very large time-series tables by time so old partitions can be dropped instead of deleted
 - **Archive** cold data. Smaller hot tables mean smaller indexes that fit in memory
 - **Search** belongs in Postgres full-text for simple cases, or OpenSearch, Elasticsearch, Meilisearch or Typesense when relevance and facets matter

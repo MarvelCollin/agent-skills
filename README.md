@@ -119,6 +119,7 @@ Backend engineering at a staff level: correct under concurrency, fast at real da
 /backend add a paginated orders endpoint       # build under the hard rules
 /backend review ./api                          # scored production-readiness review
 /backend load http://localhost:3000/api/orders # load or stress test your own service
+/backend checklist ./api security              # essentials checklist, one group or all five
 /backend n+1                                   # one topic: explain, audit this code for it, fix
 ```
 
@@ -153,6 +154,18 @@ The rules link to 18 topic guides: API design, authentication, authorization, va
 `/backend review <path>` maps the system, runs the `backend-scan` script, walks 13 areas against the rules, measures query counts and plans when the app runs locally, and confirms every finding through five gates before it is reported. The report has a weighted score out of 100, a severity for each finding, and a fix plan ranked by impact over effort.
 
 `backend-scan` flags leads with a rule tag: N+1 calls inside loops, maps and comprehensions, unscoped id lookups, client-supplied roles, mass assignment, unbounded queries, `SELECT *`, offset pagination, blocking index builds, HTTP calls without timeouts, unstructured or secret-leaking logs, swallowed and leaked errors, blocking calls, credentials in connection strings, secret fallbacks, float money and naive timestamps. It skips tests, vendored code and build output.
+
+### Checklist
+
+`/backend checklist [path] [maintenance|security|db|caching|speed]` is the fast pass for the essentials. It grades 46 items in five groups, each linked to its rule and topic file, and every `pass` needs proof (file and line, config value, command output). Items that live outside the repo, such as backups, CDN and HTTPS at the load balancer, are marked `unverified` instead of guessed.
+
+| Group | Items |
+|-------|-------|
+| Maintenance | Migrations, health check, logging, error monitoring, database backups, tests, profiling slow endpoints |
+| Security | Password hashing, rate limiting, parameterized queries, input validation, secrets in env vars, HTTPS, CORS whitelist, httpOnly and secure cookies, JWT expiry with refresh tokens, no stack traces to users |
+| Database speed | Indexes, composite and covering indexes, N+1, selected columns, `LIMIT`, cursor pagination, batching, pooling, precomputed counts, denormalized hot reads, `EXPLAIN`, query timeouts, transactions |
+| Caching | Redis for reads and sessions, HTTP cache headers, CDN, TTL, invalidation on update |
+| Response speed | Compression, small payloads, pagination, HTTP/2 and keep-alive, async I/O, background jobs, parallel calls, request timeouts, image resizing on upload |
 
 ### Load test
 

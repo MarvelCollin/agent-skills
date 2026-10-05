@@ -48,11 +48,20 @@ const [user, orders, prefs] = await Promise.all([
   Python `asyncio.gather` or `TaskGroup`, Go `errgroup`, Java `CompletableFuture.allOf` or structured concurrency. For many items use a bounded pool (`p-limit`, `asyncio.Semaphore`, `errgroup.SetLimit`), not an unbounded fan-out
 - **Batch** round trips: `MGET`, multi-row inserts, batch endpoints, DataLoader
 - **Reuse connections:** keep-alive HTTP agents, one shared client per dependency, HTTP/2 to upstreams that support it. Creating a client per request costs a TLS handshake every time
-- **Return less:** pagination, field selection, compression for responses above about 1 KB
+- **Return less:** pagination, field selection, compression for responses above about 1 KB (see Compression and Connections below)
 - **Stream large responses** (exports, files) instead of building them in memory. Use database cursors for big result sets
 - **Precompute** expensive reads into summary tables or caches (see [caching.md](caching.md))
 - **Move slow work to jobs** (see [async-jobs.md](async-jobs.md))
 - **Cheap work first:** validate and authorize before expensive calls. Reject early
+
+## Compression and Connections
+
+- **Compress at the edge** (reverse proxy, load balancer or CDN) when you have one, so the app does no CPU work for it. Otherwise use the framework's middleware
+- Brotli for static or cacheable assets (pre-compress at build time at a high level). gzip at level 4 to 6 for dynamic JSON, because high levels cost more CPU than they save
+- Skip bodies under about 1 KB and types that are already compressed (images, video, zip, woff2). Always send `Vary: Accept-Encoding`
+- **HTTP/2 or HTTP/3 terminate at the edge.** The app behind it can speak HTTP/1.1 with keep-alive. Multiplexing at the edge removes the connection setup cost for browsers
+- **Keep-alive timeout order matters.** The app's keep-alive timeout must be longer than the proxy or load balancer's idle timeout (for example Node `server.keepAliveTimeout` above the load balancer's 60 seconds). If it is shorter, the app closes a connection the proxy still thinks is open and clients see sporadic 502 errors
+- Measure payloads with real responses. The uncompressed and compressed size per hot route belongs in the profile
 
 ## Runtime Notes
 

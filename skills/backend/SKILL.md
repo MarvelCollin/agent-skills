@@ -1,8 +1,8 @@
 ---
 name: backend
 description: Build, review and load test backend services to an expert standard. When writing or changing server code, apply hard rules (authenticate every route, authorize every object and field, validate input at the boundary, no N+1 queries, bounded paginated queries, indexes and constraints in the database, transactions and idempotency, timeouts retries and rate limits, structured logs without secrets, metrics traces and health checks, safe consistent errors, slow work in background jobs, config validated at startup with graceful shutdown, correct money and time types, tests that prove it). Review an existing backend for performance, authorization, reliability and operability with a static scan and a scored report. Run smoke, load, stress, spike, soak and breakpoint tests against a service the user owns and find the bottleneck.
-when_to_use: Use when creating or changing API endpoints, services, database queries, ORM models, migrations, background jobs, caching or server config, when asked to optimize, speed up, scale or harden a backend, fix slow queries or N+1 problems, add authorization, logging, rate limiting, caching or monitoring, review backend code for best practices or production readiness, or load test or stress test an API the user owns.
-argument-hint: '[what to build] | design <system> | review <path> | review diff [base] | load <url> [smoke|load|stress|spike|soak|breakpoint] | <topic>'
+when_to_use: Use when creating or changing API endpoints, services, database queries, ORM models, migrations, background jobs, caching or server config, when asked to optimize, speed up, scale or harden a backend, fix slow queries or N+1 problems, add authorization, logging, rate limiting, caching or monitoring, review backend code for best practices or production readiness, run the backend essentials checklist (maintenance, security, database speed, caching, response speed), or load test or stress test an API the user owns.
+argument-hint: '[what to build] | design <system> | review <path> | review diff [base] | checklist [path] [maintenance|security|db|caching|speed] | load <url> [smoke|load|stress|spike|soak|breakpoint] | <topic>'
 allowed-tools: Bash(bash "${CLAUDE_SKILL_DIR}/scripts/*) Bash(powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(pwsh -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(curl *) Bash(k6 *) Read Write Edit Glob Grep Agent WebFetch
 ---
 
@@ -24,6 +24,7 @@ Reviews and reports you write use no semicolons and no em dashes (the plugin cop
 | `design <system or feature>`, or a question about how to architect or build something new | Design | Follow [references/design.md](references/design.md) |
 | `review <path>` or a request to review backend code | Review | Follow [references/review.md](references/review.md) |
 | `review diff [base]`, or a request to review a branch, PR or the current changes | Diff review | Follow Diff Review in [references/review.md](references/review.md) |
+| `checklist [path] [group]`, or a request to check a backend against the essentials (maintenance, security, database speed, caching, response speed) | Checklist | Follow [references/checklist.md](references/checklist.md). Grade each item with proof and fix the failures when asked |
 | `load <url> [type]` or a request to load or stress test | Load test | Follow [references/load-testing.md](references/load-testing.md). Authorization rules there are mandatory |
 | A topic from the table below | Topic | Read the topic file, audit the current code for that topic only, then propose or apply fixes |
 | empty, and nothing is being built | Ask | Ask what to build, which path to review, or which service to load test |
@@ -54,6 +55,7 @@ Reviews and reports you write use no semicolons and no em dashes (the plugin cop
 | `websocket`, `sse`, `realtime`, `streaming`, `push` | [references/topics/realtime.md](references/topics/realtime.md) |
 | `security`, `owasp`, `ssrf`, `privacy`, `pii` | [references/topics/security-baseline.md](references/topics/security-baseline.md) |
 | `stress`, `load`, `benchmark`, `k6` | [references/load-testing.md](references/load-testing.md) |
+| `maintenance`, `essentials`, `backup`, `compression`, `images`, `db speed`, `response speed` | [references/checklist.md](references/checklist.md) (each item links to its rule and topic file) |
 
 For framework-specific fixes (ORM eager loading, loggers, validators, job queues), use [references/stack-notes.md](references/stack-notes.md).
 
