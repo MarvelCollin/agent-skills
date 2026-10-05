@@ -77,6 +77,9 @@ $q = '["''`]'
 $money = '(price|amount|balance|cost|subtotal|fee|salary|total)'
 
 Add-Findings (Find-Lines $files 'pass(word|wd)?.*(md5|sha1|sha256|sha512|createhash)|(md5|sha1|sha256|sha512|createhash).*pass(word|wd)?' -IgnoreCase) "B1" "weak-password-hash"
+Add-Findings (Find-Lines $files 'jwt[.]decode[(]' -IgnoreCase) "B1" "jwt-unverified" 'algorithms|secret|key|public|verify_signature'
+Add-Findings (Find-Lines $files "verify_signature${q}?\s*[:=,]?\s*false|ignoreExpiration\s*:\s*true|ignore_expiration\s*=\s*true|algorithms[^\]]*${q}none${q}" -IgnoreCase) "B1" "jwt-unverified"
+Add-Findings (Find-Lines $files '(res[.]cookie|[.]set_cookie|[.]SetCookie|setcookie)[(]' -IgnoreCase) "B1" "cookie-flags" 'httponly|http_only'
 
 Add-Findings (Find-Lines $files '(findById|findByPk|findUnique|findOne|findFirst|get_object_or_404|objects[.]get|[.]find)[(][^)]*(req[.](params|query|body)|request[.](args|params|GET|POST|query_params|path_params)|params\[)' -IgnoreCase) "B2" "unscoped-lookup" 'owner|tenant|user_?id|account_?id|org_?id|current_?user|req[.]user|request[.]user'
 Add-Findings (Find-Lines $files "(req[.]body|request[.](json|data|form|POST))([.]|\[$q?)(role|is_?admin|tenant_?id|owner_?id|user_?id|account_?id|permissions?)([^a-z_]|$)" -IgnoreCase) "B2" "client-authority"
@@ -107,6 +110,15 @@ Add-Findings (Find-Lines $files "(secret|key|token|password|passwd)[a-z_]*\s*(\|
 
 Add-Findings (Find-Lines $files "$money[a-z_]*\s*[:=]\s*(parsefloat|float)[(]|$money[a-z_]*\s+(float|double|real|float32|float64)([^a-z0-9]|$)|(float|double|float64)\s+$money|$money[a-z_]*\s*=\s*(models[.]floatfield|column[(]\s*float|db[.]column[(]\s*db[.]float|mapped_column[(]\s*float)" -IgnoreCase) "B14" "float-money"
 Add-Findings (Find-Lines $files 'datetime[.](utcnow|now)[(]\s*[)]|DateTime[.]Now([^A-Za-z]|$)') "B14" "naive-datetime"
+
+Add-Findings (Find-Lines $files '(NEXT_PUBLIC|VITE|REACT_APP|EXPO_PUBLIC|NUXT_PUBLIC|VUE_APP|GATSBY|PUBLIC)_[A-Z0-9_]*(SECRET|PRIVATE|PASSWORD|PASSWD|TOKEN|SERVICE_?ROLE|CREDENTIAL|API_?KEY|DATABASE_?URL|DB_?URL)') "B16" "public-env-secret" 'PUBLISHABLE|ANON|SEARCH|MAPS|SITE_?KEY|PUBLIC_?KEY|CLIENT_?KEY'
+Add-Findings (Find-Lines $files '(send|json|jsonify|render|write|return|Response|reply|log|print|dump)[^;]*(process[.]env([^.A-Za-z_\[]|$)|os[.]environ([^.A-Za-z_\[]|$)|getenv[(][)]|ENV[.]to_h|[$]_ENV|[$]_SERVER)|phpinfo[(]') "B16" "env-exposed"
+Add-Findings (Find-Lines $files "productionBrowserSourceMaps\s*:\s*true|devtool\s*:\s*${q}(inline-)?source-map${q}|sourcemap\s*:\s*true|GENERATE_SOURCEMAP\s*=\s*true" -IgnoreCase) "B16" "sourcemap-public"
+Add-Findings (Find-Lines $files "(localStorage|sessionStorage)[.](setItem|getItem)[(]\s*${q}[a-z_.:-]*(token|jwt|session|secret|password|api_?key|auth|bearer|credential)|document[.]cookie\s*=[^=].*(token|jwt|session|auth)" -IgnoreCase) "B16" "token-in-web-storage"
+Add-Findings (Find-Lines $files '(res[.](json|send)|jsonify|reply[.]send|Response[(]|render[(]|JsonResponse).*(password_?hash|password_?digest|hashed_?password|api_?secret|client_?secret|private_?key)' -IgnoreCase) "B16" "secret-in-response" 'omit|delete|exclude|without|except|redact|select|pick|reject|drop|strip'
+
+Add-Findings (Find-Lines $files "(req[.]body|request[.](json|data|form|POST))([.]|\[${q}?|[.]get[(]${q}?)(price|unit_?price|amount|total|subtotal|discount|fee|cost|balance|credits?|points|status|is_?paid|paid|verified|is_?verified|approved|plan|tier|is_?premium|step)([^a-z_]|$)" -IgnoreCase) "B17" "client-value"
+Add-Findings (Find-Lines $files '(headers|header|META|getHeader|get_header)[^;]{0,12}x[-_](user|role|tenant|account|org|admin|uid)' -IgnoreCase) "B17" "client-header"
 
 $db = 'prisma[.][A-Za-z_]+[.][A-Za-z]+[(]|[.]objects[.](get|filter|exclude|count|create)[(]|session[.](query|get|execute|scalar|scalars)[(]|cursor[.]execute[(]|[.](query|execute|raw)[(]|[.](findOne|findById|findByPk|findUnique|findFirst|findMany|findAll|find_by|countDocuments|aggregate|populate|where)[(]|[Rr]epo(sitory)?[.](find|get|count|exists|load)|(ToListAsync|FirstOrDefaultAsync|SingleOrDefaultAsync|FindAsync|CountAsync)[(]|db[.](First|Find|Where|Raw|Get|Select|Query|QueryRow|Exec)[(]|knex[(]|[A-Z][A-Za-z0-9_]*[.](find|find_by)[(]'
 $http = '(^|[^A-Za-z0-9_.])fetch[(]|axios([.](get|post|put|patch|delete|request))?[(]|(requests|httpx)[.](get|post|put|patch|delete)[(]|http[.](Get|Post)[(]|[.](GetAsync|PostAsync|getForObject|getForEntity)[(]'
@@ -155,7 +167,7 @@ foreach ($file in $files) {
     }
 }
 
-$rules = @("B1", "B2", "B4", "B5", "B6", "B8", "B9", "B11", "B12", "B13", "B14")
+$rules = @("B1", "B2", "B4", "B5", "B6", "B8", "B9", "B11", "B12", "B13", "B14", "B16", "B17")
 
 Write-Output "BACKEND SCAN: $($Path -join ' ')"
 Write-Output "FILES_SCANNED: $($files.Count)"

@@ -27,3 +27,10 @@ def invoice(request):
         send(invoice)
     except Exception as e:
         return {"error": str(e)}
+
+
+def checkout(request):
+    price = request.json["price"]
+    plan = request.json.get("plan")
+    uid = request.META["HTTP_X_USER_ID"]
+    return jsonify(dict(os.environ))

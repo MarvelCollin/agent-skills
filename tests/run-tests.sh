@@ -319,8 +319,22 @@ backend_scan_checks() {
     expect_contains "$label flags secret fallbacks in python" "$bad" "B13 secret-fallback app.py:25:"
     expect_contains "$label flags parseFloat on money" "$bad" "B14 float-money orders.js:26:"
     expect_contains "$label flags naive datetimes" "$bad" "B14 naive-datetime app.py:12:"
-    expect_contains "$label counts every lead" "$bad" "FINDINGS: 31"
+    expect_contains "$label flags decoding a jwt without verifying" "$bad" "B1 jwt-unverified orders.js:48:"
+    expect_contains "$label flags cookies without httponly" "$bad" "B1 cookie-flags orders.js:49:"
+    expect_contains "$label flags secrets behind a public env prefix" "$bad" "B16 public-env-secret orders.js:43:"
+    expect_contains "$label flags public source maps" "$bad" "B16 sourcemap-public orders.js:44:"
+    expect_contains "$label flags the whole env sent to clients in js" "$bad" "B16 env-exposed orders.js:45:"
+    expect_contains "$label flags the whole env sent to clients in python" "$bad" "B16 env-exposed app.py:36:"
+    expect_contains "$label flags tokens in web storage" "$bad" "B16 token-in-web-storage orders.js:46:"
+    expect_contains "$label flags client sent prices and state in js" "$bad" "B17 client-value orders.js:26:"
+    expect_contains "$label flags client sent prices in python" "$bad" "B17 client-value app.py:33:"
+    expect_contains "$label flags client sent values read with get" "$bad" "B17 client-value app.py:34:"
+    expect_contains "$label flags identity headers in js" "$bad" "B17 client-header orders.js:47:"
+    expect_contains "$label flags identity headers in python" "$bad" "B17 client-header app.py:35:"
+    expect_contains "$label counts every lead" "$bad" "FINDINGS: 44"
     expect_contains "$label counts leads per rule" "$bad" "B11: 6"
+    expect_contains "$label counts public exposure leads" "$bad" "B16: 5"
+    expect_contains "$label counts client trust leads" "$bad" "B17: 6"
     expect_contains "$label passes clean code" "$good" "FINDINGS: 0"
     expect_contains "$label skips vendored and test files" "$vendored" "FINDINGS: 0"
     expect_contains "$label still scans source next to tests" "$vendored" "FILES_SCANNED: 1"
@@ -426,10 +440,10 @@ GOOD=$(bash "$BACKSCRIPTS/backend-scan.sh" "$BACKFIX/good" 2>&1)
 VENDORED=$(bash "$BACKSCRIPTS/backend-scan.sh" "$WORK/backend-project" 2>&1)
 backend_scan_checks "it" "$BAD" "$GOOD" "$VENDORED"
 OUT=$(bash "$BACKSCRIPTS/backend-scan.sh" "$BACKFIX/bad/app.py" 2>&1)
-expect_contains "scans a single file" "$OUT" "FINDINGS: 14"
+expect_contains "scans a single file" "$OUT" "FINDINGS: 18"
 OUT=$(bash "$BACKSCRIPTS/backend-scan.sh" "$BACKFIX/bad/app.py" "$BACKFIX/bad/orders.js" "$ROOT/README.md" 2>&1)
 expect_contains "scans several paths and skips non-source files" "$OUT" "FILES_SCANNED: 2"
-expect_contains "reports leads from every path" "$OUT" "FINDINGS: 31"
+expect_contains "reports leads from every path" "$OUT" "FINDINGS: 44"
 OUT=$(bash "$BACKSCRIPTS/backend-scan.sh" "$WORK/nope-backend" 2>&1); CODE=$?
 expect_exit "fails on a missing path" "$CODE" 1
 expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
@@ -564,10 +578,10 @@ if [ -n "$POWERSHELL" ]; then
     VENDORED=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$WORK/backend-project" 2>&1 | tr -d '\r')
     backend_scan_checks "it" "$BAD" "$GOOD" "$VENDORED"
     OUT=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$BACKFIX/bad/app.py" 2>&1 | tr -d '\r')
-    expect_contains "scans a single file" "$OUT" "FINDINGS: 14"
+    expect_contains "scans a single file" "$OUT" "FINDINGS: 18"
     OUT=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" "$BACKFIX/bad/app.py" "$BACKFIX/bad/orders.js" "$ROOT/README.md" 2>&1 | tr -d '\r')
     expect_contains "scans several paths and skips non-source files" "$OUT" "FILES_SCANNED: 2"
-    expect_contains "reports leads from every path" "$OUT" "FINDINGS: 31"
+    expect_contains "reports leads from every path" "$OUT" "FINDINGS: 44"
     OUT=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$WORK/nope-backend" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails on a missing path" "$CODE" 1
     expect_contains "prints an error for a missing path" "$OUT" "ERROR:"

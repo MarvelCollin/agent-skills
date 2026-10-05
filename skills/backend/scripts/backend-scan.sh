@@ -83,6 +83,12 @@ scan_i() {
 
 scan_i "pass(word|wd)?.*(md5|sha1|sha256|sha512|createhash)|(md5|sha1|sha256|sha512|createhash).*pass(word|wd)?" \
     | report B1 weak-password-hash
+scan_i "jwt[.]decode[(]" \
+    | report B1 jwt-unverified "algorithms|secret|key|public|verify_signature"
+scan_i "verify_signature$Q?[[:space:]]*[:=,]?[[:space:]]*false|ignoreExpiration[[:space:]]*:[[:space:]]*true|ignore_expiration[[:space:]]*=[[:space:]]*true|algorithms[^]]*${Q}none${Q}" \
+    | report B1 jwt-unverified
+scan_i "(res[.]cookie|[.]set_cookie|[.]SetCookie|setcookie)[(]" \
+    | report B1 cookie-flags "httponly|http_only"
 
 scan_i "(findById|findByPk|findUnique|findOne|findFirst|get_object_or_404|objects[.]get|[.]find)[(][^)]*(req[.](params|query|body)|request[.](args|params|GET|POST|query_params|path_params)|params\[)" \
     | report B2 unscoped-lookup "owner|tenant|user_?id|account_?id|org_?id|current_?user|req[.]user|request[.]user"
@@ -134,6 +140,22 @@ scan_i "$MONEY[a-z_]*[[:space:]]*[:=][[:space:]]*(parsefloat|float)[(]|$MONEY[a-
     | report B14 float-money
 scan "datetime[.](utcnow|now)[(][[:space:]]*[)]|DateTime[.]Now([^A-Za-z]|$)" \
     | report B14 naive-datetime
+
+scan "(NEXT_PUBLIC|VITE|REACT_APP|EXPO_PUBLIC|NUXT_PUBLIC|VUE_APP|GATSBY|PUBLIC)_[A-Z0-9_]*(SECRET|PRIVATE|PASSWORD|PASSWD|TOKEN|SERVICE_?ROLE|CREDENTIAL|API_?KEY|DATABASE_?URL|DB_?URL)" \
+    | report B16 public-env-secret "PUBLISHABLE|ANON|SEARCH|MAPS|SITE_?KEY|PUBLIC_?KEY|CLIENT_?KEY"
+scan "(send|json|jsonify|render|write|return|Response|reply|log|print|dump)[^;]*(process[.]env([^.A-Za-z_[]|$)|os[.]environ([^.A-Za-z_[]|$)|getenv[(][)]|ENV[.]to_h|[$]_ENV|[$]_SERVER)|phpinfo[(]" \
+    | report B16 env-exposed
+scan_i "productionBrowserSourceMaps[[:space:]]*:[[:space:]]*true|devtool[[:space:]]*:[[:space:]]*$Q(inline-)?source-map$Q|sourcemap[[:space:]]*:[[:space:]]*true|GENERATE_SOURCEMAP[[:space:]]*=[[:space:]]*true" \
+    | report B16 sourcemap-public
+scan_i "(localStorage|sessionStorage)[.](setItem|getItem)[(][[:space:]]*$Q[a-z_.:-]*(token|jwt|session|secret|password|api_?key|auth|bearer|credential)|document[.]cookie[[:space:]]*=[^=].*(token|jwt|session|auth)" \
+    | report B16 token-in-web-storage
+scan_i "(res[.](json|send)|jsonify|reply[.]send|Response[(]|render[(]|JsonResponse).*(password_?hash|password_?digest|hashed_?password|api_?secret|client_?secret|private_?key)" \
+    | report B16 secret-in-response "omit|delete|exclude|without|except|redact|select|pick|reject|drop|strip"
+
+scan_i "(req[.]body|request[.](json|data|form|POST))([.]|\[$Q?|[.]get[(]$Q?)(price|unit_?price|amount|total|subtotal|discount|fee|cost|balance|credits?|points|status|is_?paid|paid|verified|is_?verified|approved|plan|tier|is_?premium|step)([^a-z_]|$)" \
+    | report B17 client-value
+scan_i "(headers|header|META|getHeader|get_header)[^;]{0,12}x[-_](user|role|tenant|account|org|admin|uid)" \
+    | report B17 client-header
 
 if [ "${#FILES[@]}" -gt 0 ]; then
     awk -v root="$ROOT" '
@@ -196,7 +218,7 @@ echo ""
 sort -t " " -k1.2,1n -k2,2 -k3,3 "$RESULTS"
 echo ""
 echo "FINDINGS: $(wc -l <"$RESULTS" | tr -d ' ')"
-for rule in B1 B2 B4 B5 B6 B8 B9 B11 B12 B13 B14; do
+for rule in B1 B2 B4 B5 B6 B8 B9 B11 B12 B13 B14 B16 B17; do
     echo "$rule: $(grep -c "^$rule " "$RESULTS" || true)"
 done
 echo ""

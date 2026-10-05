@@ -24,3 +24,8 @@ async function getOrder(req, res) {
   const rates = await fetch(RATES_URL, { signal: AbortSignal.timeout(2000) })
   res.json({ order, rates: await rates.json() })
 }
+
+const mapsKey = process.env.NEXT_PUBLIC_MAPS_API_KEY
+const claims = jwt.verify(token, publicKey, { algorithms: ['RS256'] })
+const decoded = jwt.decode(token, publicKey, { algorithms: ['RS256'] })
+res.cookie('sid', sessionId, { httpOnly: true, secure: true, sameSite: 'lax' })
