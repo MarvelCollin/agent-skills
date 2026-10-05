@@ -267,7 +267,7 @@ dev_detect_checks() {
 }
 
 audit_checks() {
-    local label="$1" audit_output="$2" safe_output="$3"
+    local label="$1" audit_output="$2" safe_hits="$3"
     expect_contains "$label flags hardcoded secrets" "$audit_output" "[hardcoded-secret] app.py:2:"
     expect_contains "$label flags aws keys" "$audit_output" "[aws-key] app.py:9:"
     expect_contains "$label flags sql string concatenation" "$audit_output" "[sql-concat] app.py:4:"
@@ -276,8 +276,27 @@ audit_checks() {
     expect_contains "$label flags eval" "$audit_output" "[code-eval] sub/ui.js:3:"
     expect_contains "$label flags dangerous dom sinks" "$audit_output" "[dangerous-dom] sub/ui.js:1:"
     expect_contains "$label flags permissive cors" "$audit_output" "[permissive-cors] sub/ui.js:2:"
-    expect_contains "$label counts nine leads" "$audit_output" "LEADS: 9"
-    expect_matches "$label leaves safe code clean" "$safe_output" "safe\.py"
+    expect_contains "$label flags secrets behind public env prefixes" "$audit_output" "[client-env-secret] client.js:1:"
+    expect_contains "$label flags vite env secrets" "$audit_output" "[client-env-secret] client.js:2:"
+    expect_contains "$label flags tokens in local storage" "$audit_output" "[client-token-storage] client.js:3:"
+    expect_contains "$label flags tokens in script-set cookies" "$audit_output" "[client-token-storage] client.js:4:"
+    expect_contains "$label flags public source maps" "$audit_output" "[sourcemap-public] client.js:5:"
+    expect_contains "$label flags a dumped process env" "$audit_output" "[env-dump] client.js:6:"
+    expect_contains "$label flags a dumped os environ" "$audit_output" "[env-dump] app.py:17:"
+    expect_contains "$label flags jwt decode without verify" "$audit_output" "[jwt-unverified] client.js:7:"
+    expect_contains "$label flags ignored jwt expiry" "$audit_output" "[jwt-unverified] client.js:8:"
+    expect_contains "$label flags disabled signature checks" "$audit_output" "[jwt-unverified] app.py:14:"
+    expect_contains "$label flags cookies without httponly in js" "$audit_output" "[cookie-flags] client.js:9:"
+    expect_contains "$label flags cookies without httponly in python" "$audit_output" "[cookie-flags] app.py:15:"
+    expect_contains "$label flags client supplied roles in js" "$audit_output" "[client-authority] client.js:10:"
+    expect_contains "$label flags client supplied roles in python" "$audit_output" "[client-authority] app.py:12:"
+    expect_contains "$label flags client supplied prices in js" "$audit_output" "[client-value] client.js:11:"
+    expect_contains "$label flags client supplied totals in python" "$audit_output" "[client-value] app.py:13:"
+    expect_contains "$label flags identity headers in js" "$audit_output" "[client-header] client.js:12:"
+    expect_contains "$label flags identity headers in python" "$audit_output" "[client-header] app.py:16:"
+    expect_exit "$label reports a double matching line once" "$(printf '%s\n' "$audit_output" | grep -cF "[jwt-unverified] app.py:18:")" 1
+    expect_contains "$label counts every lead" "$audit_output" "LEADS: 28"
+    expect_exit "$label leaves safe code clean" "$safe_hits" 0
 }
 
 mkdir -p "$WORK/backend-project/node_modules/lib" "$WORK/backend-project/tests" "$WORK/backend-project/src"
@@ -423,8 +442,8 @@ dev_detect_checks "sh" "bash $SECSCRIPTS/dev-detect.sh" "" ""
 echo "grep-audit.sh"
 AUDIT=$(bash "$SECSCRIPTS/grep-audit.sh" "$CODE_DIR" 2>&1); CODE=$?
 expect_exit "exits 0 on a scan with leads" "$CODE" 0
-SAFE=$(bash "$SECSCRIPTS/grep-audit.sh" "$CODE_DIR" 2>&1 | grep -c "safe.py" || true)
-audit_checks "sh" "$AUDIT" "$([ "$SAFE" = "0" ] && echo "safe.py-clean" || echo "safe.py-flagged")"
+SAFE=$(bash "$SECSCRIPTS/grep-audit.sh" "$CODE_DIR" 2>&1 | grep -cE "^\[[a-z-]+\] safe" || true)
+audit_checks "sh" "$AUDIT" "$SAFE"
 OUT=$(bash "$SECSCRIPTS/grep-audit.sh" "$WORK/nope-audit" 2>&1); CODE=$?
 expect_exit "fails on a missing path" "$CODE" 1
 expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
@@ -561,8 +580,8 @@ if [ -n "$POWERSHELL" ]; then
     echo "grep-audit.ps1"
     AUDIT=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$CODE_DIR" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "exits 0 on a scan with leads" "$CODE" 0
-    SAFE=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$CODE_DIR" 2>&1 | tr -d '\r' | grep -c "safe.py" || true)
-    audit_checks "ps1" "$AUDIT" "$([ "$SAFE" = "0" ] && echo "safe.py-clean" || echo "safe.py-flagged")"
+    SAFE=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$CODE_DIR" 2>&1 | tr -d '\r' | grep -cE "^\[[a-z-]+\] safe" || true)
+    audit_checks "ps1" "$AUDIT" "$SAFE"
     OUT=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$WORK/nope-audit" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails on a missing path" "$CODE" 1
     expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
