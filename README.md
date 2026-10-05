@@ -157,7 +157,7 @@ The rules link to 18 topic guides: API design, authentication, authorization, va
 
 ### Checklist
 
-`/backend checklist [path] [maintenance|security|db|caching|speed]` is the fast pass for the essentials. It grades 46 items in five groups, each linked to its rule and topic file, and every `pass` needs proof (file and line, config value, command output). Items that live outside the repo, such as backups, CDN and HTTPS at the load balancer, are marked `unverified` instead of guessed.
+`/backend checklist [path] [maintenance|security|db|caching|speed]` is the fast pass for the essentials. It stress tests first, when it has a runnable target you own, to find the real bottleneck, then grades 46 items in five groups and ranks the fixes so the ones that explain the bottleneck come first. Each item links to its rule and topic file, and every `pass` needs proof (file and line, config value, command output). With no runnable target the baseline is reported as `not measured`, never invented. Items that live outside the repo, such as backups, CDN and HTTPS at the load balancer, are marked `unverified` instead of guessed.
 
 | Group | Items |
 |-------|-------|

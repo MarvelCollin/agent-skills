@@ -24,7 +24,7 @@ Reviews and reports you write use no semicolons and no em dashes (the plugin cop
 | `design <system or feature>`, or a question about how to architect or build something new | Design | Follow [references/design.md](references/design.md) |
 | `review <path>` or a request to review backend code | Review | Follow [references/review.md](references/review.md) |
 | `review diff [base]`, or a request to review a branch, PR or the current changes | Diff review | Follow Diff Review in [references/review.md](references/review.md) |
-| `checklist [path] [group]`, or a request to check a backend against the essentials (maintenance, security, database speed, caching, response speed) | Checklist | Follow [references/checklist.md](references/checklist.md). Grade each item with proof and fix the failures when asked |
+| `checklist [path] [group]`, or a request to check a backend against the essentials (maintenance, security, database speed, caching, response speed) | Checklist | Follow [references/checklist.md](references/checklist.md). Stress test first to find the real bottleneck, then grade each item with proof and fix in bottleneck order. Load test authorization rules apply |
 | `load <url> [type]` or a request to load or stress test | Load test | Follow [references/load-testing.md](references/load-testing.md). Authorization rules there are mandatory |
 | A topic from the table below | Topic | Read the topic file, audit the current code for that topic only, then propose or apply fixes |
 | empty, and nothing is being built | Ask | Ask what to build, which path to review, or which service to load test |

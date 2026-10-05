@@ -6,16 +6,41 @@ Arguments after `checklist`: an optional path (default the current project) and 
 
 ## How to Run
 
-1. Detect the stack and find the entry points, config, migrations and infrastructure files
-2. Run `bash "<skill-dir>/scripts/backend-scan.sh" "<path>"` (or the `.ps1` twin) and, when migrations exist, `bash "<skill-dir>/scripts/db-lint.sh" "<migrations-path>"`. Scan output is leads, so read each one in context
-3. Grade every item in the chosen groups as `pass`, `fail`, `partial` or `n/a`. A `pass` needs proof a reviewer can check: a file and line, a config value, a command output, a test name. No proof means `fail`
-4. Items that live outside the repo (backups, CDN, HTTPS at the load balancer, alerts) cannot be seen from code. Mark them `unverified` and name who can confirm. Never guess `pass`
-5. Report with the table below, then the five fixes with the best impact over effort
+Stress test first. Find where the backend actually hurts before you grade anything, so the fixes follow evidence and not the order of the list.
+
+1. **Stress test baseline** (Database Speed, Caching and Response Speed depend on it)
+   - Find a target. A service the user already runs, or one you start from the project's own start command. Local and private hosts are authorized by default. Any other host needs the user to state they own it or may load test it, plus a requests per second cap. Follow the authorization rules in [load-testing.md](load-testing.md), never test a third party
+   - No runnable target and no way to start one: skip this step, write `not measured` in the report, and say what you would have run. Never invent numbers
+   - Pick the 3 to 5 hottest endpoints from the routes and the user (a list, a detail, a search or filter, a write, login). Use a production-sized dataset when a seed script or factory exists. On a small dev database N+1 queries and missing indexes stay hidden, so say that the numbers are optimistic
+   - Run smoke first, then a stress or breakpoint run per [load-testing.md](load-testing.md) (`load-test.sh` for one endpoint, k6 for a mixed ramp). Watch the server side during the run: app CPU, event loop lag, database CPU and slow queries, pool waits, memory
+   - Record the knee (the rate just before latency bends), p95 and p99 and error rate at the knee, and the resource that saturated first. Name the bottleneck with the Symptom to Cause table in [load-testing.md](load-testing.md). Keep the plan and numbers in `backend-load-<slug>-<YYYYMMDD>/`
+2. Detect the stack and find the entry points, config, migrations and infrastructure files
+3. Run `bash "<skill-dir>/scripts/backend-scan.sh" "<path>"` (or the `.ps1` twin) and, when migrations exist, `bash "<skill-dir>/scripts/db-lint.sh" "<migrations-path>"`. Scan output is leads, so read each one in context
+4. Grade every item in the chosen groups as `pass`, `fail`, `partial` or `n/a`. A `pass` needs proof a reviewer can check: a file and line, a config value, a command output, a test name. No proof means `fail`
+5. Items that live outside the repo (backups, CDN, HTTPS at the load balancer, alerts) cannot be seen from code. Mark them `unverified` and name who can confirm. Never guess `pass`
+6. Rank the fixes. Failed items that explain the measured bottleneck come first (see the table below), then the rest by impact over effort. Security and Maintenance items are graded whatever the stress test showed, because load does not reveal SQL injection or a missing backup
+7. After fixing the top items, rerun the same stress test and report before and after numbers
+
+## Bottleneck to Checklist Items
+
+| Measured at the knee | Start with these failed items |
+|----------------------|-------------------------------|
+| Database CPU high, app CPU low, latency grows with row count | Database Speed: indexes, composite and covering indexes, N+1, selected columns, `LIMIT`, cursor pagination, `EXPLAIN` |
+| Latency climbs while CPU stays low, errors begin at an exact concurrency | Database Speed: connection pooling, transactions, query timeouts. Response Speed: request timeouts, background jobs |
+| One core pinned or event loop lag | Response Speed: async I/O, background jobs, compression at the edge. Maintenance: profile slow endpoints |
+| Database load tracks request rate and the same reads repeat | Caching: Redis reads, TTL, invalidation, HTTP cache headers. Database Speed: precomputed counts |
+| A slow outbound dependency in the traces | Response Speed: parallel calls, request timeouts, background jobs |
+| Large response bytes, bandwidth near saturation | Response Speed: compression, small payloads, pagination, image resizing. Caching: CDN |
+| Sporadic 502 or 503 under load | Response Speed: keep-alive timeout order. Maintenance: health check, error monitoring |
+| Login or signup is the slowest route | Security: keep password hashing off the event loop and rate limit it. Do not lower the hash cost to look faster |
+| Memory climbs during a soak | Maintenance: profile slow endpoints. Caching: TTL and bounded keys |
+| `429` early in the ramp | Security: rate limiting. Confirm the limits match the plan |
 
 ## Report Format
 
 ```
 Backend Checklist: <project> (<date>)
+Stress baseline .... knee at 180 rps on GET /orders, p99 2.1 s, database CPU saturated (N+1, 41 queries per request)
 Maintenance ........ 5 of 7 pass, 1 partial, 1 unverified
 Security ........... 7 of 10 pass, 3 fail
 Database Speed ..... 9 of 14 pass, 5 fail
@@ -27,9 +52,13 @@ Fail and partial
 |------|--------|----------|-----|
 | Fix N+1 queries | fail | routes/orders.js:14 queries items per order in a loop | include items in one query (B4) |
 
-Fix first
+Fix first (bottleneck items, then the rest)
 1. ...
+
+After fixes: knee 520 rps, p99 240 ms (same test, same data)
 ```
+
+When nothing could be measured, the first line reads `Stress baseline .... not measured (no runnable target)` and the ranking falls back to impact over effort.
 
 Prose in the report follows the plugin copy rule: no semicolons and no em dashes.
 
