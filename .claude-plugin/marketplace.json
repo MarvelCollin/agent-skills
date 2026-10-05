@@ -5,13 +5,13 @@
     "url": "https://github.com/MarvelCollin"
   },
   "metadata": {
-    "description": "Claude Code skills for backend, UI/UX frontend and security, by MarvelCollin."
+    "description": "Claude Code skills by MarvelCollin."
   },
   "plugins": [
     {
       "name": "agent-skills",
       "source": "./",
-      "description": "A growing set of Claude Code skills in one plugin. Backend engineering, UI/UX frontend and security today, with more on the way.",
+      "description": "A growing set of Claude Code skills in one plugin.",
       "version": "0.7.0"
     }
   ]

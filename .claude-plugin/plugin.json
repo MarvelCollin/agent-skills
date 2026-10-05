@@ -2,7 +2,7 @@
   "name": "agent-skills",
   "displayName": "Agent Skills",
   "version": "0.7.0",
-  "description": "A growing set of Claude Code skills in one plugin. Backend engineering, UI/UX frontend and security today, with more on the way.",
+  "description": "A growing set of Claude Code skills in one plugin.",
   "author": {
     "name": "MarvelCollin",
     "url": "https://github.com/MarvelCollin"

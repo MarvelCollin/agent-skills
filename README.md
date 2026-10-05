@@ -1,7 +1,7 @@
 # Agent Skills
 ![License](https://img.shields.io/github/license/MarvelCollin/agent-skills) ![Last commit](https://img.shields.io/github/last-commit/MarvelCollin/agent-skills) ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 
-A growing set of skills for Claude Code, packaged as one plugin. Today it covers backend engineering, UI/UX frontend work and security, and more areas are on the way. Each skill lives in its own folder under `skills/` and becomes one slash command.
+A growing set of skills for Claude Code, packaged as one plugin. Each skill lives in its own folder under `skills/` and becomes one slash command.
 
 ## Skills
 
