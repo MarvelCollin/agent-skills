@@ -18,7 +18,7 @@ As a plugin, which installs every skill:
 
 ```bash
 claude plugin marketplace add MarvelCollin/agent-skills
-claude plugin install agent-skills@agent-skills
+claude plugin install agent-skills@marvelcollin
 ```
 
 Or copy one skill into your personal skills folder. Each skill keeps everything it needs inside its own folder, so it works on its own. Swap `backend` for `uiux`, `security` or `explain`:
