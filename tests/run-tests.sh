@@ -179,7 +179,9 @@ rule_scan_checks() {
     expect_contains "$label flags interfaces inside components" "$bad_output" "R13 inline-types OrderCard.tsx:3:"
     expect_contains "$label flags type aliases inside components" "$bad_output" "R13 inline-types OrderCard.tsx:8:"
     expect_contains "$label flags fetch inside components" "$bad_output" "R13 fetch-in-component OrderCard.tsx:13:"
-    expect_contains "$label counts every finding" "$bad_output" "FINDINGS: 18"
+    expect_contains "$label flags overlays that scroll as a whole" "$bad_output" "R14 scrolling-overlay EditDialog.tsx:8:"
+    expect_contains "$label flags submit buttons disabled until valid" "$bad_output" "R14 disabled-until-valid EditDialog.tsx:11:"
+    expect_contains "$label counts every finding" "$bad_output" "FINDINGS: 21"
     expect_contains "$label passes clean UI" "$good_output" "FINDINGS: 0"
     expect_contains "$label skips node_modules" "$vendored_output" "FINDINGS: 0"
 }

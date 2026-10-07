@@ -1,6 +1,6 @@
 # UI Build Rules
 
-These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R13 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
+These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R14 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
 
 Read these alongside [color.md](color.md), [navigation.md](navigation.md), [golden-rules.md](golden-rules.md) and the slop catalog in [slop-patterns.md](slop-patterns.md).
 
@@ -75,7 +75,7 @@ Each data table has:
 Modals, drawers, popovers, dropdowns, menus and toasts size themselves to their content within limits. Never give every modal the same fixed width or height.
 
 - Width: `width: fit-content` with `min-width: min(20rem, 100vw - 2rem)` and `max-width: min(<content cap>, 100vw - 2rem)`. Pick the cap from the content: short confirmation about 28rem, form about 40rem, data or media about 64rem
-- Height: automatic up to `max-height: min(85dvh, <cap>)`. Header and footer stay in place and only the body scrolls, with the custom scrollbar (R7)
+- Height: automatic up to `max-height: min(90dvh, <cap>)`. Header and footer stay in place and only the body scrolls, with the custom scrollbar (R7). Form overlays follow the full structure in R14
 - Under 640px wide, modals become full-width bottom sheets or full screens with a visible close control
 - Popovers and dropdowns flip or shift to stay on screen, and match their trigger's width when they list options
 - Use a modal only for decisions that need attention. Show errors inline, next to the field (see [golden-rules.md](golden-rules.md))
@@ -194,13 +194,51 @@ Code is split by responsibility so it stays readable as it grows. Each file has 
 - **Naming:** components are nouns (`OrderCard`), hooks start with `use`, event props start with `on` and handlers with `handle`, booleans read as questions (`isOpen`, `hasError`)
 - **Imports flow one way:** pages use features, features use shared `components/ui` and `lib`, never the reverse
 
+## R14: Form Overlays Keep Their Actions in View and Their Fields Aligned
+
+Every modal, drawer or sheet that holds a form is built from three regions. The person always sees the title and the action buttons, however much content sits between them.
+
+| Region | Holds | Behavior |
+|--------|-------|----------|
+| Header | Title, one line of description, close button | Pinned. `flex-shrink: 0` |
+| Body | Fields, helpers, previews | The only scroll area. `flex: 1`, `min-height: 0`, `overflow-y: auto`, `overscroll-behavior: contain`, custom scrollbar (R7) |
+| Footer | Primary action, Cancel, destructive action | Pinned. `flex-shrink: 0`. Always visible without scrolling |
+
+- **The popup is a flex column** with `overflow: hidden` and `max-height: min(90dvh, <cap>)`. Never put `overflow-y: auto` on the popup itself, because then the footer scrolls away with the fields
+- **A form that wraps body and footer** is a flex column too (`display: flex`, `flex-direction: column`, `flex: 1`, `min-height: 0`). Forgetting this is the most common reason the footer still scrolls. Build it into the shared dialog component so no screen can forget it
+- **Dividers appear only when the body scrolls.** Show the header border when the body is scrolled down and the footer border when more content sits below. A short form has no lines and no wasted chrome
+- **One scroll area.** Text areas and rich text editors inside an overlay grow with their content. They never get their own scrollbar inside a scrolling body. If a field needs a fixed height, the body does not scroll
+- **Footer layout:** primary action on the right, Cancel beside it, a destructive action alone on the left. Buttons size to their label on desktop and stack full width only under 640px. The footer padding matches the header and body padding exactly
+- **Do not disable the submit button until the form is valid.** A greyed out button explains nothing. Keep it enabled, validate on submit, move focus to the first invalid field and show the error next to it. Disable it only while the request is in flight, with a spinner and a verb (Saving)
+- **No reserved blank space.** No fixed heights on the body, no `min-height` on tag inputs, text areas or lists larger than one row of content, no empty helper slots, and no padding after the last field beyond the body padding
+
+### Pick the Container From the Content
+
+| Content | Container |
+|---------|-----------|
+| A confirmation or one or two fields | Small modal, about 28rem |
+| Up to about eight short fields | Form modal, about 36 to 40rem. Pair short related fields (min and max, start and end) in two columns |
+| More than eight fields, a rich text editor, a generator panel or a live preview | Wide modal, about 48 to 56rem, with the secondary panel in a side column on desktop, or a side sheet |
+| More than about fifteen fields, several sections, or the person needs the page behind for reference | A dedicated page or a stepper with its own URL |
+
+When a modal grows past its container, change the container instead of shrinking the content. Collapse optional helpers (an AI writer, advanced settings) into a section that opens on request, group fields under short section headings, and move the rest to a sheet or a page.
+
+### Fields in a Row Line Up
+
+- Fields that share a row share the same label baseline and the same input baseline. Use a grid with `align-items: start` and give every label the same height
+- Helper text belongs to every field in the row or to none. A single helper under one column leaves a hole under the other. Move it into the field (a unit suffix such as `%` or `min`) or below the whole row
+- Units live in the input as a suffix, not in the label in brackets
+- One spacing token between fields and a larger one between sections, the same in every overlay
+- Toggle rows keep the label and description on the left and the switch on the right, vertically centered, with the same padding as the fields around them
+- Under 640px every row becomes one column and the overlay becomes a full height sheet with the footer pinned above the keyboard (`100dvh`)
+
 ## Every Component Ships with Every State
 
 Default, hover, focus-visible, active, disabled, loading, empty, error and success, where they apply. A screen is not done until its loading, empty and error states exist.
 
 ## Checking the Rules
 
-Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7, R9, R10, R11 and R13 violations with file and line:
+Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7, R9, R10, R11, R13 and R14 violations with file and line:
 
 ```bash
 bash "<skill-dir>/scripts/rule-scan.sh" "<project-or-folder>"
@@ -212,4 +250,4 @@ On Windows without bash:
 powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/rule-scan.ps1" -Path "<project-or-folder>"
 ```
 
-The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2, R8 and the rest of R10 in the rendered UI. Check R12 by comparing the names and style of new files against the conventions report.
+The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2, R8, the rest of R10 and the rest of R14 in the rendered UI. For R14, open every form overlay with the most content it can hold and at a 700px tall window: the footer must be visible without scrolling and there must be one scrollbar. Check R12 by comparing the names and style of new files against the conventions report.

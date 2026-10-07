@@ -1,6 +1,6 @@
 ---
 name: uiux
-description: Build and audit web UI with real UX discipline. When building or changing UI, apply hard rules (pastel palette unless the user picks colors, no stat cards with icon tiles, no icons in rounded squares, no pill badges, search and filters on every table column, overlays that size to their content, custom scrollbars, date pickers, selects and other controls instead of browser built-ins, specific and consistent layouts, no semicolons or em dashes in copy, fast backend-paginated data loading with skeletons, real avatars instead of initials, follow the project's naming and code conventions, keep types, API calls, hooks and components in separate files) plus navigation and color guidelines and Shneiderman's Eight Golden Rules, then review the result for ease of use, feel and navigation. Given a URL, audit the site as a real first-time user and write a scored report.
+description: Build and audit web UI with real UX discipline. When building or changing UI, apply hard rules (pastel palette unless the user picks colors, no stat cards with icon tiles, no icons in rounded squares, no pill badges, search and filters on every table column, overlays that size to their content, form modals with a pinned header and footer, one scroll area and aligned fields, custom scrollbars, date pickers, selects and other controls instead of browser built-ins, specific and consistent layouts, no semicolons or em dashes in copy, fast backend-paginated data loading with skeletons, real avatars instead of initials, follow the project's naming and code conventions, keep types, API calls, hooks and components in separate files) plus navigation and color guidelines and Shneiderman's Eight Golden Rules, then review the result for ease of use, feel and navigation. Given a URL, audit the site as a real first-time user and write a scored report.
 when_to_use: Use whenever creating, designing, restyling or reviewing any web UI (pages, dashboards, components, forms, tables, modals, date pickers, navigation), and when asked to UX test, usability test, audit or compare a website by URL, check accessibility, measure page speed, check for AI design slop, or turn UX findings into a report.
 argument-hint: '[what to build] | review [path-or-url] | <url> [focus] | <url> flow "<goal>" | <url> vs <url2> | report [output-path]'
 allowed-tools: Bash(bash "${CLAUDE_SKILL_DIR}/scripts/*) Bash(powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(pwsh -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(agent-browser *) Bash(curl *) WebFetch Read Write Glob Grep Agent mcp__Claude_Browser__* mcp__playwright__* mcp__plugin_playwright_playwright__*
@@ -34,7 +34,7 @@ Prepend `https://` to a URL that has no scheme.
 ## Build Mode
 
 1. Run the conventions script on the project (`bash "<skill-dir>/scripts/conventions.sh" "<project>"`, or `conventions.ps1 -Path` on Windows) and open two or three existing files like the ones you will write. New code follows what they show (R12).
-2. Read [references/build-rules.md](references/build-rules.md) (hard rules R1 to R13), [references/performance.md](references/performance.md), [references/color.md](references/color.md), [references/navigation.md](references/navigation.md), [references/golden-rules.md](references/golden-rules.md), and the patterns to avoid in [references/slop-patterns.md](references/slop-patterns.md).
+2. Read [references/build-rules.md](references/build-rules.md) (hard rules R1 to R14), [references/performance.md](references/performance.md), [references/color.md](references/color.md), [references/navigation.md](references/navigation.md), [references/golden-rules.md](references/golden-rules.md), and the patterns to avoid in [references/slop-patterns.md](references/slop-patterns.md).
 3. Before writing code, settle and state briefly:
    - the conventions you will follow: file and folder naming, code style, export style, and where types, API calls, hooks and components go (R12, R13)
    - the palette: the user's colors, or a pastel palette from the recipe in color.md with the hue chosen for this product
@@ -44,8 +44,8 @@ Prepend `https://` to a URL that has no scheme.
    - the states each component needs
    - how data loads: endpoints, server-side paging, sort and filter parameters, and the skeleton for each loading state
    - the avatar treatment when a person has no photo
-4. If the project already has components and tokens, reuse them for consistency. Anything new you build still follows R1 to R13. If existing code breaks a hard rule, do not rewrite unrelated code. List it under Still Open in the review.
-5. Build it. Custom, accessible controls (R7), filterable tables (R5), overlays that size to content (R6), every state designed.
+4. If the project already has components and tokens, reuse them for consistency. Anything new you build still follows R1 to R14. If existing code breaks a hard rule, do not rewrite unrelated code. List it under Still Open in the review.
+5. Build it. Custom, accessible controls (R7), filterable tables (R5), overlays that size to content (R6), form overlays with pinned actions and one scroll area (R14), every state designed.
 6. Run the UI Review in [references/ui-review.md](references/ui-review.md). Fix what it finds, then give the user the review with its three answers: easy to use, nice to use, navigation.
 
 ## Audit Mode

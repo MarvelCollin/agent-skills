@@ -104,6 +104,9 @@ scan_insensitive "modal|dialog|drawer|sheet|popover" \
     | { grep -E "(^|[^a-z-])(w|h)-\[[0-9]+px\]|(^|[^a-z-])(width|height)[[:space:]]*:[[:space:]]*[0-9]+px" || true; } \
     | report R6 fixed-size-overlay
 
+scan "<(DialogContent|SheetContent|DrawerContent|ModalContent|Modal|dialog)([[:space:]][^>]*)?(overflow(-y)?-(auto|scroll)|overflow(-y)?:[[:space:]]*(auto|scroll))" | report R14 scrolling-overlay
+scan "disabled=\\{[^}]*(isValid|canSubmit|isComplete|isFormValid)" | report R14 disabled-until-valid
+
 scan "type=${Q}(date|datetime-local|time|month|week|range|color)${Q}" | report R7 native-control
 scan "<(select|datalist)([[:space:]>]|$)" | report R7 native-control
 scan "type=${Q}(checkbox|radio|file)${Q}" \
@@ -147,6 +150,6 @@ echo ""
 sort "$RESULTS"
 echo ""
 echo "FINDINGS: $(wc -l <"$RESULTS" | tr -d ' ')"
-for rule in R1 R3 R4 R5 R6 R7 R9 R10 R11 R13; do
+for rule in R1 R3 R4 R5 R6 R7 R9 R10 R11 R13 R14; do
     echo "$rule: $(grep -c "^$rule " "$RESULTS" || true)"
 done

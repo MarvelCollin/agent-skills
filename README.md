@@ -36,6 +36,9 @@ Claude also loads the skill on its own whenever you ask it to build or restyle U
 | R9 Clean copy | No semicolons and no em dashes in UI text or in anything the skill writes |
 | R10 Fast data loading | Tables and lists paginate from the backend with server-side sort and filter, skeleton loading states, no layout shift, no lag |
 | R11 Real avatars | A real photo or a neutral placeholder, never a circle of initials |
+| R12 Project conventions | New files follow the project's naming, code style and placement |
+| R13 Layered structure | Types, API calls, hooks and components each live in their own files |
+| R14 Form overlays | Header and action buttons stay pinned, only the body scrolls, fields in a row line up, and the container grows from modal to sheet to page as the content does |
 
 It also applies the guides on [navigation](skills/uiux/references/navigation.md), [color picking](skills/uiux/references/color.md) and [Shneiderman's Eight Golden Rules](skills/uiux/references/golden-rules.md).
 

@@ -33,7 +33,7 @@ tests/                           Script unit tests, fixture server, fake npx
 
 ## /uiux Design Principles
 
-- Build mode hard rules R1 to R11 live in `skills/uiux/references/build-rules.md`. Keep `scripts/rule-scan.*` in sync when a rule changes
+- Build mode hard rules R1 to R14 live in `skills/uiux/references/build-rules.md`. Keep `scripts/rule-scan.*` in sync when a rule changes
 - No semicolons or em dashes in anything the skill tells Claude to write, and none in the skill's own prose
 
 ## /security Principles

@@ -97,6 +97,9 @@ Add-Findings (Find-Lines $files "modal|dialog|drawer|sheet|popover" -IgnoreCase 
     $_.Line -cmatch "(^|[^a-z-])(w|h)-\[[0-9]+px\]|(^|[^a-z-])(width|height)\s*:\s*[0-9]+px"
 }) "R6" "fixed-size-overlay"
 
+Add-Findings (Find-Lines $files "<(DialogContent|SheetContent|DrawerContent|ModalContent|Modal|dialog)(\s[^>]*)?(overflow(-y)?-(auto|scroll)|overflow(-y)?:\s*(auto|scroll))") "R14" "scrolling-overlay"
+Add-Findings (Find-Lines $files "disabled=\{[^}]*(isValid|canSubmit|isComplete|isFormValid)") "R14" "disabled-until-valid"
+
 Add-Findings (Find-Lines $files "type=$quote(date|datetime-local|time|month|week|range|color)$quote") "R7" "native-control"
 Add-Findings (Find-Lines $files "<(select|datalist)([\s>]|$)") "R7" "native-control"
 Add-Findings (Find-Lines $files "type=$quote(checkbox|radio|file)$quote" | Where-Object {
@@ -134,7 +137,7 @@ Write-Output ""
 $results | Sort-Object { $_ } -Culture "en-US" | ForEach-Object { Write-Output $_ }
 Write-Output ""
 Write-Output "FINDINGS: $($results.Count)"
-foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9", "R10", "R11", "R13")) {
+foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9", "R10", "R11", "R13", "R14")) {
     $count = @($results | Where-Object { $_.StartsWith("$rule ") }).Count
     Write-Output "${rule}: $count"
 }
