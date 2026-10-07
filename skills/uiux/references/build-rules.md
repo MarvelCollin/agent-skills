@@ -75,7 +75,7 @@ Each data table has:
 Modals, drawers, popovers, dropdowns, menus and toasts size themselves to their content within limits. Never give every modal the same fixed width or height.
 
 - Width: `width: fit-content` with `min-width: min(20rem, 100vw - 2rem)` and `max-width: min(<content cap>, 100vw - 2rem)`. Pick the cap from the content: short confirmation about 28rem, form about 40rem, data or media about 64rem
-- Height: automatic up to `max-height: min(90dvh, <cap>)`. Header and footer stay in place and only the body scrolls, with the custom scrollbar (R7). Form overlays follow the full structure in R14
+- Height: automatic up to `max-height: min(90dvh, <cap>)`. Header and footer stay in place and only the body scrolls, with the custom scrollbar (R7). Form overlays follow the full structure in R14. A multi-step wizard is the one overlay that may keep a fixed height, see R14
 - Under 640px wide, modals become full-width bottom sheets or full screens with a visible close control
 - Popovers and dropdowns flip or shift to stay on screen, and match their trigger's width when they list options
 - Use a modal only for decisions that need attention. Show errors inline, next to the field (see [golden-rules.md](golden-rules.md))
@@ -211,6 +211,7 @@ Every modal, drawer or sheet that holds a form is built from three regions. The 
 - **Footer layout:** primary action on the right, Cancel beside it, a destructive action alone on the left. Buttons size to their label on desktop and stack full width only under 640px. The footer padding matches the header and body padding exactly
 - **Do not disable the submit button until the form is valid.** A greyed out button explains nothing. Keep it enabled, validate on submit, move focus to the first invalid field and show the error next to it. Disable it only while the request is in flight, with a spinner and a verb (Saving)
 - **No reserved blank space.** No fixed heights on the body, no `min-height` on tag inputs, text areas or lists larger than one row of content, no empty helper slots, and no padding after the last field beyond the body padding
+- **Exception for multi-step wizards.** A stepper inside one overlay may fix the popup height to its tallest step, capped by the viewport (for example `height: min(46rem, 90dvh)`), so the frame and the footer do not jump when the person moves between steps. The body still scrolls, the footer stays pinned, and a form with a single step never uses this
 
 ### Pick the Container From the Content
 
