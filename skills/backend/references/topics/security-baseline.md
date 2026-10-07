@@ -75,5 +75,7 @@ When the server fetches a URL a user supplied (webhooks, image import, link prev
 - [ ] No string-built queries or shell commands
 - [ ] SSRF protections on user-supplied URLs
 - [ ] Strict CORS, TLS, security headers
+- [ ] No secret in the client bundle or behind a public env prefix, no token in web storage, no hash or config in responses ([client-trust.md](client-trust.md))
+- [ ] Role, owner, price and status come from the server, never from the client
 - [ ] Dependency and secret scanning in CI
 - [ ] Personal data classified, minimized, encrypted and deletable

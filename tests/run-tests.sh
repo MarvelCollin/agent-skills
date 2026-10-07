@@ -276,7 +276,7 @@ dev_detect_checks() {
 }
 
 audit_checks() {
-    local label="$1" audit_output="$2" safe_output="$3"
+    local label="$1" audit_output="$2" safe_hits="$3"
     expect_contains "$label flags hardcoded secrets" "$audit_output" "[hardcoded-secret] app.py:2:"
     expect_contains "$label flags aws keys" "$audit_output" "[aws-key] app.py:9:"
     expect_contains "$label flags sql string concatenation" "$audit_output" "[sql-concat] app.py:4:"
@@ -285,8 +285,27 @@ audit_checks() {
     expect_contains "$label flags eval" "$audit_output" "[code-eval] sub/ui.js:3:"
     expect_contains "$label flags dangerous dom sinks" "$audit_output" "[dangerous-dom] sub/ui.js:1:"
     expect_contains "$label flags permissive cors" "$audit_output" "[permissive-cors] sub/ui.js:2:"
-    expect_contains "$label counts nine leads" "$audit_output" "LEADS: 9"
-    expect_matches "$label leaves safe code clean" "$safe_output" "safe\.py"
+    expect_contains "$label flags secrets behind public env prefixes" "$audit_output" "[client-env-secret] client.js:1:"
+    expect_contains "$label flags vite env secrets" "$audit_output" "[client-env-secret] client.js:2:"
+    expect_contains "$label flags tokens in local storage" "$audit_output" "[client-token-storage] client.js:3:"
+    expect_contains "$label flags tokens in script-set cookies" "$audit_output" "[client-token-storage] client.js:4:"
+    expect_contains "$label flags public source maps" "$audit_output" "[sourcemap-public] client.js:5:"
+    expect_contains "$label flags a dumped process env" "$audit_output" "[env-dump] client.js:6:"
+    expect_contains "$label flags a dumped os environ" "$audit_output" "[env-dump] app.py:17:"
+    expect_contains "$label flags jwt decode without verify" "$audit_output" "[jwt-unverified] client.js:7:"
+    expect_contains "$label flags ignored jwt expiry" "$audit_output" "[jwt-unverified] client.js:8:"
+    expect_contains "$label flags disabled signature checks" "$audit_output" "[jwt-unverified] app.py:14:"
+    expect_contains "$label flags cookies without httponly in js" "$audit_output" "[cookie-flags] client.js:9:"
+    expect_contains "$label flags cookies without httponly in python" "$audit_output" "[cookie-flags] app.py:15:"
+    expect_contains "$label flags client supplied roles in js" "$audit_output" "[client-authority] client.js:10:"
+    expect_contains "$label flags client supplied roles in python" "$audit_output" "[client-authority] app.py:12:"
+    expect_contains "$label flags client supplied prices in js" "$audit_output" "[client-value] client.js:11:"
+    expect_contains "$label flags client supplied totals in python" "$audit_output" "[client-value] app.py:13:"
+    expect_contains "$label flags identity headers in js" "$audit_output" "[client-header] client.js:12:"
+    expect_contains "$label flags identity headers in python" "$audit_output" "[client-header] app.py:16:"
+    expect_exit "$label reports a double matching line once" "$(printf '%s\n' "$audit_output" | grep -cF "[jwt-unverified] app.py:18:")" 1
+    expect_contains "$label counts every lead" "$audit_output" "LEADS: 28"
+    expect_exit "$label leaves safe code clean" "$safe_hits" 0
 }
 
 mkdir -p "$WORK/backend-project/node_modules/lib" "$WORK/backend-project/tests" "$WORK/backend-project/src"
@@ -328,8 +347,22 @@ backend_scan_checks() {
     expect_contains "$label flags secret fallbacks in python" "$bad" "B13 secret-fallback app.py:25:"
     expect_contains "$label flags parseFloat on money" "$bad" "B14 float-money orders.js:26:"
     expect_contains "$label flags naive datetimes" "$bad" "B14 naive-datetime app.py:12:"
-    expect_contains "$label counts every lead" "$bad" "FINDINGS: 31"
+    expect_contains "$label flags decoding a jwt without verifying" "$bad" "B1 jwt-unverified orders.js:48:"
+    expect_contains "$label flags cookies without httponly" "$bad" "B1 cookie-flags orders.js:49:"
+    expect_contains "$label flags secrets behind a public env prefix" "$bad" "B16 public-env-secret orders.js:43:"
+    expect_contains "$label flags public source maps" "$bad" "B16 sourcemap-public orders.js:44:"
+    expect_contains "$label flags the whole env sent to clients in js" "$bad" "B16 env-exposed orders.js:45:"
+    expect_contains "$label flags the whole env sent to clients in python" "$bad" "B16 env-exposed app.py:36:"
+    expect_contains "$label flags tokens in web storage" "$bad" "B16 token-in-web-storage orders.js:46:"
+    expect_contains "$label flags client sent prices and state in js" "$bad" "B17 client-value orders.js:26:"
+    expect_contains "$label flags client sent prices in python" "$bad" "B17 client-value app.py:33:"
+    expect_contains "$label flags client sent values read with get" "$bad" "B17 client-value app.py:34:"
+    expect_contains "$label flags identity headers in js" "$bad" "B17 client-header orders.js:47:"
+    expect_contains "$label flags identity headers in python" "$bad" "B17 client-header app.py:35:"
+    expect_contains "$label counts every lead" "$bad" "FINDINGS: 44"
     expect_contains "$label counts leads per rule" "$bad" "B11: 6"
+    expect_contains "$label counts public exposure leads" "$bad" "B16: 5"
+    expect_contains "$label counts client trust leads" "$bad" "B17: 6"
     expect_contains "$label passes clean code" "$good" "FINDINGS: 0"
     expect_contains "$label skips vendored and test files" "$vendored" "FINDINGS: 0"
     expect_contains "$label still scans source next to tests" "$vendored" "FILES_SCANNED: 1"
@@ -418,8 +451,8 @@ dev_detect_checks "sh" "bash $SECSCRIPTS/dev-detect.sh" "" ""
 echo "grep-audit.sh"
 AUDIT=$(bash "$SECSCRIPTS/grep-audit.sh" "$CODE_DIR" 2>&1); CODE=$?
 expect_exit "exits 0 on a scan with leads" "$CODE" 0
-SAFE=$(bash "$SECSCRIPTS/grep-audit.sh" "$CODE_DIR" 2>&1 | grep -c "safe.py" || true)
-audit_checks "sh" "$AUDIT" "$([ "$SAFE" = "0" ] && echo "safe.py-clean" || echo "safe.py-flagged")"
+SAFE=$(bash "$SECSCRIPTS/grep-audit.sh" "$CODE_DIR" 2>&1 | grep -cE "^\[[a-z-]+\] safe" || true)
+audit_checks "sh" "$AUDIT" "$SAFE"
 OUT=$(bash "$SECSCRIPTS/grep-audit.sh" "$WORK/nope-audit" 2>&1); CODE=$?
 expect_exit "fails on a missing path" "$CODE" 1
 expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
@@ -435,10 +468,10 @@ GOOD=$(bash "$BACKSCRIPTS/backend-scan.sh" "$BACKFIX/good" 2>&1)
 VENDORED=$(bash "$BACKSCRIPTS/backend-scan.sh" "$WORK/backend-project" 2>&1)
 backend_scan_checks "it" "$BAD" "$GOOD" "$VENDORED"
 OUT=$(bash "$BACKSCRIPTS/backend-scan.sh" "$BACKFIX/bad/app.py" 2>&1)
-expect_contains "scans a single file" "$OUT" "FINDINGS: 14"
+expect_contains "scans a single file" "$OUT" "FINDINGS: 18"
 OUT=$(bash "$BACKSCRIPTS/backend-scan.sh" "$BACKFIX/bad/app.py" "$BACKFIX/bad/orders.js" "$ROOT/README.md" 2>&1)
 expect_contains "scans several paths and skips non-source files" "$OUT" "FILES_SCANNED: 2"
-expect_contains "reports leads from every path" "$OUT" "FINDINGS: 31"
+expect_contains "reports leads from every path" "$OUT" "FINDINGS: 44"
 OUT=$(bash "$BACKSCRIPTS/backend-scan.sh" "$WORK/nope-backend" 2>&1); CODE=$?
 expect_exit "fails on a missing path" "$CODE" 1
 expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
@@ -558,8 +591,8 @@ if [ -n "$POWERSHELL" ]; then
     echo "grep-audit.ps1"
     AUDIT=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$CODE_DIR" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "exits 0 on a scan with leads" "$CODE" 0
-    SAFE=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$CODE_DIR" 2>&1 | tr -d '\r' | grep -c "safe.py" || true)
-    audit_checks "ps1" "$AUDIT" "$([ "$SAFE" = "0" ] && echo "safe.py-clean" || echo "safe.py-flagged")"
+    SAFE=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$CODE_DIR" 2>&1 | tr -d '\r' | grep -cE "^\[[a-z-]+\] safe" || true)
+    audit_checks "ps1" "$AUDIT" "$SAFE"
     OUT=$(run_ps "$SECSCRIPTS/grep-audit.ps1" -Path "$WORK/nope-audit" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails on a missing path" "$CODE" 1
     expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
@@ -575,10 +608,10 @@ if [ -n "$POWERSHELL" ]; then
     VENDORED=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$WORK/backend-project" 2>&1 | tr -d '\r')
     backend_scan_checks "it" "$BAD" "$GOOD" "$VENDORED"
     OUT=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$BACKFIX/bad/app.py" 2>&1 | tr -d '\r')
-    expect_contains "scans a single file" "$OUT" "FINDINGS: 14"
+    expect_contains "scans a single file" "$OUT" "FINDINGS: 18"
     OUT=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" "$BACKFIX/bad/app.py" "$BACKFIX/bad/orders.js" "$ROOT/README.md" 2>&1 | tr -d '\r')
     expect_contains "scans several paths and skips non-source files" "$OUT" "FILES_SCANNED: 2"
-    expect_contains "reports leads from every path" "$OUT" "FINDINGS: 31"
+    expect_contains "reports leads from every path" "$OUT" "FINDINGS: 44"
     OUT=$(run_ps "$BACKSCRIPTS/backend-scan.ps1" -Path "$WORK/nope-backend" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails on a missing path" "$CODE" 1
     expect_contains "prints an error for a missing path" "$OUT" "ERROR:"

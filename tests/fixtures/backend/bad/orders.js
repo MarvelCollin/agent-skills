@@ -39,3 +39,11 @@ async function legacy() {
   } catch (err) {
   }
 }
+
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY
+const nextConfig = { productionBrowserSourceMaps: true }
+function showConfig(req, res) { res.json(process.env) }
+localStorage.setItem('access_token', token)
+function checkout(req) { return { total: req.body.total, role: req.headers['x-user-role'] } }
+const claims = jwt.decode(req.headers.authorization)
+res.cookie('sid', sessionId)

@@ -1,8 +1,8 @@
 {
   "name": "agent-skills",
   "displayName": "Agent Skills",
-  "version": "0.7.0",
-  "description": "A growing set of Claude Code skills. /uiux builds UI under strict UX rules and reviews it or audits a live site. /security runs an authorized security review of an app you own. /backend builds and reviews backends to an expert standard (authorization, N+1 queries, indexing, resilience, logging, observability) and load tests services you own.",
+  "version": "0.10.0",
+  "description": "A growing set of Claude Code skills in one plugin.",
   "author": {
     "name": "MarvelCollin",
     "url": "https://github.com/MarvelCollin"
@@ -13,6 +13,9 @@
   "keywords": [
     "claude-code",
     "skills",
+    "developer-tools",
+    "ui-ux",
+    "frontend",
     "ux",
     "usability",
     "accessibility",
@@ -28,7 +31,12 @@
     "performance",
     "n-plus-one",
     "load-testing",
-    "observability"
+    "observability",
+    "explain",
+    "learning",
+    "teaching",
+    "eli5",
+    "feynman"
   ],
   "skills": "./skills/"
 }

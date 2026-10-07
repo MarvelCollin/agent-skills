@@ -1,24 +1,25 @@
 # Backend Build Rules
 
-These rules apply whenever you create or change server code: endpoints, services, queries, models, migrations, jobs, config. B1 to B15 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the Rules Check.
+These rules apply whenever you create or change server code: endpoints, services, queries, models, migrations, jobs, config. B1 to B17 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the Rules Check.
 
 The scan tags after each rule title are what `scripts/backend-scan.*` reports for application code and what `scripts/db-lint.*` reports for SQL migrations and Prisma schemas. Rules with no tag need a human read.
 
 ## B1: Authenticate Every Route, Deny by Default
 
-Scan: `weak-password-hash`
+Scan: `weak-password-hash`, `jwt-unverified`, `cookie-flags`
 
 - Every route requires authentication unless it is on an explicit public allowlist (health checks, login, signup, public content). New routes are private by default because the auth middleware is global, not opt-in per route
 - Passwords use argon2id (OWASP minimum m=19456 KiB, t=2, p=1), or scrypt, or bcrypt cost 10 or more with the 72 byte limit handled. Never MD5, SHA-1 or a bare SHA-2 hash
 - Login, signup, password reset and token endpoints are rate limited per account and per IP, return generic errors that do not reveal whether an account exists, and compare secrets in constant time
 - Sessions are opaque random ids in `HttpOnly`, `Secure`, `SameSite` cookies, rotated on login and privilege change. Access tokens are short-lived (5 to 15 minutes) with rotating refresh tokens. JWTs are verified with an algorithm allowlist plus `iss`, `aud` and `exp` checks
+- Tokens are verified, never only decoded. `jwt.decode` and reading claims without a signature check trust a token anyone can forge. Never accept `alg: none` or skip `exp`
 - Use a proven library or identity provider. Never hand-roll crypto, token formats or OAuth flows
 
 Details: [topics/authentication.md](topics/authentication.md)
 
 ## B2: Authorize Every Object, Function and Field
 
-Scan: `unscoped-lookup`, `client-authority`, `mass-assignment`
+Scan: `unscoped-lookup`, `client-authority`, `mass-assignment` (B17 covers every other client-supplied value)
 
 - **Object level (OWASP API1).** Every read, update or delete of a record checks that the caller may access that record. Scope it in the query itself (`WHERE id = $1 AND tenant_id = $2`) instead of fetching first and checking later. Lists filter in the query, never after pagination
 - **Function level (API5).** Admin and privileged operations check the role or permission on the server, in one central policy layer, not only by hiding UI
@@ -168,9 +169,41 @@ Details: [topics/database.md](topics/database.md), [topics/api-design.md](topics
 - List endpoints have a query-count assertion that stays flat as rows grow
 - Concurrency-sensitive paths (stock, balance, unique claims) have a test that fires parallel requests and checks the invariant
 - Idempotent endpoints have a test that sends the same key twice
+- Sensitive endpoints have a tamper test: a normal user sends a forbidden role, owner id, price, status or step and the test expects the field to be ignored or the request rejected, with the database unchanged (B17)
+- CI searches the production client build for secret values and fails on a hit (B16)
 - Hot endpoints get a load smoke test with thresholds before release (see [load-testing.md](load-testing.md))
 
 Details: [topics/testing.md](topics/testing.md)
+
+## B16: Nothing Secret Reaches the Client
+
+Scan: `public-env-secret`, `env-exposed`, `sourcemap-public`, `token-in-web-storage`, `secret-in-response`. B1 adds `cookie-flags`
+
+- Whatever reaches the browser is public. Anyone can open DevTools and read the bundled JavaScript, source maps, response bodies, `localStorage`, `sessionStorage` and every cookie scripts can read. Treat the client as hostile
+- An environment variable is private only while it stays on the server. Public prefixes (`NEXT_PUBLIC_`, `VITE_`, `REACT_APP_`, `EXPO_PUBLIC_`, `NUXT_PUBLIC_`, `VUE_APP_`, `GATSBY_`, `PUBLIC_`) inline the value into the client bundle at build time. Never put a secret, private key, service-role key, signing key or database URL behind one. Keys that must be public (publishable, search-only, maps) are restricted at the provider by origin, quota and permission
+- Calls that need a secret (payments, email, LLM, storage signing, admin APIs) run on the server. The browser calls your endpoint and your server calls the provider. Use a backend for frontend or a presigned URL, not a shipped key
+- The browser holds only an opaque random session id in an `HttpOnly`, `Secure`, `SameSite` cookie. The user can see their own cookie, so it carries no data and cannot be forged. Never keep access tokens, refresh tokens, API keys or role flags in web storage, a script-set cookie, a URL or a global variable
+- Responses are explicit DTOs (B3). Never return password hashes, tokens, internal ids, other users' data, SQL, stack traces or config objects. Never serialize `process.env`, `os.environ` or a settings object into a response, a template, an error page or a log line
+- Production does not serve source maps publicly. Debug and ops surfaces (`/env`, `/debug`, `/actuator/env`, `phpinfo()`, Swagger and GraphQL playgrounds, verbose errors) are off or authenticated
+- Check the build output, not only the source. A secret that was exposed even once is compromised, so rotate it
+
+Details: [topics/client-trust.md](topics/client-trust.md), [topics/config-deploy.md](topics/config-deploy.md), [topics/authentication.md](topics/authentication.md)
+
+## B17: The Server Decides, the Client Only Asks
+
+Scan: `client-value`, `client-header`. B2 adds `client-authority`, `mass-assignment`. B1 adds `jwt-unverified`
+
+- Every value a client sends can be changed: body, query, path ids, headers, cookies, hidden fields, token claims, `localStorage` flags. A user can edit a request in DevTools or `curl` and send `role: "admin"`. The UI only suggests, the server decides
+- Authority comes from the server. Identity, role, permissions, tenant, owner and plan come from the authenticated session or a verified token and a server lookup. Never from the body, the query, a header such as `X-User-Id` or `X-Role`, a plain cookie or unverified claims
+- Business values come from the server. Price, total, discount, fee, currency, balance, points, order status, payment state, workflow step and quota are looked up or computed. The client sends ids and quantities, never amounts or state
+- State machines run on the server. Each transition checks the current state and the actor, so calling a later endpoint directly or replaying a step gains nothing
+- Hidden UI is not security. A missing button, a disabled input or a frontend route guard protects nothing, so every endpoint checks the caller on its own
+- Client side validation is a convenience. The same rules run on the server (B3), including ownership of every referenced id, and file types read from content, not from the name or `Content-Type`
+- Do not make decisions from headers a client can send (`X-Forwarded-For`, `Host`, `Origin`, `Referer`) unless your own proxy overwrites them, and never use them for authorization
+- Webhooks, queue messages and calls from other services are inputs too. Verify the signature or the caller, then validate the schema
+- Prove it with a tamper test per sensitive endpoint (B15)
+
+Details: [topics/client-trust.md](topics/client-trust.md), [topics/authorization.md](topics/authorization.md), [topics/validation.md](topics/validation.md)
 
 ## Rules Check Format
 
@@ -183,6 +216,8 @@ B2 authz ........... pass (scoped by user_id in query, DTO allowlist)
 B4 N+1 ............. pass (include items, 2 queries per request at 20 and 200 rows)
 B6 indexes ......... still open (orders.created_at has no index, migration added but not run)
 B10 metrics ........ not applicable (no metrics stack in this project yet)
+B16 no secrets out . pass (no public env secrets, session is an HttpOnly cookie, DTO responses)
+B17 server decides . pass (role and owner from the session, totals computed from product prices)
 ...
 ```
 

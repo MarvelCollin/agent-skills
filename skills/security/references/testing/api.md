@@ -15,7 +15,8 @@ REST and GraphQL endpoints. Many of the classes above apply, plus API-specific i
 
 - Hit each endpoint directly with your test accounts. Swap ids across accounts for BOLA. Call privileged operations as a low-privilege user.
 - For mass assignment, add an unexpected field (a role or ownership field) to a create or update request and see if it sticks. Use your test account.
-- Read raw responses for fields the UI does not show.
+- Read raw responses for fields the UI does not show. See [client-exposure.md](client-exposure.md).
+- For mass assignment and other client-controlled fields, see [tampering.md](tampering.md).
 - For rate limiting, send a small burst to confirm no limit, not a flood.
 - For GraphQL, check whether introspection is enabled and whether each resolver enforces authorization. Keep any nested-query test shallow enough not to strain the server.
 

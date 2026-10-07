@@ -1,0 +1,12 @@
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY;
+const dbUrl = import.meta.env.VITE_DATABASE_URL;
+localStorage.setItem("access_token", token);
+document.cookie = "session_token=" + token;
+module.exports = { productionBrowserSourceMaps: true };
+app.get("/debug", (req, res) => res.json(process.env));
+const claims = jwt.decode(token);
+jwt.verify(token, signingKey, { ignoreExpiration: true });
+res.cookie("session", sid);
+const { role, isAdmin } = req.body;
+const price = req.body.price;
+const userId = req.headers["x-user-id"];

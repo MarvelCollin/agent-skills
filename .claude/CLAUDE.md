@@ -10,6 +10,7 @@ Claude Code plugin that bundles a growing set of skills. Each skill lives in its
 skills/uiux/                     /uiux UI build rules, UI review and UX audit
 skills/security/                 /security authorized security review and code review
 skills/backend/                  /backend build rules, backend review and load testing
+skills/explain/                  /explain simple explanations, teach, quiz, explain back, remember
   SKILL.md                       Entry point (each skill)
   references/                    Loaded on demand by SKILL.md
   templates/                     Report templates
@@ -50,12 +51,21 @@ tests/                           Script unit tests, fixture server, fake npx
 
 ## /backend Principles
 
-- Build mode hard rules B1 to B15 live in `skills/backend/references/build-rules.md`. Each rule names its `backend-scan` checks. Keep `scripts/backend-scan.*` and the scan tags in sync when a rule changes
+- Build mode hard rules B1 to B17 live in `skills/backend/references/build-rules.md`. Each rule names its `backend-scan` checks. Keep `scripts/backend-scan.*` and the scan tags in sync when a rule changes
 - Topic depth lives in `skills/backend/references/topics/`, one file per area. SKILL.md maps topic words to files
+- Checklist mode (`references/checklist.md`) stress tests first and ranks fixes by the measured bottleneck. Keep its items in sync with the build rules and the topic files they link to
 - Scan output is leads, not findings. A finding needs a reachable path, real impact, evidence and a concrete fix (five gates in `references/review.md`)
 - Measure before and after. Query counts, EXPLAIN plans, traces and load numbers beat opinions
 - Load tests only against targets the user owns or is authorized to test. Local and private hosts are the default. `load-test.*` refuses remote hosts without `--authorized` and a rate cap. Never load test third parties
 - Same copy rule as the other skills: no semicolons or em dashes in prose or reports. Code examples follow the target project's style
+
+## /explain Principles
+
+- Rules E1 to E14 live in `skills/explain/references/explain-rules.md`. Each rule names its evidence, and `references/research.md` holds the sources. Keep SKILL.md's The Shape and Before You Send in sync when a rule changes
+- Explain first, ask second. Questions add depth but never gate the answer
+- Simplify the words, never the facts. Every picture states where it stops being true
+- Short by default (80 to 200 words). Simpler must be a new angle, not the same text cut down
+- Same copy rule as the other skills, in the skill's prose and in every explanation it writes
 
 ## Checks
 

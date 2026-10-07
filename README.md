@@ -1,17 +1,38 @@
 # Agent Skills
 ![License](https://img.shields.io/github/license/MarvelCollin/agent-skills) ![Last commit](https://img.shields.io/github/last-commit/MarvelCollin/agent-skills) ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)
 
-A growing set of skills for Claude Code, packaged as one plugin.
+A growing set of skills for Claude Code, packaged as one plugin. Each skill lives in its own folder under `skills/` and becomes one slash command.
 
 ## Skills
 
 | Skill | Usage | What it does |
 |-------|-------|--------------|
-| `/uiux` | `/uiux [what to build]` or `/uiux <url> [focus]` | Builds UI that follows strict UX rules and reviews it, or audits a live site as a real user |
+| `/backend` | `/backend [what to build]`, `/backend design <system>`, `/backend review <path>`, `/backend checklist [path]`, `/backend load <url>` or `/backend <topic>` | Designs and builds backend code under expert rules, reviews it for production readiness, runs the essentials checklist, or load tests a service you own |
+| `/uiux` | `/uiux [what to build]` or `/uiux <url> [focus]` | Builds UI/UX frontend that follows strict UX rules and reviews it, or audits a live site as a real user |
 | `/security` | `/security <target-or-path> [phase]` | Runs an authorized security review of an app you own or are cleared to test, or a static code review |
-| `/backend` | `/backend [what to build]`, `/backend review <path>`, `/backend load <url>` or `/backend <topic>` | Builds backend code under expert rules, reviews a backend for production readiness, or load tests a service you own |
+| `/explain` | `/explain <topic>`, `/explain simpler`, `/explain deeper`, `/explain teach <topic>`, `/explain quiz`, `/explain back <topic>` or `/explain remember <thing>` | Explains anything in the simplest true way, easy to understand and remember, teaches step by step, quizzes you, checks your own explanation, or drills something into memory |
 
-More skills are on the way.
+## Installation
+
+As a plugin, which installs every skill:
+
+```bash
+claude plugin marketplace add MarvelCollin/agent-skills
+claude plugin install agent-skills@marvelcollin
+```
+
+Or copy one skill into your personal skills folder. Each skill keeps everything it needs inside its own folder, so it works on its own. Swap `backend` for `uiux`, `security` or `explain`:
+
+```bash
+git clone https://github.com/MarvelCollin/agent-skills
+cp -r agent-skills/skills/backend ~/.claude/skills/backend
+```
+
+To try a local checkout without installing it:
+
+```bash
+claude --plugin-dir ./agent-skills
+```
 
 ## `/uiux`
 
@@ -67,28 +88,6 @@ Focus areas: `nav`, `flow`, `forms`, `errors`, `perf`, `mobile`, `a11y [A|AA|AAA
 - bash or PowerShell for the scripts
 - Node.js and Chrome for the axe-core and Lighthouse scans (optional)
 
-## Installation
-
-As a plugin:
-
-```bash
-claude plugin marketplace add MarvelCollin/agent-skills
-claude plugin install agent-skills@agent-skills
-```
-
-Or copy the skill into your personal skills folder:
-
-```bash
-git clone https://github.com/MarvelCollin/agent-skills
-cp -r agent-skills/skills/uiux ~/.claude/skills/uiux
-```
-
-To try a local checkout without installing it:
-
-```bash
-claude --plugin-dir ./agent-skills
-```
-
 ## `/security`
 
 An authorized security review of a web app you own or are cleared to test. It is built for your own and local or dev builds first (localhost, private hosts, your own source), and refuses targets you cannot show authorization for.
@@ -108,11 +107,11 @@ It works in phases, based on the OWASP WSTG and ASVS:
 
 1. **Scope.** Confirms authorization and writes the rules of engagement. Nothing active runs before this. A `scope-check` script verifies each target is in scope, and flags out-of-scope hosts.
 2. **Recon.** Maps the attack surface inside scope, preferring the app's own source and traffic over noisy scanning.
-3. **Testing.** Works through vulnerability classes matched to what recon found: injection, broken auth and access control, SSRF and server-side, XSS and client-side, session and tokens, business logic, misconfiguration, exposed secrets, API, and LLM features. Lightest touch that proves the issue, nothing destructive.
+3. **Testing.** Works through vulnerability classes matched to what recon found: injection, broken auth and access control, SSRF and server-side, XSS and client-side, session and tokens, business logic, misconfiguration, exposed secrets, client exposure (env values in the bundle, tokens in storage, over-fetched responses, public source maps), client tampering (an edited request that forges a role, owner, price or status), API, and LLM features. Lightest touch that proves the issue, nothing destructive.
 4. **Validation.** Six gates kill false positives. A finding ships only when reproduced with evidence and real impact.
 5. **Report.** Every finding gets severity, evidence, impact and a concrete fix, mapped to OWASP and CWE, with fixes ranked by risk over effort.
 
-A `grep-audit` script speeds up code review by flagging risky sinks and hardcoded secrets for a human to read. The skill only tests targets the user owns or is authorized to test, and never helps evade detection, target at scale, run denial-of-service, or attack third parties.
+A `grep-audit` script speeds up code review by flagging risky sinks and hardcoded secrets for a human to read, including secrets behind public env prefixes, tokens in web storage, public source maps, decoded but unverified JWTs, cookies without `HttpOnly`, and roles, prices and identity headers taken from the client. The skill only tests targets the user owns or is authorized to test, and never helps evade detection, target at scale, run denial-of-service, or attack third parties.
 
 ## `/backend`
 
@@ -120,7 +119,10 @@ Backend engineering at a staff level: correct under concurrency, fast at real da
 
 ```
 /backend add a paginated orders endpoint       # build under the hard rules
+/backend design a multi-tenant billing service # design doc first, then build
 /backend review ./api                          # scored production-readiness review
+/backend review diff main                      # review a branch or the current changes
+/backend checklist ./api security              # stress test first, then the essentials checklist
 /backend load http://localhost:3000/api/orders # load or stress test your own service
 /backend n+1                                   # one topic: explain, audit this code for it, fix
 ```
@@ -147,21 +149,75 @@ Every build follows these hard rules, then ends with a Rules Check that says pas
 | B12 Slow work off the request path | Durable idempotent jobs, nothing that blocks the event loop |
 | B13 Config and shutdown | Typed config validated at startup, no secret fallbacks, graceful shutdown |
 | B14 Correct types | Money as integer cents or decimal, UTC `timestamptz`, UUIDv7 or bigint keys |
-| B15 Prove it with tests | Real-database integration tests, authorization matrix, query counts, parallel and idempotency tests |
+| B15 Prove it with tests | Real-database integration tests, authorization matrix, query counts, parallel and idempotency tests, tamper tests, a build check for leaked secrets |
+| B16 Nothing secret reaches the client | No secret behind a public env prefix or in the bundle, no public source maps or debug pages, an opaque `HttpOnly` session cookie, no tokens in web storage, DTO responses with no hashes or config |
+| B17 The server decides | Role, owner, price, total and status come from the server and a forged field changes nothing, hidden UI is never the check, tokens are verified and not only decoded |
 
-The rules link to 18 topic guides: API design, authentication, authorization, validation, database and N+1, migrations, concurrency, caching, performance, resilience, background jobs, logging, observability, errors, testing, config and deploy, architecture, and a security baseline mapped to the OWASP API Security Top 10 (2023). A stack guide covers the concrete fixes for Node, Python, Rails, Laravel, Spring, .NET, Go and GraphQL.
+The rules link to 21 topic guides: API design, authentication, authorization, validation, database and N+1, migrations, concurrency, caching, performance, resilience, background jobs, logging, observability, errors, testing, config and deploy, architecture, distributed systems, real-time, client trust (secrets out of the browser, never trust client values), and a security baseline mapped to the OWASP API Security Top 10 (2023). A Postgres guide ranks its rules by impact with wrong and right SQL, and a stack guide covers the concrete fixes for Node, Python, Rails, Laravel, Spring, .NET, Go and GraphQL.
+
+### Design
+
+`/backend design <system>` is for a new service or a change that is costly to undo. It asks only the questions the code cannot answer (traffic, data size, tenancy, consistency, latency and recovery targets), each with a recommended answer. It then estimates capacity, picks the simplest shape the numbers support, models data from access patterns, drafts the API contract and records decisions as ADRs. It stops for your approval before building anything expensive to reverse.
 
 ### Review
 
 `/backend review <path>` maps the system, runs the `backend-scan` script, walks 13 areas against the rules, measures query counts and plans when the app runs locally, and confirms every finding through five gates before it is reported. The report has a weighted score out of 100, a severity for each finding, and a fix plan ranked by impact over effort.
 
-`backend-scan` flags leads with a rule tag: N+1 calls inside loops, maps and comprehensions, unscoped id lookups, client-supplied roles, mass assignment, unbounded queries, `SELECT *`, offset pagination, blocking index builds, HTTP calls without timeouts, unstructured or secret-leaking logs, swallowed and leaked errors, blocking calls, credentials in connection strings, secret fallbacks, float money and naive timestamps. It skips tests, vendored code and build output.
+`backend-scan` flags leads with a rule tag: N+1 calls inside loops, maps and comprehensions, unscoped id lookups, client-supplied roles, mass assignment, unbounded queries, `SELECT *`, offset pagination, blocking index builds, HTTP calls without timeouts, unstructured or secret-leaking logs, swallowed and leaked errors, blocking calls, credentials in connection strings, secret fallbacks, float money, naive timestamps, decoded but unverified JWTs, cookies without `HttpOnly`, secrets behind public env prefixes, public source maps, the whole environment sent in a response, tokens in web storage, and client-sent prices, status and identity headers. It skips tests, vendored code and build output. `/backend review diff [base]` reviews only a branch, pull request or the current changes.
+
+`db-lint` does the same for SQL migrations and Prisma schemas: blocking index builds, constraints validated under lock, `NOT NULL` without a default, column type changes, unbatched backfills, foreign keys without an index, float money, timestamps without a time zone and random UUID keys.
+
+### Checklist
+
+`/backend checklist [path] [maintenance|security|db|caching|speed]` is the fast pass for the essentials. It stress tests first, when it has a runnable target you own, to find the real bottleneck, then grades 48 items in five groups and ranks the fixes so the ones that explain the bottleneck come first. Each item links to its rule and topic file, and every `pass` needs proof (file and line, config value, command output). With no runnable target the baseline is reported as `not measured`, never invented. Items that live outside the repo, such as backups, CDN and HTTPS at the load balancer, are marked `unverified` instead of guessed.
+
+| Group | Items |
+|-------|-------|
+| Maintenance | Migrations, health check, logging, error monitoring, database backups, tests, profiling slow endpoints |
+| Security | Password hashing, rate limiting, parameterized queries, input validation, secrets in env vars, HTTPS, CORS whitelist, httpOnly and secure cookies, JWT expiry with refresh tokens, no stack traces to users, secrets and sessions kept out of the browser, no trust in client-sent roles or prices |
+| Database speed | Indexes, composite and covering indexes, N+1, selected columns, `LIMIT`, cursor pagination, batching, pooling, precomputed counts, denormalized hot reads, `EXPLAIN`, query timeouts, transactions |
+| Caching | Redis for reads and sessions, HTTP cache headers, CDN, TTL, invalidation on update |
+| Response speed | Compression, small payloads, pagination, HTTP/2 and keep-alive, async I/O, background jobs, parallel calls, request timeouts, image resizing on upload |
 
 ### Load test
 
 `/backend load <url> [smoke|load|stress|spike|soak|breakpoint]` plans the traffic mix and pass criteria, runs the test, watches the server side, and names the bottleneck with evidence. The `load-test` script wraps autocannon (it needs Node.js) and reports requests, RPS, p50, p90, p99, error rate and a pass or fail against thresholds. For ramps and mixed traffic the skill writes a k6 script.
 
 Load tests only run against services you own. Local and private hosts are allowed by default. Any other host needs you to state your authorization, and the script refuses it without `--authorized` and a rate cap. The skill never load tests third parties.
+
+## `/explain`
+
+Explains anything you do not understand in the simplest true way, so it is easy to understand and easy to remember. Claude also loads it on its own when you say you do not get something or ask for a simple explanation.
+
+```
+/explain what is a database index
+/explain this error: ECONNREFUSED 127.0.0.1:5432
+/explain src/auth/session.ts     # explains your own code with your own names
+/explain simpler                 # same idea from a new, simpler angle
+/explain deeper                  # one layer down, real terms tied to the first picture
+/explain example                 # another example and a near miss
+/explain teach recursion         # short lesson, one chunk per turn with a check
+/explain quiz                    # questions on what was explained, one at a time
+/explain back closures           # you explain it, Claude finds the gaps
+/explain remember <paste text>   # logic map, fading cues, recall drills, spacing schedule
+```
+
+A default explanation is 80 to 200 words with this shape, and any part that adds nothing is dropped:
+
+| Part | What it does |
+|------|--------------|
+| Core | The answer in one plain sentence, by what it does or why it exists |
+| Picture | One everyday comparison with the parts mapped and its limit stated |
+| Example | One real case before any definition, your own code when there is some |
+| How it works | At most three steps, with a small text diagram for flows |
+| Watch out | The common wrong idea and where it fails |
+| The name | The real term last, so you can search it |
+| Remember | One bold line to keep |
+| Your turn | One small question that makes it stick, never "does that make sense?" |
+
+Every explanation follows rules E1 to E14 (answer first, plain words, what it does before what it is called, concrete before abstract, three new ideas at most, one picture with its limit, cut everything extra, simple but true, name the trap, short by default, respect the reader, leave one thing to do, match the learner, clean copy). The rules come from research on cognitive load, worked examples, analogies, misconceptions, retrieval practice and AI tutoring, plus the methods of explainers like Feynman, 3Blue1Brown and Julia Evans. Sources are in [skills/explain/references/research.md](skills/explain/references/research.md).
+
+`/explain remember` is for things you need to memorize, like an essay template, a formula or a list. It explains the meaning first, builds a logic map that says the job of each part, then drills you through four levels (full text, first words only, the logic chain only, blank page) with feedback on each attempt. It gives a spacing schedule (day 1, 2, 4, 7, 14 and 30) and ends with practice using the material on new content, because rereading feels like learning but fades fast.
 
 ## Project Structure
 
@@ -176,19 +232,23 @@ skills/
                               browser protocol, personas, rubric, heuristics, flow test,
                               accessibility, comparison, slop catalog, report
     templates/                Report and flow test templates
-    scripts/                  rule-scan, perf-check, axe-scan, lighthouse-audit (.sh + .ps1)
+    scripts/                  rule-scan, perf-check, axe-scan, lighthouse-audit, conventions (.sh + .ps1)
   security/
     SKILL.md                  Entry point: scope, recon, test, validate, report, code review
     references/               Authorization, recon, validation, reporting, code review,
-                              testing/ (10 vulnerability classes)
+                              testing/ (12 vulnerability classes)
     templates/                Report and finding templates
     scripts/                  dev-detect, scope-init, scope-check, grep-audit (.sh + .ps1)
   backend/
-    SKILL.md                  Entry point: build, review, load test and topic modes
-    references/               Build rules B1 to B15, review, load testing, stack notes,
-                              topics/ (18 backend topic guides)
-    templates/                Review and load test report templates
-    scripts/                  backend-scan, load-test (.sh + .ps1)
+    SKILL.md                  Entry point: build, design, review, checklist, load test and topic modes
+    references/               Build rules B1 to B17, design, review, essentials checklist, load testing,
+                              Postgres guide, stack notes, topics/ (21 backend topic guides)
+    templates/                Design, review and load test report templates, OpenAPI starter
+    scripts/                  backend-scan, db-lint, conventions, load-test (.sh + .ps1)
+  explain/
+    SKILL.md                  Entry point: explain, simpler, deeper, example, teach, quiz, explain back and remember
+    references/               Rules E1 to E14, plain words, pictures and examples, teach mode, remember mode,
+                              research sources
 evals/                        Cases for claude plugin eval
 tests/                        Unit tests for the scripts
 ```

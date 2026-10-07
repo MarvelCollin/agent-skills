@@ -1,0 +1,12 @@
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const inviteToken = process.env.INVITE_TOKEN;
+localStorage.setItem("theme", "dark");
+module.exports = { productionBrowserSourceMaps: false, devtool: "hidden-source-map" };
+app.get("/health", (req, res) => res.json({ ok: true, env: process.env.NODE_ENV }));
+const claims = jwt.decode(token, publicKey, { algorithms: ["RS256"] });
+jwt.verify(token, signingKey, { algorithms: ["HS256"] });
+res.cookie("session", sid, { httpOnly: true, secure: true, sameSite: "lax" });
+const total = priceFor(req.body.sku) * req.body.qty;
+const role = req.user.role;
+const forwarded = req.headers["accept-language"];

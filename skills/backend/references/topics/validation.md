@@ -59,6 +59,7 @@ Do not echo the rejected value back in full. It may be a secret or an injection 
 - Scan for malware when files are shared with other users
 - Strip metadata (EXIF GPS) from images when privacy matters
 - Process images and video in a background job, with limits on pixel dimensions to stop decompression bombs
+- Resize and compress images on upload. Cap the original by bytes and pixels, then generate a small set of bounded variants (thumbnail, medium, large) re-encoded as WebP or AVIF with a JPEG fallback, and store the dimensions. Serve variants through the CDN with long immutable caching. List and card views use the thumbnail and never the original. Keep the original only when the product needs it
 
 ## Libraries
 

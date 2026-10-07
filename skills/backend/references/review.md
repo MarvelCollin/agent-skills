@@ -17,7 +17,7 @@ For `review diff [base]` (a branch or PR before merge), review only what changed
 1. List the changed files: `git diff --name-only --diff-filter=AMR <base>...HEAD` plus uncommitted changes from `git diff --name-only HEAD`. The base defaults to the main branch
 2. Scan them in one call. Pass the source files to `backend-scan` and the migration or schema files to `db-lint` (several paths are allowed: separate arguments, or `-Path "a,b"` on PowerShell). Non-source files are skipped
 3. Read the full diff, then the surrounding code each change depends on: the route's middleware, the query's callers, the migration's table
-4. Check every changed endpoint, query, migration and job against B1 to B15, and confirm each finding with the five gates below
+4. Check every changed endpoint, query, migration and job against B1 to B17, and confirm each finding with the five gates below
 5. Report: findings most severe first in the finding format, then what looks good, then a verdict: **approve**, **approve with fixes** (Low and Medium only), or **changes requested** (any Critical or High)
 
 ## 1. Map the System
@@ -61,7 +61,7 @@ Each line is `<rule> <check> <file>:<line>: <code>`. These are leads, not findin
 Work through the areas in the scoring table below. For each, read the hot paths end to end and check the matching build rule in [build-rules.md](build-rules.md) and its topic file. Questions that find the most issues:
 
 - **Authentication:** Is the auth middleware global or opt-in? Which routes skip it and should they? How are passwords hashed? Are tokens verified fully?
-- **Authorization:** Pick three object endpoints and trace the id from the URL to the query. Is ownership or tenancy in the `WHERE`? Can a body field set `role`, `tenant_id` or `owner_id`? Do admin routes check the permission on the server?
+- **Authorization:** Pick three object endpoints and trace the id from the URL to the query. Is ownership or tenancy in the `WHERE`? Can a body field set `role`, `tenant_id` or `owner_id`? Do admin routes check the permission on the server? Edit a request as a normal user (DevTools or curl) and send `role: admin`, another `userId`, a lower `price` or a `status: paid`. Does the server ignore or reject it? Is any check only a hidden button or a frontend route guard?
 - **Input and API contract:** Is there a schema on every input? Body size limit? Do responses go through DTOs? Are status codes and error shapes consistent?
 - **Data access:** For each list endpoint, count queries for 1 row and for 50 rows. Any serializer or template touching a relation? Any unbounded query?
 - **Schema and migrations:** Do hot queries have matching indexes? Foreign keys indexed? Constraints present? Would the last five migrations lock a big table?
@@ -71,7 +71,7 @@ Work through the areas in the scoring table below. For each, read the hot paths 
 - **Logging:** Structured? Request id on every line? Any secret or personal data logged? Audit log for sensitive actions?
 - **Observability:** RED metrics? Tracing? Liveness and readiness separate? Can you tell from telemetry alone why a request was slow?
 - **Errors:** One handler? Problem details? Empty catches? Stack traces in responses? Unhandled rejection handling?
-- **Config and operations:** Config validated at startup? Secrets in code or defaults? Container runs as non-root with resource limits? Backups tested?
+- **Config and operations:** Config validated at startup? Secrets in code or defaults? Any secret behind a public env prefix or in the built bundle, source maps served publicly, tokens in `localStorage`, session cookie without `HttpOnly`, response fields like `passwordHash`, an env or debug endpoint? Container runs as non-root with resource limits? Backups tested?
 - **Testing:** Integration tests on a real database? Authorization tests that expect denial? Query-count tests? Any load test?
 
 ## 4. Measure When You Can
@@ -137,7 +137,7 @@ Grade each area from 0 to 4, then compute the weighted score out of 100.
 | Area | Rules | Weight |
 |------|-------|--------|
 | Authentication | B1 | 8 |
-| Authorization | B2 | 12 |
+| Authorization | B2, B17 | 12 |
 | Input and API contract | B3 | 8 |
 | Data access and queries | B4, B5 | 12 |
 | Schema, indexes and migrations | B6 | 8 |
@@ -147,7 +147,7 @@ Grade each area from 0 to 4, then compute the weighted score out of 100.
 | Logging | B9 | 8 |
 | Observability | B10 | 6 |
 | Error handling | B11 | 6 |
-| Config and operations | B13, B14 | 5 |
+| Config and operations | B13, B14, B16 | 5 |
 | Testing | B15 | 5 |
 
 Score = sum of (weight times grade divided by 4). A Critical finding caps its area at 0 and a High finding caps it at 1.
