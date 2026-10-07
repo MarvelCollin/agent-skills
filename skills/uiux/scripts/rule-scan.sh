@@ -123,6 +123,19 @@ fi
 
 scan_insensitive "getInitials|(^|[^a-z])initials([^a-z]|$)|charAt\(0\)|(slice|substring|substr)\(0,[[:space:]]*[12]\)[[:space:]]*\.toUpperCase" | report R11 initials-avatar
 
+for file in "${FILES[@]+"${FILES[@]}"}"; do
+    case "$file" in
+        *.tsx|*.jsx|*.vue|*.svelte) ;;
+        *) continue ;;
+    esac
+    { grep -nHE "^[[:space:]]*(export[[:space:]]+)?(interface|type)[[:space:]]+[A-Z][A-Za-z0-9_]*" "$file" || true; } | report R13 inline-types
+    { grep -nHE "(^|[^A-Za-z0-9_.])fetch\(|axios(\.(get|post|put|patch|delete|request))?\(" "$file" || true; } | report R13 fetch-in-component
+    lines="$(wc -l <"$file" | tr -d ' ')"
+    if [ "$lines" -gt 300 ]; then
+        printf '%s:1:%s lines, split it into smaller components\n' "$file" "$lines" | report R13 large-component
+    fi
+done
+
 scan "—|&mdash;|&#8212;" | report R9 em-dash
 scan_json "—" | report R9 em-dash
 scan "[A-Za-z0-9\"'/]>[^<>{}]*[A-Za-z0-9)][[:space:]]*;[[:space:]]+[A-Za-z][^<>{}]*<" | report R9 semicolon-in-copy
@@ -134,6 +147,6 @@ echo ""
 sort "$RESULTS"
 echo ""
 echo "FINDINGS: $(wc -l <"$RESULTS" | tr -d ' ')"
-for rule in R1 R3 R4 R5 R6 R7 R9 R10 R11; do
+for rule in R1 R3 R4 R5 R6 R7 R9 R10 R11 R13; do
     echo "$rule: $(grep -c "^$rule " "$RESULTS" || true)"
 done

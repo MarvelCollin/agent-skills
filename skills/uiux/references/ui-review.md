@@ -23,6 +23,7 @@ If the UI can run (a dev server, a static file, a preview), open it with a brows
 7. For speed (R10): load tables and lists against a large dataset. Check the network panel: one page per request with paging, sort and filter parameters, never the whole dataset. Throttle the network and confirm skeletons appear with no layout jump. Type in search and confirm it debounces and queries the server
 8. For avatars (R11): view users with and without photos. No initials circles
 9. Squint at the screenshot and view it in grayscale (see the checks in [color.md](color.md))
+10. For code structure (R12, R13): compare every new file's name, folder and style with the conventions report, and check that types, server calls, hooks and components each sit in their own files
 
 ## 3. Answer the Three Questions
 
@@ -86,6 +87,8 @@ Write the review in chat, without semicolons or em dashes (R9):
 | R9 No semicolons or em dashes | | |
 | R10 Fast, backend pagination, skeletons | | |
 | R11 Real avatars, no initials | | |
+| R12 Follows the project's conventions | | |
+| R13 Clean, layered structure | | |
 
 ### Fixed During Review
 - ...

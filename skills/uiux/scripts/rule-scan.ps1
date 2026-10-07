@@ -113,6 +113,16 @@ if (-not $hasCustomScrollbar) {
 
 Add-Findings (Find-Lines $files "getInitials|(^|[^a-z])initials([^a-z]|$)|charAt\(0\)|(slice|substring|substr)\(0,[ 	]*[12]\)[ 	]*\.toUpperCase" -IgnoreCase) "R11" "initials-avatar"
 
+$componentFiles = @($files | Where-Object { @(".tsx", ".jsx", ".vue", ".svelte") -contains $_.Extension.ToLower() })
+Add-Findings (Find-Lines $componentFiles '^\s*(export\s+)?(interface|type)\s+[A-Z][A-Za-z0-9_]*') "R13" "inline-types"
+Add-Findings (Find-Lines $componentFiles '(^|[^A-Za-z0-9_.])fetch\(|axios(\.(get|post|put|patch|delete|request))?\(') "R13" "fetch-in-component"
+foreach ($file in $componentFiles) {
+    $lineCount = @([System.IO.File]::ReadAllLines($file.FullName)).Count
+    if ($lineCount -gt 300) {
+        $results.Add("R13 large-component $(Get-RelativePath $file.FullName):1: $lineCount lines, split it into smaller components")
+    }
+}
+
 Add-Findings (Find-Lines $files "$emDash|&mdash;|&#8212;") "R9" "em-dash"
 Add-Findings (Find-Lines $jsonFiles $emDash) "R9" "em-dash"
 Add-Findings (Find-Lines $files "[A-Za-z0-9`"'/]>[^<>{}]*[A-Za-z0-9)]\s*;\s+[A-Za-z][^<>{}]*<") "R9" "semicolon-in-copy"
@@ -124,7 +134,7 @@ Write-Output ""
 $results | Sort-Object { $_ } -Culture "en-US" | ForEach-Object { Write-Output $_ }
 Write-Output ""
 Write-Output "FINDINGS: $($results.Count)"
-foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9", "R10", "R11")) {
+foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9", "R10", "R11", "R13")) {
     $count = @($results | Where-Object { $_.StartsWith("$rule ") }).Count
     Write-Output "${rule}: $count"
 }

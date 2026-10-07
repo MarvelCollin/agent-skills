@@ -156,6 +156,8 @@ RULES="$ROOT/tests/fixtures/rules"
 mkdir -p "$WORK/rules-project/node_modules/lib"
 cp "$RULES/good/page.html" "$WORK/rules-project/page.html"
 cp "$RULES/bad/dashboard.html" "$WORK/rules-project/node_modules/lib/dashboard.html"
+mkdir -p "$WORK/rules-big"
+for i in $(seq 1 320); do echo "  <p>line $i</p>"; done >"$WORK/rules-big/Huge.tsx"
 
 rule_scan_checks() {
     local label="$1" bad_output="$2" good_output="$3" vendored_output="$4"
@@ -174,7 +176,10 @@ rule_scan_checks() {
     expect_contains "$label flags semicolons in string files" "$bad_output" "R9 semicolon-in-copy strings.json:2:"
     expect_contains "$label flags tables without pagination" "$bad_output" "R10 table-without-pagination dashboard.html:11:"
     expect_contains "$label flags initials avatars" "$bad_output" "R11 initials-avatar dashboard.html:"
-    expect_contains "$label counts every finding" "$bad_output" "FINDINGS: 15"
+    expect_contains "$label flags interfaces inside components" "$bad_output" "R13 inline-types OrderCard.tsx:3:"
+    expect_contains "$label flags type aliases inside components" "$bad_output" "R13 inline-types OrderCard.tsx:8:"
+    expect_contains "$label flags fetch inside components" "$bad_output" "R13 fetch-in-component OrderCard.tsx:13:"
+    expect_contains "$label counts every finding" "$bad_output" "FINDINGS: 18"
     expect_contains "$label passes clean UI" "$good_output" "FINDINGS: 0"
     expect_contains "$label skips node_modules" "$vendored_output" "FINDINGS: 0"
 }
@@ -187,6 +192,8 @@ VENDORED=$(bash "$SCRIPTS/rule-scan.sh" "$WORK/rules-project" 2>&1)
 rule_scan_checks "it" "$BAD" "$GOOD" "$VENDORED"
 OUT=$(bash "$SCRIPTS/rule-scan.sh" "$RULES/bad/strings.json" 2>&1)
 expect_contains "scans a single file" "$OUT" "R9 semicolon-in-copy strings.json:2:"
+OUT=$(bash "$SCRIPTS/rule-scan.sh" "$WORK/rules-big" 2>&1)
+expect_contains "flags components over 300 lines" "$OUT" "R13 large-component Huge.tsx:1: 320 lines"
 OUT=$(bash "$SCRIPTS/rule-scan.sh" "$WORK/missing" 2>&1); CODE=$?
 expect_exit "fails on a missing path" "$CODE" 1
 expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
@@ -532,6 +539,8 @@ if [ -n "$POWERSHELL" ]; then
     rule_scan_checks "it" "$BAD" "$GOOD" "$VENDORED"
     OUT=$(run_ps "$SCRIPTS/rule-scan.ps1" -Path "$RULES/bad/strings.json" 2>&1 | tr -d '\r')
     expect_contains "scans a single file" "$OUT" "R9 semicolon-in-copy strings.json:2:"
+    OUT=$(run_ps "$SCRIPTS/rule-scan.ps1" -Path "$WORK/rules-big" 2>&1 | tr -d '\r')
+    expect_contains "flags components over 300 lines" "$OUT" "R13 large-component Huge.tsx:1: 320 lines"
     OUT=$(run_ps "$SCRIPTS/rule-scan.ps1" -Path "$WORK/missing" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails on a missing path" "$CODE" 1
     expect_contains "prints an error for a missing path" "$OUT" "ERROR:"

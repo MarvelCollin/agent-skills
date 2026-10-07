@@ -1,6 +1,6 @@
 # UI Build Rules
 
-These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R11 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
+These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R13 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
 
 Read these alongside [color.md](color.md), [navigation.md](navigation.md), [golden-rules.md](golden-rules.md) and the slop catalog in [slop-patterns.md](slop-patterns.md).
 
@@ -154,13 +154,53 @@ Do not fall back to a circle with a person's initials for a profile picture. The
 - Reserve the avatar's exact size so it does not shift when the image loads (R10). Give the `img` width, height, `loading="lazy"` and a real `alt` of the person's name.
 - If a monogram is truly unavoidable for a brand reason, that is the one exception, and it must be a deliberate, consistent style, not the default letter circle. Say so in the review.
 
+## R12: Follow the Project's Conventions
+
+New code reads as if the same team wrote it. Before writing, learn how this project already does things:
+
+```bash
+bash "<skill-dir>/scripts/conventions.sh" "<project-or-folder>"
+```
+
+On Windows without bash: `powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/conventions.ps1" -Path "<project-or-folder>"`. It reports the dominant file and folder naming per file type, role suffixes (`.types`, `.service`, `.api`), where tests live, the formatter config, semicolons, quotes, indent and the import alias. Then open two or three existing files of the same kind as the one you will write (a sibling component, the nearest page, its hook).
+
+- **File and folder names** follow the dominant style for that file type: if components are `UserCard.tsx`, a new one is `OrderCard.tsx`, not `order-card.tsx`. Folders follow the dominant folder style. Use the role suffixes the project already uses
+- **Code style** follows the formatter config, and the sample where there is none: semicolons, quotes, indent, the import alias (`@/`) instead of long relative paths
+- **Patterns** match: named or default exports, function declarations or arrow components, the styling approach (Tailwind, CSS modules, styled components), the state and data libraries already installed. Do not add a dependency for something the project already solves
+- **Placement** matches: tests where the project keeps them (`TEST_LAYOUT`), shared primitives where existing ones live
+- **Reuse** existing components, tokens, hooks, utilities and API clients before creating new ones
+- **No convention yet:** use `PascalCase.tsx` components, `useCamelCase.ts` hooks, `kebab-case` folders, `Component.types.ts` for types, and say so in the review
+
+If the existing convention conflicts with R13, keep R13's separation but use the project's naming for the new files.
+
+## R13: Clean, Layered Frontend Structure
+
+Code is split by responsibility so it stays readable as it grows. Each file has one job.
+
+| Concern | Lives in | Never in |
+|---------|----------|----------|
+| Interfaces and types | `Component.types.ts` beside the component, or the feature's `types.ts` | The component file |
+| Server calls (`fetch`, `axios`, SDK clients) | An API module per resource (`orders.api.ts`, `services/orders.ts`) | Components |
+| Data loading, caching, mutations | A hook per use case (`useOrders`, `useUpdateOrder`), on the project's data library (TanStack Query, SWR, RTK Query) when it has one | Components |
+| Business logic and derived state | Hooks or plain functions in `lib/` or the feature folder | JSX |
+| Constants, options, config | `constants.ts` or the feature's config file | Scattered string literals |
+| Markup and interaction | The component | |
+
+- **One component per file.** A component file over about 300 lines, or with more than one exported component, gets split into subcomponents
+- **Feature folders** for app code (`features/orders/` with `components/`, `hooks/`, `api/`, `types.ts`), shared primitives in one place (`components/ui/`). Follow the existing layout when there is one
+- **Typed boundaries.** Props have a named type in the types file. No `any`. API responses are typed once in the API module and mapped to UI types there, not in components
+- **Thin components.** A component reads props and hook results and renders. Early returns for loading, empty and error states. No nested ternaries deeper than one level in JSX. Repeated markup becomes a subcomponent
+- **No prop drilling past two levels.** Use composition (children, slots) or context
+- **Naming:** components are nouns (`OrderCard`), hooks start with `use`, event props start with `on` and handlers with `handle`, booleans read as questions (`isOpen`, `hasError`)
+- **Imports flow one way:** pages use features, features use shared `components/ui` and `lib`, never the reverse
+
 ## Every Component Ships with Every State
 
 Default, hover, focus-visible, active, disabled, loading, empty, error and success, where they apply. A screen is not done until its loading, empty and error states exist.
 
 ## Checking the Rules
 
-Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7, R9, R10 and R11 violations with file and line:
+Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7, R9, R10, R11 and R13 violations with file and line:
 
 ```bash
 bash "<skill-dir>/scripts/rule-scan.sh" "<project-or-folder>"
@@ -172,4 +212,4 @@ On Windows without bash:
 powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/rule-scan.ps1" -Path "<project-or-folder>"
 ```
 
-The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2, R8 and the rest of R10 in the rendered UI.
+The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2, R8 and the rest of R10 in the rendered UI. Check R12 by comparing the names and style of new files against the conventions report.
