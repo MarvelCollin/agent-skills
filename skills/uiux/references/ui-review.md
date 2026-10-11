@@ -26,6 +26,7 @@ If the UI can run (a dev server, a static file, a preview), open it with a brows
 10. For form overlays (R14): open every modal, drawer and sheet that holds a form, fill it with the longest realistic content, and shrink the window to 700px tall. The title and the action buttons stay visible, only the body scrolls, there is one scrollbar, fields in a row line up, and there is no empty space under a field or after the last one
 11. For code structure (R12, R13): compare every new file's name, folder and style with the conventions report, and check that types, server calls, hooks and components each sit in their own files
 12. For AI template tells (R15): go down the R15 table row by row on the screenshots. Hover every card, button and link. Look for sparkles, check bullets, dot grids, orbs, glass, fake terminals, three pricing tiers, invented testimonials and the default fonts
+13. For launch readiness (R16): on each public page check the main action is visible at 375 and 1440 without scrolling, scroll a long page on mobile and find the sticky action, read the page title, description and share tags in the head, open a made up URL and check the 404 page and its status code, submit each form wrong and then right, and read the footer for privacy, terms and real contact details
 
 ## 3. Answer the Three Questions
 
@@ -93,6 +94,7 @@ Write the review in chat, without semicolons or em dashes (R9):
 | R13 Clean, layered structure | | |
 | R14 Form overlays: pinned actions, one scroll area, aligned fields | | |
 | R15 No AI template tells | | |
+| R16 Launch ready pages | | |
 
 ### Fixed During Review
 - ...

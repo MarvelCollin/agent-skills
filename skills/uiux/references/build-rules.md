@@ -1,6 +1,6 @@
 # UI Build Rules
 
-These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R15 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
+These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R16 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
 
 Read these alongside [color.md](color.md), [navigation.md](navigation.md), [golden-rules.md](golden-rules.md) and the slop catalog in [slop-patterns.md](slop-patterns.md).
 
@@ -262,13 +262,34 @@ People now spot the defaults of AI generated sites on sight, and once they do, t
 
 The review rates the build against the whole catalog and it must come out Clean. The rule scan flags the tells that leave a trace in code.
 
+## R16: Launch Ready Pages
+
+A page can look finished and still feel fake. Public pages (home, landing, pricing, docs, sign up) ship with everything a real site has. Screens behind a login still need the states, the 404 and the alt text, not the share tags.
+
+- **One main action above the fold.** At 375x812 and 1440x900 the primary call to action is visible without scrolling, names the outcome ("Book a demo", "Start your free trial"), and is the strongest element on the screen
+- **A sticky action on long mobile pages.** When a landing page runs longer than about three screens at 375px, keep the primary action in reach: a bottom bar that appears once the hero button scrolls away, respects the safe area, and never covers form fields, the cookie banner or the content's last line
+- **Designed breakpoints.** Viewport meta, mobile first styles, checked at 375, 768 and 1440. No sideways scroll, touch targets of 44px or more, and inputs at 16px or larger on mobile so iOS does not zoom
+- **A title and description per page.** Every route sets its own `<title>` (page name, then brand, under about 60 characters) and a meta description written for that page (about 150 characters), through the framework's metadata API. One title for the whole site fails
+- **A share preview.** Open Graph title, description and a 1200x630 image, `twitter:card`, and a canonical URL on the home page and every page people share
+- **A favicon set.** `favicon.ico`, an SVG or 32px PNG icon, a 180px Apple touch icon and manifest icons at 192 and 512 pixels
+- **Alt text on every image.** It says what the image shows for this page's purpose. Decorative images get `alt=""`. Never the file name, never "image of"
+- **The page language.** `<html lang>` matches the content
+- **Loading, error and success states.** Skeletons while content loads (R10). Form errors appear inline next to the field, tied to it with `aria-describedby`, and focus moves to the first invalid field. Every form ends on a success state or a thank you page that says what happens next and when
+- **A custom 404 page** inside the site's layout, with navigation, search when the site has it, and links to the main pages. It returns HTTP 404, not 200
+- **A footer with the real basics.** Links to the privacy policy and terms, and real contact details: an email address that works, and a postal address where the law requires one. No lorem ipsum, no example.com, no 555 numbers, no John Doe
+- **The real product.** A real screenshot, recording or live demo, not a mockup (R15)
+
+Never invent the facts these need. Ask the user for the contact details, the legal entity and the analytics account instead of writing placeholders, and mark any drafted legal page as a draft for review.
+
+Before launch, run `/checkprod` for the production settings that live outside the UI: robots.txt, sitemap, analytics and consent, security headers, and the backend checks.
+
 ## Every Component Ships with Every State
 
 Default, hover, focus-visible, active, disabled, loading, empty, error and success, where they apply. A screen is not done until its loading, empty and error states exist.
 
 ## Checking the Rules
 
-Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7, R9, R10, R11, R13, R14 and R15 violations with file and line:
+Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7, R9, R10, R11, R13, R14, R15 and R16 violations with file and line:
 
 ```bash
 bash "<skill-dir>/scripts/rule-scan.sh" "<project-or-folder>"
@@ -280,4 +301,4 @@ On Windows without bash:
 powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/rule-scan.ps1" -Path "<project-or-folder>"
 ```
 
-The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2, R8, the rest of R10, the rest of R14 and the rest of R15 in the rendered UI. For R14, open every form overlay with the most content it can hold and at a 700px tall window: the footer must be visible without scrolling and there must be one scrollbar. Check R12 by comparing the names and style of new files against the conventions report.
+The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2, R8, the rest of R10, the rest of R14, the rest of R15 and the rest of R16 in the rendered UI. For R16, screenshot every public page at 375x812 and 1440x900, open a made up URL and read its status code, and submit every form once with errors and once correctly. For R14, open every form overlay with the most content it can hold and at a 700px tall window: the footer must be visible without scrolling and there must be one scrollbar. Check R12 by comparing the names and style of new files against the conventions report.

@@ -194,7 +194,14 @@ rule_scan_checks() {
     expect_contains "$label flags checkmark bullets" "$bad_output" "R15 checkmark-bullets landing.html:10:"
     expect_contains "$label flags fake terminal windows" "$bad_output" "R15 fake-terminal landing.html:14:"
     expect_contains "$label counts ai template tells" "$bad_output" "R15: 10"
-    expect_contains "$label counts every finding" "$bad_output" "FINDINGS: 33"
+    expect_contains "$label flags images without alt text" "$bad_output" "R16 img-without-alt home.html:7:"
+    expect_contains "$label flags a page without a viewport" "$bad_output" "R16 missing-viewport home.html:3:"
+    expect_contains "$label flags a page without a title" "$bad_output" "R16 missing-title home.html:3:"
+    expect_contains "$label flags a page without a language" "$bad_output" "R16 missing-lang home.html:2:"
+    expect_contains "$label flags lorem ipsum" "$bad_output" "R16 placeholder-copy home.html:9:"
+    expect_contains "$label flags placeholder emails" "$bad_output" "R16 placeholder-copy home.html:10:"
+    expect_contains "$label counts launch readiness leads" "$bad_output" "R16: 6"
+    expect_contains "$label counts every finding" "$bad_output" "FINDINGS: 39"
     expect_contains "$label passes clean UI" "$good_output" "FINDINGS: 0"
     expect_contains "$label skips node_modules" "$vendored_output" "FINDINGS: 0"
 }
@@ -674,6 +681,14 @@ if [ -n "$POWERSHELL" ]; then
 else
     echo "PowerShell not found, skipping .ps1 tests"
 fi
+
+for suite in "$ROOT"/tests/suites/*.sh; do
+    [ -f "$suite" ] || continue
+    if [ -n "${SUITE:-}" ] && [ "$(basename "$suite" .sh)" != "$SUITE" ]; then
+        continue
+    fi
+    . "$suite"
+done
 
 echo ""
 echo "$PASSED passed, $FAILED failed"

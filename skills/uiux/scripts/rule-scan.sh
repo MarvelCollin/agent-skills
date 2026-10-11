@@ -178,6 +178,37 @@ for file in "${FILES[@]+"${FILES[@]}"}"; do
     fi
 done
 
+MARKUP=()
+for file in "${FILES[@]+"${FILES[@]}"}"; do
+    case "$file" in
+        *.html|*.htm|*.jsx|*.tsx|*.vue|*.svelte|*.astro) MARKUP+=("$file") ;;
+    esac
+done
+if [ "${#MARKUP[@]}" -gt 0 ]; then
+    { grep -nHE "<(img|Image)([[:space:]][^>]*)?/?>" "${MARKUP[@]}" 2>/dev/null || true; } \
+        | { grep -vE "^[^:]+:[0-9]+:.*([[:space:]:]alt[[:space:]]*=|\{\.\.\.)" || true; } \
+        | report R16 img-without-alt
+    { grep -inHE "lorem ipsum|(^|[^a-z0-9.-])example\.(com|org)|123 main st|555-[0-9]{4}|\(555\)|john doe|jane doe|your-?(domain|company)\.com|acme (inc|corp)" "${MARKUP[@]}" 2>/dev/null || true; } \
+        | report R16 placeholder-copy
+fi
+for file in "${MARKUP[@]+"${MARKUP[@]}"}"; do
+    case "$file" in
+        *.html|*.htm) ;;
+        *) continue ;;
+    esac
+    if grep -qiE "<head([[:space:]>]|$)" "$file"; then
+        if ! grep -qiE "name=[\"']?viewport" "$file"; then
+            { grep -inHE -m1 "<head([[:space:]>]|$)" "$file" || true; } | report R16 missing-viewport
+        fi
+        if ! grep -qiE "<title([[:space:]>]|$)" "$file"; then
+            { grep -inHE -m1 "<head([[:space:]>]|$)" "$file" || true; } | report R16 missing-title
+        fi
+    fi
+    if grep -qiE "<html([[:space:]>]|$)" "$file" && ! grep -qiE "<html[^>]*[[:space:]]lang=" "$file"; then
+        { grep -inHE -m1 "<html([[:space:]>]|$)" "$file" || true; } | report R16 missing-lang
+    fi
+done
+
 scan "—|&mdash;|&#8212;" | report R9 em-dash
 scan_json "—" | report R9 em-dash
 scan "[A-Za-z0-9\"'/]>[^<>{}]*[A-Za-z0-9)][[:space:]]*;[[:space:]]+[A-Za-z][^<>{}]*<" | report R9 semicolon-in-copy
@@ -189,6 +220,6 @@ echo ""
 sort "$RESULTS"
 echo ""
 echo "FINDINGS: $(wc -l <"$RESULTS" | tr -d ' ')"
-for rule in R1 R3 R4 R5 R6 R7 R9 R10 R11 R13 R14 R15; do
+for rule in R1 R3 R4 R5 R6 R7 R9 R10 R11 R13 R14 R15 R16; do
     echo "$rule: $(grep -c "^$rule " "$RESULTS" || true)"
 done

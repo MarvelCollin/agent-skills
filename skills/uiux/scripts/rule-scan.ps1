@@ -166,6 +166,21 @@ foreach ($file in $componentFiles) {
     }
 }
 
+$markupFiles = @($files | Where-Object { @(".html", ".htm", ".jsx", ".tsx", ".vue", ".svelte", ".astro") -contains $_.Extension.ToLower() })
+Add-Findings (Find-Lines $markupFiles "<(img|Image)(\s[^>]*)?/?>" | Where-Object { $_.Line -cnotmatch "[\s:]alt\s*=|\{\.\.\." }) "R16" "img-without-alt"
+Add-Findings (Find-Lines $markupFiles "lorem ipsum|(^|[^a-z0-9.-])example\.(com|org)|123 main st|555-[0-9]{4}|\(555\)|john doe|jane doe|your-?(domain|company)\.com|acme (inc|corp)" -IgnoreCase) "R16" "placeholder-copy"
+foreach ($file in @($markupFiles | Where-Object { @(".html", ".htm") -contains $_.Extension.ToLower() })) {
+    $html = [System.IO.File]::ReadAllText($file.FullName)
+    if ($html -match "<head([\s>]|$)") {
+        $head = Select-String -LiteralPath $file.FullName -Pattern "<head([\s>]|$)" -Encoding UTF8 | Select-Object -First 1
+        if ($html -notmatch "name=[`"']?viewport") { Add-Findings $head "R16" "missing-viewport" }
+        if ($html -notmatch "<title([\s>]|$)") { Add-Findings $head "R16" "missing-title" }
+    }
+    if ($html -match "<html([\s>]|$)" -and $html -notmatch "<html[^>]*\slang=") {
+        Add-Findings (Select-String -LiteralPath $file.FullName -Pattern "<html([\s>]|$)" -Encoding UTF8 | Select-Object -First 1) "R16" "missing-lang"
+    }
+}
+
 Add-Findings (Find-Lines $files "$emDash|&mdash;|&#8212;") "R9" "em-dash"
 Add-Findings (Find-Lines $jsonFiles $emDash) "R9" "em-dash"
 Add-Findings (Find-Lines $files "[A-Za-z0-9`"'/]>[^<>{}]*[A-Za-z0-9)]\s*;\s+[A-Za-z][^<>{}]*<") "R9" "semicolon-in-copy"
@@ -177,7 +192,7 @@ Write-Output ""
 $results | Sort-Object { $_ } -Culture "en-US" | ForEach-Object { Write-Output $_ }
 Write-Output ""
 Write-Output "FINDINGS: $($results.Count)"
-foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9", "R10", "R11", "R13", "R14", "R15")) {
+foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9", "R10", "R11", "R13", "R14", "R15", "R16")) {
     $count = @($results | Where-Object { $_.StartsWith("$rule ") }).Count
     Write-Output "${rule}: $count"
 }
