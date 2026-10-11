@@ -5,7 +5,7 @@ param(
 $Path = @($Path | ForEach-Object { $_ -split ',' } | Where-Object { $_ -ne "" })
 
 $excludedDirs = @("node_modules", ".git", "dist", "build", ".next", "vendor", "coverage", ".venv", "venv", "__pycache__", "target", "bin", "obj", "test", "tests", "__tests__", "spec", "e2e")
-$extensions = @(".js", ".mjs", ".cjs", ".ts", ".py", ".rb", ".php", ".go", ".java", ".kt", ".cs")
+$extensions = @(".js", ".mjs", ".cjs", ".ts", ".py", ".rb", ".php", ".go", ".java", ".kt", ".cs", ".rules")
 $excludedNames = @("*.min.*", "*.d.ts", "*.test.*", "*.spec.*", "*_test.go", "*_test.py", "test_*.py", "*_spec.rb", "*Test.java", "*Tests.cs")
 
 function Test-Wanted($Item) {
@@ -120,6 +120,9 @@ Add-Findings (Find-Lines $files '(res[.](json|send)|jsonify|reply[.]send|Respons
 Add-Findings (Find-Lines $files "(req[.]body|request[.](json|data|form|POST))([.]|\[${q}?|[.]get[(]${q}?)(price|unit_?price|amount|total|subtotal|discount|fee|cost|balance|credits?|points|status|is_?paid|paid|verified|is_?verified|approved|plan|tier|is_?premium|step)([^a-z_]|$)" -IgnoreCase) "B17" "client-value"
 Add-Findings (Find-Lines $files '(headers|header|META|getHeader|get_header)[^;]{0,12}x[-_](user|role|tenant|account|org|admin|uid)' -IgnoreCase) "B17" "client-header"
 
+Add-Findings (Find-Lines $files "(createBucket|updateBucket)[(][^)]*public[`"']?\s*:\s*true|acl[`"']?\s*[:=]\s*[`"']public-read|BlockPublicAcls[`"']?\s*[:=]\s*false" -IgnoreCase) "B18" "public-bucket"
+Add-Findings (Find-Lines $files 'allow\s+[a-z, ]+:\s*if\s+(true\s*;|request[.]time\s*<|request[.]auth\s*!=\s*null\s*;)') "B18" "open-rules"
+
 $db = 'prisma[.][A-Za-z_]+[.][A-Za-z]+[(]|[.]objects[.](get|filter|exclude|count|create)[(]|session[.](query|get|execute|scalar|scalars)[(]|cursor[.]execute[(]|[.](query|execute|raw)[(]|[.](findOne|findById|findByPk|findUnique|findFirst|findMany|findAll|find_by|countDocuments|aggregate|populate|where)[(]|[Rr]epo(sitory)?[.](find|get|count|exists|load)|(ToListAsync|FirstOrDefaultAsync|SingleOrDefaultAsync|FindAsync|CountAsync)[(]|db[.](First|Find|Where|Raw|Get|Select|Query|QueryRow|Exec)[(]|knex[(]|[A-Z][A-Za-z0-9_]*[.](find|find_by)[(]'
 $http = '(^|[^A-Za-z0-9_.])fetch[(]|axios([.](get|post|put|patch|delete|request))?[(]|(requests|httpx)[.](get|post|put|patch|delete)[(]|http[.](Get|Post)[(]|[.](GetAsync|PostAsync|getForObject|getForEntity)[(]'
 $cb = '[.](forEach|map|flatMap|each|each_with_index|find_each|for_each)[ \t]*[({]|[.]each[ \t]+do'
@@ -167,7 +170,7 @@ foreach ($file in $files) {
     }
 }
 
-$rules = @("B1", "B2", "B4", "B5", "B6", "B8", "B9", "B11", "B12", "B13", "B14", "B16", "B17")
+$rules = @("B1", "B2", "B4", "B5", "B6", "B8", "B9", "B11", "B12", "B13", "B14", "B16", "B17", "B18")
 
 Write-Output "BACKEND SCAN: $($Path -join ' ')"
 Write-Output "FILES_SCANNED: $($files.Count)"

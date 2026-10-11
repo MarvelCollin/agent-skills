@@ -146,12 +146,25 @@ if [ "${#FILES[@]}" -gt 0 ]; then
             }
             return
         }
+        if (s ~ /^create policy /) {
+            cmd = "all"
+            if (match(s, / for (all|select|insert|update|delete)( |$)/)) {
+                cmd = substr(s, RSTART + 5, RLENGTH - 5)
+                sub(/ $/, "", cmd)
+            }
+            if (cmd != "select" && s ~ /(using|with check) ?\( ?true ?\)/) emit("B18", "permissive-policy", file, sline, stext)
+            return
+        }
+        if (s ~ /^insert into storage\.buckets/ && s ~ /(^|[^a-z_])true([^a-z_]|$)/) emit("B18", "public-bucket", file, sline, stext)
+        if (s ~ /^update storage\.buckets / && s ~ /public ?= ?true/) emit("B18", "public-bucket", file, sline, stext)
         if (s ~ /^alter table /) {
             tbl = s
             sub(/^alter table (if exists )?(only )?/, "", tbl)
             sub(/ .*$/, "", tbl)
             tbl = norm(tbl)
-            if (!(file in firstalter)) {
+            if (s ~ / enable row level security/) rls[tbl] = 1
+            if (s ~ / disable row level security/) emit("B18", "rls-disabled", file, sline, stext)
+            if (!(file in firstalter) && !((file, tbl) in created)) {
                 firstalter[file] = sline
                 firstaltertext[file] = stext
             }
@@ -193,6 +206,7 @@ if [ "${#FILES[@]}" -gt 0 ]; then
         endfile()
         curfile = FILENAME
         curprisma = (FILENAME ~ /\.prisma$/)
+        if (FILENAME ~ /(^|\/)supabase\//) supafile[FILENAME] = 1
         pg = 0
         inmodel = 0
         intable = 0
@@ -256,14 +270,25 @@ if [ "${#FILES[@]}" -gt 0 ]; then
         code = line
         sub(/--.*$/, "", code)
         low = tolower(code)
+        if (low ~ /auth\.(uid|jwt)[ \t]*\(|storage\.(buckets|objects)|[ \t]to[ \t]+(authenticated|anon)([^a-z_]|$)/) supafile[FILENAME] = 1
         if (intable) {
             chunk(FILENAME, FNR, code, line)
         } else if (match(low, /^[ \t]*create[ \t]+((global|local)[ \t]+)?((temp|temporary|unlogged)[ \t]+)?table[ \t]+(if[ \t]+not[ \t]+exists[ \t]+)?/)) {
+            head = substr(low, RSTART, RLENGTH)
             rest = substr(code, RSTART + RLENGTH)
             rawtable = rest
             sub(/[ \t(].*$/, "", rawtable)
             table = norm(rawtable)
             created[FILENAME, table] = 1
+            schema = tolower(rawtable)
+            gsub(/"/, "", schema)
+            if (head !~ /(temp|temporary)[ \t]/ && (schema !~ /\./ || schema ~ /^public\./) && !(table in ctline)) {
+                nct++
+                ctname[nct] = table
+                ctfile[table] = FILENAME
+                ctline[table] = FNR
+                cttext[table] = line
+            }
             if (tolower(rest) !~ /partition[ \t]+of|[ \t]as[ \t]/) {
                 intable = 1
                 depth = 0
@@ -301,6 +326,10 @@ if [ "${#FILES[@]}" -gt 0 ]; then
         for (f in firstalter) {
             if (!(f in haslt)) emit("B6", "no-lock-timeout", f, firstalter[f], firstaltertext[f])
         }
+        for (i = 1; i <= nct; i++) {
+            t = ctname[i]
+            if ((ctfile[t] in supafile) && !(t in rls)) emit("B18", "rls-disabled", ctfile[t], ctline[t], cttext[t])
+        }
     }
     ' "${FILES[@]}" >>"$RESULTS"
 fi
@@ -311,7 +340,7 @@ echo ""
 sort -t " " -k1.2,1n -k2,2 -k3,3 "$RESULTS"
 echo ""
 echo "FINDINGS: $(wc -l <"$RESULTS" | tr -d ' ')"
-for rule in B6 B14; do
+for rule in B6 B14 B18; do
     echo "$rule: $(grep -c "^$rule " "$RESULTS" || true)"
 done
 echo ""

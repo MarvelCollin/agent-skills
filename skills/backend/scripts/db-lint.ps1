@@ -66,6 +66,9 @@ $fks = New-Object System.Collections.Generic.List[object]
 $hasTx = @{}
 $hasLt = @{}
 $firstAlter = [ordered]@{}
+$rls = @{}
+$supaFile = @{}
+$exposed = [ordered]@{}
 
 function Add-Fk([string]$Table, [string]$Col, [string]$File, [int]$Line, [string]$Text) {
     $key = "$Table|$Col"
@@ -145,10 +148,21 @@ function Flush-Statement([string]$File, [string]$Stmt, [int]$SLine, [string]$STe
         }
         return
     }
+    if ($s -match '^create policy ') {
+        $cmd = "all"
+        $pm = [regex]::Match($s, ' for (all|select|insert|update|delete)( |$)')
+        if ($pm.Success) { $cmd = $pm.Groups[1].Value }
+        if ($cmd -ne "select" -and $s -match '(using|with check) ?\( ?true ?\)') { Emit "B18" "permissive-policy" $File $SLine $SText }
+        return
+    }
+    if ($s -match '^insert into storage\.buckets' -and $s -match '(^|[^a-z_])true([^a-z_]|$)') { Emit "B18" "public-bucket" $File $SLine $SText }
+    if ($s -match '^update storage\.buckets ' -and $s -match 'public ?= ?true') { Emit "B18" "public-bucket" $File $SLine $SText }
     if ($s -match '^alter table ') {
         $tbl = $s -replace '^alter table (if exists )?(only )?', ''
         $tbl = Norm ($tbl -replace ' .*$', '')
-        if (-not $firstAlter.Contains($File)) { $firstAlter[$File] = [pscustomobject]@{ Line = $SLine; Text = $SText } }
+        if ($s -match ' enable row level security') { $rls[$tbl] = $true }
+        if ($s -match ' disable row level security') { Emit "B18" "rls-disabled" $File $SLine $SText }
+        if (-not $firstAlter.Contains($File) -and -not $created.ContainsKey("$File|$tbl")) { $firstAlter[$File] = [pscustomobject]@{ Line = $SLine; Text = $SText } }
         if ($s -match ' add (constraint [^ ]+ )?primary key') { $haspk[$tbl] = $true }
         if ($s -match ' add (constraint [^ ]+ )?(primary key|unique)' -and $s -notmatch ' using index') { Emit "B6" "unique-under-lock" $File $SLine $SText }
         if ($s -match ' add (constraint [^ ]+ )?(foreign key|check)' -and $s -notmatch 'not valid') { Emit "B6" "constraint-validates-under-lock" $File $SLine $SText }
@@ -226,6 +240,7 @@ $createRe = '^[ \t]*create[ \t]+((global|local)[ \t]+)?((temp|temporary|unlogged
 foreach ($file in $files) {
     $lines = [System.IO.File]::ReadAllLines($file)
     if ($file.EndsWith(".prisma")) { Lint-Prisma $file $lines; continue }
+    if (($file -replace '\\', '/') -match '(^|/)supabase/') { $supaFile[$file] = $true }
     $state.InTable = $false
     $state.Depth = 0
     $inDollar = $false
@@ -236,6 +251,7 @@ foreach ($file in $files) {
         $n = $i + 1
         $line = $lines[$i].TrimEnd("`r")
         $code = $line -replace '--.*$', ''
+        if ($code.ToLowerInvariant() -match 'auth\.(uid|jwt)[ \t]*\(|storage\.(buckets|objects)|[ \t]to[ \t]+(authenticated|anon)([^a-z_]|$)') { $supaFile[$file] = $true }
         if ($state.InTable) {
             Process-Chunk $file $n $code $line
         } else {
@@ -245,6 +261,10 @@ foreach ($file in $files) {
                 $rawTable = $rest -replace '[ \t(].*$', ''
                 $state.Table = Norm $rawTable
                 $created["$file|$($state.Table)"] = $true
+                $schema = ($rawTable -replace '"', '').ToLowerInvariant()
+                if ($m.Value.ToLowerInvariant() -notmatch '(temp|temporary)[ \t]' -and ($schema -notmatch '\.' -or $schema -match '^public\.') -and -not $exposed.Contains($state.Table)) {
+                    $exposed[$state.Table] = [pscustomobject]@{ File = $file; Line = $n; Text = $line }
+                }
                 if ($rest.ToLowerInvariant() -notmatch 'partition[ \t]+of|[ \t]as[ \t]') {
                     $state.InTable = $true
                     $state.Depth = 0
@@ -283,6 +303,10 @@ foreach ($t in $nopk.Keys) {
 foreach ($f in $firstAlter.Keys) {
     if (-not $hasLt.ContainsKey($f)) { Emit "B6" "no-lock-timeout" $f $firstAlter[$f].Line $firstAlter[$f].Text }
 }
+foreach ($t in $exposed.Keys) {
+    $e = $exposed[$t]
+    if ($supaFile.ContainsKey($e.File) -and -not $rls.ContainsKey($t)) { Emit "B18" "rls-disabled" $e.File $e.Line $e.Text }
+}
 
 Write-Output "DB LINT: $($Path -join ' ')"
 Write-Output "FILES_SCANNED: $($files.Count)"
@@ -290,7 +314,7 @@ Write-Output ""
 $results | Sort-Object @{ Expression = { [int]($_.Split(' ')[0].Substring(1)) } }, @{ Expression = { $_.Split(' ')[1] } }, @{ Expression = { $_.Split(' ')[2] } } | ForEach-Object { Write-Output $_ }
 Write-Output ""
 Write-Output "FINDINGS: $($results.Count)"
-foreach ($rule in @("B6", "B14")) {
+foreach ($rule in @("B6", "B14", "B18")) {
     $count = @($results | Where-Object { $_.StartsWith("$rule ") }).Count
     Write-Output "${rule}: $count"
 }

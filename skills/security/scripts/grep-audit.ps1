@@ -9,7 +9,7 @@ if (-not (Test-Path -LiteralPath $Path)) {
 
 $target = (Resolve-Path -LiteralPath $Path).Path
 $excludedDirs = @("node_modules", ".git", "dist", "build", ".next", "vendor", "coverage", ".venv", "venv")
-$extensions = @(".js", ".ts", ".jsx", ".tsx", ".py", ".rb", ".php", ".go", ".java", ".cs", ".yml", ".yaml", ".json", ".sql")
+$extensions = @(".js", ".ts", ".jsx", ".tsx", ".py", ".rb", ".php", ".go", ".java", ".cs", ".yml", ".yaml", ".json", ".sql", ".rules")
 
 $files = @(Get-ChildItem -LiteralPath $target -Recurse -File -Force -ErrorAction SilentlyContinue | Where-Object {
     $relative = if ($_.FullName.Length -gt $target.Length) { $_.FullName.Substring($target.Length) } else { $_.Name }
@@ -89,6 +89,10 @@ FlagWithout "cookie-flags" '(res\.cookie|set_?cookie)\s*\(' 'http_?only'
 Flag "client-authority"  (ClientInputPattern $authorityNames)
 Flag "client-value"      (ClientInputPattern $valueNames)
 Flag "client-header"     '(headers|header|META|getHeader|get_header)[^;]{0,12}x[-_](user|role|tenant|account|org|admin|uid)'
+Flag "rls-off"           'disable\s+row\s+level\s+security'
+Flag "permissive-policy" 'create\s+policy.*\sfor\s+(all|insert|update|delete)\s.*(using|with\s+check)\s*\(\s*true\s*\)'
+Flag "public-bucket"     "(insert\s+into\s+storage\.buckets.*[^a-z_]true([^a-z_]|$)|(createBucket|updateBucket)\([^)]*public[`"']?\s*:\s*true|acl[`"']?\s*[:=]\s*[`"']public-read|BlockPublicAcls[`"']?\s*[:=]\s*false)"
+Flag "open-rules"        'allow\s+[a-z, ]+:\s*if\s+(true\s*;|request\.time\s*<|request\.auth\s*!=\s*null\s*;)'
 
 $seen = New-Object System.Collections.Generic.HashSet[string]
 $unique = New-Object System.Collections.Generic.List[string]

@@ -20,7 +20,7 @@ done < <(find "$TARGET" \
         -o -name vendor -o -name coverage -o -name .venv -o -name venv \) -prune \) \
     -o \( -type f \( -name '*.js' -o -name '*.ts' -o -name '*.jsx' -o -name '*.tsx' -o -name '*.py' \
         -o -name '*.rb' -o -name '*.php' -o -name '*.go' -o -name '*.java' -o -name '*.cs' \
-        -o -name '*.env*' -o -name '*.yml' -o -name '*.yaml' -o -name '*.json' -o -name '*.sql' \) \
+        -o -name '*.env*' -o -name '*.yml' -o -name '*.yaml' -o -name '*.json' -o -name '*.sql' -o -name '*.rules' \) \
         ! -name '*.min.*' ! -name 'package-lock.json' -print0 \))
 
 if [ "${#FILES[@]}" -eq 0 ]; then
@@ -97,6 +97,10 @@ flag_without "cookie-flags" "(res\.cookie|set_?cookie)[[:space:]]*\(" "http_?onl
 flag "client-authority"  "$(client_input_regex "$AUTHORITY_NAMES")"
 flag "client-value"      "$(client_input_regex "$VALUE_NAMES")"
 flag "client-header"     "(headers|header|META|getHeader|get_header)[^;]{0,12}x[-_](user|role|tenant|account|org|admin|uid)"
+flag "rls-off"           "disable[[:space:]]+row[[:space:]]+level[[:space:]]+security"
+flag "permissive-policy" "create[[:space:]]+policy.*[[:space:]]for[[:space:]]+(all|insert|update|delete)[[:space:]].*(using|with[[:space:]]+check)[[:space:]]*\([[:space:]]*true[[:space:]]*\)"
+flag "public-bucket"     "(insert[[:space:]]+into[[:space:]]+storage\.buckets.*[^a-z_]true([^a-z_]|$)|(createBucket|updateBucket)\([^)]*public[\"']?[[:space:]]*:[[:space:]]*true|acl[\"']?[[:space:]]*[:=][[:space:]]*[\"']public-read|BlockPublicAcls[\"']?[[:space:]]*[:=][[:space:]]*false)"
+flag "open-rules"        "allow[[:space:]]+[a-z, ]+:[[:space:]]*if[[:space:]]+(true[[:space:]]*;|request\.time[[:space:]]*<|request\.auth[[:space:]]*!=[[:space:]]*null[[:space:]]*;)"
 
 LC_ALL=C sort -u "$RESULTS" -o "$RESULTS"
 

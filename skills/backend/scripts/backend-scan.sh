@@ -10,7 +10,7 @@ wanted() {
     local name="${1##*/}"
     case "$name" in
         *.min.*|*.d.ts|*.test.*|*.spec.*|*_test.go|*_test.py|test_*.py|*_spec.rb|*Test.java|*Tests.cs) return 1 ;;
-        *.js|*.mjs|*.cjs|*.ts|*.py|*.rb|*.php|*.go|*.java|*.kt|*.cs) return 0 ;;
+        *.js|*.mjs|*.cjs|*.ts|*.py|*.rb|*.php|*.go|*.java|*.kt|*.cs|*.rules) return 0 ;;
     esac
     return 1
 }
@@ -35,7 +35,7 @@ for TARGET in "$@"; do
                 -o -name test -o -name tests -o -name __tests__ -o -name spec -o -name e2e \) -prune \) \
             -o \( -type d -path '*/storage/framework' -prune \) \
             -o \( -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' -o -name '*.ts' -o -name '*.py' -o -name '*.rb' \
-                -o -name '*.php' -o -name '*.go' -o -name '*.java' -o -name '*.kt' -o -name '*.cs' \) \
+                -o -name '*.php' -o -name '*.go' -o -name '*.java' -o -name '*.kt' -o -name '*.cs' -o -name '*.rules' \) \
                 ! -name '*.min.*' ! -name '*.d.ts' ! -name '*.test.*' ! -name '*.spec.*' ! -name '*_test.go' ! -name '*_test.py' \
                 ! -name 'test_*.py' ! -name '*_spec.rb' ! -name '*Test.java' ! -name '*Tests.cs' -print0 \))
     else
@@ -157,6 +157,11 @@ scan_i "(req[.]body|request[.](json|data|form|POST))([.]|\[$Q?|[.]get[(]$Q?)(pri
 scan_i "(headers|header|META|getHeader|get_header)[^;]{0,12}x[-_](user|role|tenant|account|org|admin|uid)" \
     | report B17 client-header
 
+scan_i "(createBucket|updateBucket)[(][^)]*public[\"']?[[:space:]]*:[[:space:]]*true|acl[\"']?[[:space:]]*[:=][[:space:]]*[\"']public-read|BlockPublicAcls[\"']?[[:space:]]*[:=][[:space:]]*false" \
+    | report B18 public-bucket
+scan "allow[[:space:]]+[a-z, ]+:[[:space:]]*if[[:space:]]+(true[[:space:]]*;|request[.]time[[:space:]]*<|request[.]auth[[:space:]]*!=[[:space:]]*null[[:space:]]*;)" \
+    | report B18 open-rules
+
 if [ "${#FILES[@]}" -gt 0 ]; then
     awk -v root="$ROOT" '
     function rel(f) {
@@ -218,7 +223,7 @@ echo ""
 sort -t " " -k1.2,1n -k2,2 -k3,3 "$RESULTS"
 echo ""
 echo "FINDINGS: $(wc -l <"$RESULTS" | tr -d ' ')"
-for rule in B1 B2 B4 B5 B6 B8 B9 B11 B12 B13 B14 B16 B17; do
+for rule in B1 B2 B4 B5 B6 B8 B9 B11 B12 B13 B14 B16 B17 B18; do
     echo "$rule: $(grep -c "^$rule " "$RESULTS" || true)"
 done
 echo ""

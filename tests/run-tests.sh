@@ -324,7 +324,11 @@ audit_checks() {
     expect_contains "$label flags identity headers in js" "$audit_output" "[client-header] client.js:12:"
     expect_contains "$label flags identity headers in python" "$audit_output" "[client-header] app.py:16:"
     expect_exit "$label reports a double matching line once" "$(printf '%s\n' "$audit_output" | grep -cF "[jwt-unverified] app.py:18:")" 1
-    expect_contains "$label counts every lead" "$audit_output" "LEADS: 28"
+    expect_contains "$label flags rls switched off" "$audit_output" "[rls-off] data.sql:1:"
+    expect_contains "$label flags write policies open to everyone" "$audit_output" "[permissive-policy] data.sql:2:"
+    expect_contains "$label flags public storage buckets" "$audit_output" "[public-bucket] data.sql:3:"
+    expect_contains "$label flags open firebase rules" "$audit_output" "[open-rules] firestore.rules:4:"
+    expect_contains "$label counts every lead" "$audit_output" "LEADS: 32"
     expect_exit "$label leaves safe code clean" "$safe_hits" 0
 }
 
@@ -379,7 +383,12 @@ backend_scan_checks() {
     expect_contains "$label flags client sent values read with get" "$bad" "B17 client-value app.py:34:"
     expect_contains "$label flags identity headers in js" "$bad" "B17 client-header orders.js:47:"
     expect_contains "$label flags identity headers in python" "$bad" "B17 client-header app.py:35:"
-    expect_contains "$label counts every lead" "$bad" "FINDINGS: 44"
+    expect_contains "$label flags public buckets in code" "$bad" "B18 public-bucket storage.js:1:"
+    expect_contains "$label flags public read acls" "$bad" "B18 public-bucket storage.js:2:"
+    expect_contains "$label flags firebase test mode rules" "$bad" "B18 open-rules firestore.rules:5:"
+    expect_contains "$label flags firebase rules open to everyone" "$bad" "B18 open-rules firestore.rules:8:"
+    expect_contains "$label counts client data leads" "$bad" "B18: 4"
+    expect_contains "$label counts every lead" "$bad" "FINDINGS: 48"
     expect_contains "$label counts leads per rule" "$bad" "B11: 6"
     expect_contains "$label counts public exposure leads" "$bad" "B16: 5"
     expect_contains "$label counts client trust leads" "$bad" "B17: 6"
@@ -415,7 +424,13 @@ db_lint_checks() {
     expect_contains "$label flags prisma datetime without timestamptz" "$bad" "B14 timestamp-without-tz schema.prisma:11:"
     expect_contains "$label flags random uuid keys in sql" "$bad" "B14 random-uuid-key 001_init.sql:2:"
     expect_contains "$label flags random uuid keys in prisma" "$bad" "B14 random-uuid-key schema.prisma:7:"
-    expect_contains "$label counts every lead" "$bad" "FINDINGS: 24"
+    expect_contains "$label flags supabase tables without rls" "$bad" "B18 rls-disabled supabase/migrations/20260101000000_notes.sql:1:"
+    expect_contains "$label flags rls switched off" "$bad" "B18 rls-disabled supabase/migrations/20260101000000_notes.sql:15:"
+    expect_contains "$label flags write policies open to everyone" "$bad" "B18 permissive-policy supabase/migrations/20260101000000_notes.sql:13:"
+    expect_exit "$label allows public read policies" "$(printf '%s\n' "$bad" | grep -c 'permissive-policy supabase/migrations/20260101000000_notes.sql:14' || true)" 0
+    expect_contains "$label flags public storage buckets" "$bad" "B18 public-bucket supabase/migrations/20260101000000_notes.sql:17:"
+    expect_contains "$label counts client data leads" "$bad" "B18: 4"
+    expect_contains "$label counts every lead" "$bad" "FINDINGS: 30"
     expect_contains "$label passes clean migrations and schema" "$good" "FINDINGS: 0"
 }
 

@@ -1,6 +1,6 @@
 # Backend Build Rules
 
-These rules apply whenever you create or change server code: endpoints, services, queries, models, migrations, jobs, config. B1 to B17 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the Rules Check.
+These rules apply whenever you create or change server code: endpoints, services, queries, models, migrations, jobs, config. B1 to B18 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the Rules Check.
 
 The scan tags after each rule title are what `scripts/backend-scan.*` reports for application code and what `scripts/db-lint.*` reports for SQL migrations and Prisma schemas. Rules with no tag need a human read.
 
@@ -148,6 +148,8 @@ Scan: `credentials-in-dsn`, `secret-fallback`
 - No secrets in code, in committed config, or as fallback defaults (`process.env.JWT_SECRET || "dev"`). No credentials inside connection strings in source
 - The same build artifact is promoted through every environment. Only config changes
 - On `SIGTERM` the service fails readiness, stops accepting new work, finishes in-flight requests and jobs within a deadline, closes pools and flushes telemetry, then exits
+- CI scans every push for committed secrets (gitleaks, trufflehog or GitHub push protection) and the whole git history once. A secret found in history is rotated first, then purged. Deleting the file is not enough
+- CI audits dependencies (`npm audit --omit=dev`, `pnpm audit`, `pip-audit`, `govulncheck`, `bundle audit`) and fails on high and critical issues in production dependencies. The lockfile is committed, and Renovate or Dependabot keeps dependencies current
 
 Details: [topics/config-deploy.md](topics/config-deploy.md), [topics/resilience.md](topics/resilience.md)
 
@@ -205,6 +207,24 @@ Scan: `client-value`, `client-header`. B2 adds `client-authority`, `mass-assignm
 
 Details: [topics/client-trust.md](topics/client-trust.md), [topics/authorization.md](topics/authorization.md), [topics/validation.md](topics/validation.md)
 
+## B18: Lock the Data the Client Can Reach
+
+Scan: `public-bucket`, `open-rules`. db-lint adds `rls-disabled`, `permissive-policy`, `public-bucket`
+
+When the browser or app talks to the database or storage directly (Supabase, Firebase, Appwrite, PocketBase, presigned S3 uploads), the database rules are the authorization layer. The anon key ships in the bundle by design, so whatever the rules allow, anyone can do with `curl`.
+
+- Row Level Security is on for every table in an exposed schema (`public` in Supabase), enabled in the same migration that creates the table. A table without RLS can be read and written by anyone who holds the anon key
+- Policies scope rows to the caller: `using (auth.uid() = user_id)` for reads and `with check (auth.uid() = user_id)` for writes, and tenant membership through a lookup. `using (true)` is only for rows that are public on purpose, and never on insert, update or delete
+- One policy per command and role (`for select to authenticated`), not one `for all` policy. Columns the user must not change (role, plan, owner, price, status) are protected by a column privilege, a trigger or a server function, not by the client leaving them out (B17)
+- The service role key, admin SDK credentials and anything else that bypasses the rules live only on the server (B16). Edge and server functions that use them check the caller themselves
+- Storage buckets are private by default. Files go out through short lived signed URLs, and storage policies keep each user in their own folder (`(storage.foldername(name))[1] = auth.uid()::text`). A bucket is public only for assets meant for everyone, and listing is never public
+- Uploads are capped by size, checked by content type and stored under generated names (B3)
+- Firebase rules never ship `allow read, write: if true` or the test mode rule `if request.time < timestamp.date(...)`. Every match compares `request.auth.uid` with the owner of the document or path
+- S3 and GCS buckets keep public access blocked. Objects go out through presigned URLs with a short expiry
+- Prove it with the anon key and a second test user: reading or writing another user's row or file must fail (B15). Run the Supabase security advisor, or the Firebase rules emulator tests, in CI
+
+Details: [topics/client-data-access.md](topics/client-data-access.md), [topics/authorization.md](topics/authorization.md), [postgres.md](postgres.md)
+
 ## Rules Check Format
 
 End a build with:
@@ -218,6 +238,7 @@ B6 indexes ......... still open (orders.created_at has no index, migration added
 B10 metrics ........ not applicable (no metrics stack in this project yet)
 B16 no secrets out . pass (no public env secrets, session is an HttpOnly cookie, DTO responses)
 B17 server decides . pass (role and owner from the session, totals computed from product prices)
+B18 client data .... pass (RLS on all 6 public tables, owner policies, avatars bucket private with signed URLs)
 ...
 ```
 

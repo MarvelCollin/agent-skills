@@ -27,7 +27,7 @@
 | Area | Rules | Weight | Grade (0 to 4) | Points | Note |
 |------|-------|--------|----------------|--------|------|
 | Authentication | B1 | 8 | {{g}} | {{p}} | {{one_line}} |
-| Authorization | B2, B17 | 12 | {{g}} | {{p}} | {{one_line}} |
+| Authorization | B2, B17, B18 | 12 | {{g}} | {{p}} | {{one_line}} |
 | Input and API contract | B3 | 8 | {{g}} | {{p}} | {{one_line}} |
 | Data access and queries | B4, B5 | 12 | {{g}} | {{p}} | {{one_line}} |
 | Schema, indexes and migrations | B6 | 8 | {{g}} | {{p}} | {{one_line}} |

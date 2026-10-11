@@ -42,7 +42,7 @@ Stress test first. Find where the backend actually hurts before you grade anythi
 Backend Checklist: <project> (<date>)
 Stress baseline .... knee at 180 rps on GET /orders, p99 2.1 s, database CPU saturated (N+1, 41 queries per request)
 Maintenance ........ 5 of 7 pass, 1 partial, 1 unverified
-Security ........... 9 of 12 pass, 3 fail
+Security ........... 12 of 16 pass, 3 fail, 1 n/a
 Database Speed ..... 9 of 14 pass, 5 fail
 Caching ............ 2 of 6 pass, 4 n/a
 Response Speed ..... 6 of 9 pass, 3 fail
@@ -90,6 +90,10 @@ Prose in the report follows the plugin copy rule: no semicolons and no em dashes
 | Keep secrets, env values and sessions out of the browser | B16, [client-trust](topics/client-trust.md) | No secret behind a public env prefix (`NEXT_PUBLIC_`, `VITE_`, `REACT_APP_` and similar), no key in the client bundle or build output, production source maps are not public, no token in `localStorage` or a script-set cookie, and no env dump or debug page in production (`public-env-secret`, `env-exposed`, `sourcemap-public`, `token-in-web-storage` are clean) |
 | Never trust role, price, owner or status sent by the client | B17, [client-trust](topics/client-trust.md) | Role, tenant, owner and plan come from the session. Totals and prices are computed from server data. Status and workflow steps change only through server transitions. Tokens are verified, not only decoded. Tamper tests prove a forged field is ignored or rejected (`client-authority`, `client-value`, `client-header`, `jwt-unverified` are clean) |
 | Never return stack traces to users | B11, [errors](topics/errors.md) | One central handler returns a generic 500 body with a request id, and debug mode is off in production (`leaked-error` is clean) |
+| Enable RLS on every table the client can reach | B18, [client-data-access](topics/client-data-access.md) | When the client talks to the database directly (Supabase, Firebase), every exposed table has RLS on with owner scoped policies, no `using (true)` on writes, and a cross user test proves it (`rls-disabled`, `permissive-policy`, `open-rules` are clean). `n/a` when only the server touches the database |
+| Lock storage buckets | B18, [client-data-access](topics/client-data-access.md) | Buckets are private, files go out through short lived signed URLs, uploads land in per user folders with size and type limits, and cloud buckets block public access (`public-bucket` is clean) |
+| Scan the git history for secrets | B13, [config-deploy](topics/config-deploy.md) | gitleaks or trufflehog ran over the full history with no live finding, any secret ever committed was rotated, and CI scans every push |
+| Audit dependencies | B13, [config-deploy](topics/config-deploy.md) | The audit command for the stack (`npm audit --omit=dev`, `pnpm audit`, `pip-audit`, `govulncheck`) shows no high or critical issue in production dependencies, the lockfile is committed, and Renovate or Dependabot is on |
 
 ## Database Speed
 

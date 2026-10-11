@@ -22,7 +22,8 @@ Work from input to sink. A vulnerability is almost always untrusted input reachi
 - **Business logic:** steps that can be skipped or replayed, amounts and quantities trusted from the client, missing server-side checks. See [testing/business-logic.md](testing/business-logic.md).
 - **Client exposure:** secrets in public-prefixed env vars (`NEXT_PUBLIC_`, `VITE_`, `REACT_APP_`, `EXPO_PUBLIC_`, `NUXT_PUBLIC_`, `VUE_APP_`, `GATSBY_`, `PUBLIC_`), hardcoded keys in client code, production source maps, whole rows serialized into SSR state or API responses, tokens in `localStorage` or script-set cookies, session cookies without `HttpOnly`, endpoints that print the environment. See [testing/client-exposure.md](testing/client-exposure.md).
 - **Client-controlled values:** role, owner, tenant, price, total, status or step taken from the body, query, headers or a decoded but unverified JWT, mass assignment, authorization enforced only in the UI, webhooks and queue messages accepted without verification. See [testing/tampering.md](testing/tampering.md).
-- **Dependencies:** known-vulnerable versions in the lockfile. Note them with the advisory id.
+- **Data the client can reach:** Supabase tables created without `enable row level security`, policies of `using (true)` on writes, public storage buckets, Firebase rules of `if true` or the test mode date rule, S3 objects with a `public-read` ACL. See [testing/data-storage.md](testing/data-storage.md).
+- **Dependencies:** known-vulnerable versions in the lockfile. Run the audit for the stack (`npm audit --omit=dev`, `pnpm audit`, `pip-audit`, `govulncheck`) and note each high or critical issue with its advisory id and whether the vulnerable code is reachable.
 
 ## Speed It Up with Grep
 
@@ -38,7 +39,7 @@ On Windows without bash:
 powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/grep-audit.ps1" -Path "<path>"
 ```
 
-The script flags likely dangerous sinks and hardcoded secrets by file and line. It also flags client exposure and client trust leads under these categories: `client-env-secret` (secret-named env vars behind public prefixes), `client-token-storage` (tokens in `localStorage`, `sessionStorage` or script-set cookies), `sourcemap-public`, `env-dump` (the whole environment sent or logged), `jwt-unverified` (decode without verify, ignored expiry, `none`), `cookie-flags` (cookie set without `HttpOnly`), `client-authority` (role, owner or tenant read from the request), `client-value` (price, status or step read from the request) and `client-header` (identity from `X-User`, `X-Role` and similar headers). Every hit needs a human read. Many are safe in context.
+The script flags likely dangerous sinks and hardcoded secrets by file and line. It also flags client exposure and client trust leads under these categories: `client-env-secret` (secret-named env vars behind public prefixes), `client-token-storage` (tokens in `localStorage`, `sessionStorage` or script-set cookies), `sourcemap-public`, `env-dump` (the whole environment sent or logged), `jwt-unverified` (decode without verify, ignored expiry, `none`), `cookie-flags` (cookie set without `HttpOnly`), `client-authority` (role, owner or tenant read from the request), `client-value` (price, status or step read from the request) and `client-header` (identity from `X-User`, `X-Role` and similar headers). For data the client reaches directly it flags `rls-off`, `permissive-policy`, `public-bucket` and `open-rules`. Every hit needs a human read. Many are safe in context.
 
 ## Output
 

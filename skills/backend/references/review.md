@@ -17,7 +17,7 @@ For `review diff [base]` (a branch or PR before merge), review only what changed
 1. List the changed files: `git diff --name-only --diff-filter=AMR <base>...HEAD` plus uncommitted changes from `git diff --name-only HEAD`. The base defaults to the main branch
 2. Scan them in one call. Pass the source files to `backend-scan` and the migration or schema files to `db-lint` (several paths are allowed: separate arguments, or `-Path "a,b"` on PowerShell). Non-source files are skipped
 3. Read the full diff, then the surrounding code each change depends on: the route's middleware, the query's callers, the migration's table
-4. Check every changed endpoint, query, migration and job against B1 to B17, and confirm each finding with the five gates below
+4. Check every changed endpoint, query, migration and job against B1 to B18, and confirm each finding with the five gates below
 5. Report: findings most severe first in the finding format, then what looks good, then a verdict: **approve**, **approve with fixes** (Low and Medium only), or **changes requested** (any Critical or High)
 
 ## 1. Map the System
@@ -52,7 +52,7 @@ Then lint the migrations and schema files (SQL and Prisma) the same way:
 bash "<skill-dir>/scripts/db-lint.sh" "<migrations-or-schema-path>" >> "<review-dir>/scan.txt"
 ```
 
-On Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/db-lint.ps1" -Path "<path>"`. It flags migrations that lock or rewrite live tables, foreign keys without an index, tables without a primary key, and wrong types for money, time and keys.
+On Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/db-lint.ps1" -Path "<path>"`. It flags migrations that lock or rewrite live tables, foreign keys without an index, tables without a primary key, wrong types for money, time and keys, and for Supabase style migrations, tables without RLS, write policies of `using (true)` and public storage buckets.
 
 Each line is `<rule> <check> <file>:<line>: <code>`. These are leads, not findings. The scan skips tests, vendored code and build output. It cannot see lazy-loaded relations in templates or serializers, missing indexes, or missing authorization on routes that do no lookup, so the manual walk in step 3 is where most real findings come from.
 
@@ -137,7 +137,7 @@ Grade each area from 0 to 4, then compute the weighted score out of 100.
 | Area | Rules | Weight |
 |------|-------|--------|
 | Authentication | B1 | 8 |
-| Authorization | B2, B17 | 12 |
+| Authorization | B2, B17, B18 | 12 |
 | Input and API contract | B3 | 8 |
 | Data access and queries | B4, B5 | 12 |
 | Schema, indexes and migrations | B6 | 8 |

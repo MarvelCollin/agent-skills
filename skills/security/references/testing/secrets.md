@@ -13,7 +13,7 @@ Keys, tokens, passwords, and connection strings that should never be readable en
 ## How to Test Safely
 
 - Grep the tree and the client bundle for key-shaped strings and secret keywords. The `grep-audit` script in [../code-review.md](../code-review.md) covers this. Each hit needs a read to confirm it is a real, live secret and not a placeholder or a public key.
-- Check version control history for the same patterns.
+- Check version control history for the same patterns. With gitleaks installed: `gitleaks detect --source . --log-opts="--all" --redact`. With trufflehog: `trufflehog git file://. --only-verified`. Without either: `git log --all -E -G 'AKIA[0-9A-Z]{16}|sk_live_|ghp_[A-Za-z0-9]{36}|xox[abp]-|AIza[0-9A-Za-z_-]{35}|sk-ant-|BEGIN [A-Z ]*PRIVATE KEY' --format='%h %ad %s' --date=short` lists the commits to read, and `git log --all --diff-filter=A --name-only --format= -- '*.env' '.env*'` lists env files that were ever committed. Record the commit and file, never the secret itself.
 - Watch responses during recon for anything that looks like a credential or token that should be server-only.
 - Do not use any real secret you find. Confirming it exists and is reachable is the finding. Report it, do not exercise it.
 
