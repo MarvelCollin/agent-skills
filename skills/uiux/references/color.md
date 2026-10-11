@@ -64,6 +64,7 @@ Keep the same hues. Swap the lightness roles: background around L 0.18-0.22 with
 - Squint test: the one primary action per screen should be the first thing you notice.
 - Grayscale test: view a screenshot in grayscale. States should still be distinguishable by text, shape or position.
 - No saturated default fills (C13), no rainbow of sibling cards (C12), no purple gradient (C01).
+- No stock pastel rainbow (C17), harsh multi hue gradient (C14), purple on black (C15) or neon accent (C16). A pastel palette has one lead hue, not one tint per card.
 
 ## Sources
 

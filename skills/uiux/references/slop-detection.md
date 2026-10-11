@@ -39,6 +39,18 @@ border-radius: 1rem     /* rounded-2xl default */
 border-radius: 0.75rem  /* rounded-xl default */
 ```
 
+### Background and Surface Tells
+```css
+background-image: radial-gradient(#d4d4d8 1px, transparent 1px)   /* K21 dot grid */
+background-image: linear-gradient(to right, #8881 1px, transparent 1px)  /* K21 line grid */
+mask-image: radial-gradient(ellipse at center, black, transparent)  /* K21 faded grid */
+filter: blur(64px)                                                /* K04 orb */
+backdrop-filter: blur(24px) saturate(180%)                         /* K02 liquid glass */
+box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4)                 /* K02 glass highlight */
+background: linear-gradient(90deg, #ff0080, #7928ca, #ff4d4d)      /* C14 harsh gradient */
+color: #39ff14                                                     /* C16 neon */
+```
+
 ### Control and Overlay Tells
 ```html
 <select>                                          <!-- S07 native select -->
@@ -64,6 +76,9 @@ data.map(row => ...)  // over a full fetch        <!-- S10 unbounded render -->
 /backdrop-blur/
 /rounded-(2xl|3xl).*shadow-lg.*p-6/
 /blur-(2xl|3xl).*opacity-\d+.*absolute/
+/\b(Sparkles|WandSparkles|SparklesIcon)\b|lucide-sparkles|✨/
+/from-[a-z]+-(500|600) via-[a-z]+-(500|600) to-[a-z]+-(500|600)/
+/bg-(black|neutral-950|zinc-950).*(violet|purple|fuchsia)-(400|500|600)/
 ```
 
 ### P1 Regex Patterns
@@ -76,6 +91,16 @@ data.map(row => ...)  // over a full fetch        <!-- S10 unbounded render -->
 /shadow-\[0_0_\d+px_rgba/
 /text-cyan-400.*bg-(slate|gray|zinc)-(900|950)/
 /rounded-full.*px-[2-3].*py-[0-1].*text-(xs|sm)/
+/<(Check|CheckIcon|CheckCircle2?|CircleCheck(Big)?|BadgeCheck)[\s/>]|[✓✔✅]/   three or more in one list
+/(radial|linear)-gradient\([^)]*[12]px[^)]*transparent/
+/DotPattern|GridPattern|dot-pattern|grid-pattern/
+/backdrop-blur|backdrop-saturate/
+/hover:(-translate-y-|scale-1\d\d)|hover:shadow-(xl|2xl)/
+/group-hover:translate-x-.*(Arrow|Chevron|→)/
+/rounded-full.*bg-red-(400|500).*rounded-full.*bg-yellow-(400|500).*rounded-full.*bg-green-(400|500)/
+/#ff5f5[67]|#ffbd2e|#27c93f|#28c840/
+/(text|bg|border|ring|shadow)-(lime|cyan|fuchsia)-(300|400)/
+/(bg|from|via|to)-[a-z]+-(50|100|200)/   three or more different hues in one file
 ```
 
 ### P2 Regex Patterns
@@ -83,6 +108,8 @@ data.map(row => ...)  // over a full fetch        <!-- S10 unbounded render -->
 /bg-(emerald|green)-(500|600)/
 /bg-(amber|stone)-50/
 /tracking-tight.*text-(4xl|5xl|6xl)/
+/shadow-(md|lg|xl)/   on most cards, buttons and images
+/from ["']lucide-react["']/   with no size or strokeWidth props anywhere
 ```
 
 ## HTML Structure Detection
@@ -117,6 +144,23 @@ data.map(row => ...)  // over a full fetch        <!-- S10 unbounded render -->
     <span class="*text-(sm|xs)*text-(gray|muted)*">*label*</span>
   </div>
   <!-- repeated 2-3 more times -->
+</div>
+```
+
+### Pricing Pattern
+```
+<div class="*grid*cols-3*">
+  <div>Starter  $0   ✓ ✓ ✓</div>
+  <div class="*scale-105*ring*">Most popular  Pro  $29  ✓ ✓ ✓ ✓</div>
+  <div>Enterprise  Contact us  ✓ ✓ ✓ ✓ ✓</div>
+</div>
+```
+
+### Fake Terminal Pattern
+```
+<div class="*bg-(black|zinc-900|slate-900)*font-mono*">
+  <span class="*rounded-full*bg-red-*"></span><span class="*bg-yellow-*"></span><span class="*bg-green-*"></span>
+  <p>$ npx create-something@latest</p>
 </div>
 ```
 
@@ -160,6 +204,16 @@ reimagine, disrupt
 "* at scale"
 ```
 
+### Manufactured Contrast Phrases
+```
+"It's not *, it's *"
+"This isn't just *. It's *."
+"Not *. *."
+"Less *. More *."
+"* without the *"
+"Stop *. Start *."
+```
+
 ### Social Proof Red Flags
 ```
 "Trusted by *,000+ *"
@@ -169,6 +223,14 @@ reimagine, disrupt
 ```
 
 Check against: domain age, actual user base, logo authenticity.
+
+### Fake Testimonial Red Flags
+```
+Quote has no company, role, link or date
+Headshot is a stock or generated face (reverse image search finds it elsewhere)
+Every quote is five stars and uses the same buzzwords as the hero
+Names are generic pairs (Sarah J., Michael Chen, Alex Rivera)
+```
 
 ## Font Detection
 

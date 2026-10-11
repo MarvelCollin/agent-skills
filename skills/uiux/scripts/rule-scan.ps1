@@ -67,6 +67,46 @@ $emDash = [string][char]0x2014
 Add-Findings (Find-Lines $files "(^|[^a-z0-9-])(bg|from|via|to|fill)-($hues)-(500|600|700)([^0-9]|$)") "R1" "saturated-fill"
 Add-Findings (Find-Lines $files "(background(-color)?|fill)\s*:\s*#($saturatedHex)([^0-9a-f]|$)|bg-\[#($saturatedHex)\]" -IgnoreCase) "R1" "saturated-fill"
 
+$sparkle = [string][char]0x2728
+$arrow = [string][char]0x2192
+$checkGlyphs = "$([char]0x2713)|$([char]0x2714)|$([char]0x2705)"
+$pastelPattern = "(^|[^a-z0-9-])(bg|from|via|to)-($hues)-(50|100|200)([^0-9]|$)"
+$checkPattern = "<(Check|CheckIcon|CheckCircle|CheckCircle2|CircleCheck|CircleCheckBig|BadgeCheck)[\s/>]|$checkGlyphs"
+
+Add-Findings (Find-Lines $files "#(39ff14|00ffff|ff00ff|ccff00|00ff00|0ff|f0f|0f0)([^0-9a-f]|$)" -IgnoreCase) "R1" "neon-color"
+Add-Findings (Find-Lines $files "(^|[^a-z0-9-])(text|bg|border|ring|shadow|from|via|to|fill|stroke)-(lime|cyan|fuchsia)-(300|400)([^0-9]|$)") "R1" "neon-color"
+foreach ($file in $files) {
+    $pastel = @(Select-String -LiteralPath $file.FullName -Pattern $pastelPattern -AllMatches -Encoding UTF8 -CaseSensitive)
+    $pastelHues = @($pastel | ForEach-Object { $_.Matches } | ForEach-Object { $_.Groups[3].Value } | Sort-Object -Unique)
+    if ($pastelHues.Count -ge 3) {
+        Add-Findings ($pastel | Select-Object -First 1) "R1" "pastel-rainbow"
+    }
+}
+
+Add-Findings (Find-Lines $files "(^|[^A-Za-z])(Sparkles|Sparkle|WandSparkles|SparklesIcon)([^A-Za-z]|$)|lucide-sparkles|$sparkle") "R15" "sparkle-icon"
+Add-Findings (Find-Lines $files "(radial|linear)-gradient\([^)]*[^0-9.][12]px[^)]*transparent|DotPattern|GridPattern|dot-pattern|grid-pattern") "R15" "dot-grid"
+Add-Findings (Find-Lines $files "rounded-full" | Where-Object { $_.Line -cmatch "blur-(2xl|3xl|\[[0-9]+px\])" }) "R15" "gradient-orb"
+Add-Findings (Find-Lines $files "filter\s*:\s*blur\(([4-9][0-9]|[1-9][0-9][0-9])px\)" -IgnoreCase) "R15" "gradient-orb"
+Add-Findings (Find-Lines $files "backdrop-blur|backdrop-saturate|backdrop-filter\s*:" -IgnoreCase) "R15" "glass-surface"
+Add-Findings (Find-Lines $files "hover:(-translate-y-|scale-1[0-9][0-9])|hover:shadow-(xl|2xl)") "R15" "hover-lift"
+Add-Findings (Find-Lines $files "hover:-?translate-x-" | Where-Object { $_.Line -cmatch "Arrow|arrow|Chevron|chevron|$arrow" }) "R15" "animated-arrow"
+Add-Findings (Find-Lines $files "font-family[^;]*(Inter|Geist|Space Grotesk)([^A-Za-z]|$)|(^|[^A-Za-z_])(Inter|Space_Grotesk|Geist|Geist_Mono)\s*\(\{|[`"']geist/font|family=(Inter|Space\+Grotesk|Geist)([^A-Za-z]|$)") "R15" "default-font"
+Add-Findings (Find-Lines $files "[\uD83C-\uD83E][\uDC00-\uDFFF]") "R15" "emoji"
+foreach ($file in $files) {
+    $checks = @(Select-String -LiteralPath $file.FullName -Pattern $checkPattern -Encoding UTF8 -CaseSensitive)
+    if ($checks.Count -ge 3) {
+        Add-Findings ($checks | Select-Object -First 1) "R15" "checkmark-bullets"
+    }
+    $text = [System.IO.File]::ReadAllText($file.FullName)
+    $macDots = ($text -match "#ff5f5[67]") -and ($text -match "#ffbd2e|#febc2e") -and ($text -match "#27c93f|#28c840")
+    $tailwindDots = ($text -cmatch "rounded-full[^`"']*bg-red-(400|500)|bg-red-(400|500)[^`"']*rounded-full") -and
+        ($text -cmatch "rounded-full[^`"']*bg-(yellow|amber)-(400|500)|bg-(yellow|amber)-(400|500)[^`"']*rounded-full") -and
+        ($text -cmatch "rounded-full[^`"']*bg-(green|emerald)-(400|500)|bg-(green|emerald)-(400|500)[^`"']*rounded-full")
+    if ($macDots -or $tailwindDots) {
+        Add-Findings (Select-String -LiteralPath $file.FullName -Pattern "#ff5f5[67]|bg-red-(400|500)" -Encoding UTF8 | Select-Object -First 1) "R15" "fake-terminal"
+    }
+}
+
 Add-Findings (Find-Lines $files "rounded" | Where-Object {
     $_.Line -cmatch "(^|[^a-z-])(size|w|h)-(6|7|8|9|10|11|12|14|16)([^0-9]|$)" -and
     $_.Line -cmatch "bg-[a-z]+-(50|100|200|300|400|500|600|700)([^0-9]|$)" -and
@@ -137,7 +177,7 @@ Write-Output ""
 $results | Sort-Object { $_ } -Culture "en-US" | ForEach-Object { Write-Output $_ }
 Write-Output ""
 Write-Output "FINDINGS: $($results.Count)"
-foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9", "R10", "R11", "R13", "R14")) {
+foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9", "R10", "R11", "R13", "R14", "R15")) {
     $count = @($results | Where-Object { $_.StartsWith("$rule ") }).Count
     Write-Output "${rule}: $count"
 }

@@ -77,6 +77,45 @@ scan_json() {
 scan "(^|[^a-z0-9-])(bg|from|via|to|fill)-($HUES)-(500|600|700)([^0-9]|$)" | report R1 saturated-fill
 scan_insensitive "(background(-color)?|fill)[[:space:]]*:[[:space:]]*#($SATURATED_HEX)([^0-9a-f]|$)|bg-\[#($SATURATED_HEX)\]" | report R1 saturated-fill
 
+scan_insensitive "#(39ff14|00ffff|ff00ff|ccff00|00ff00|0ff|f0f|0f0)([^0-9a-f]|$)" | report R1 neon-color
+scan "(^|[^a-z0-9-])(text|bg|border|ring|shadow|from|via|to|fill|stroke)-(lime|cyan|fuchsia)-(300|400)([^0-9]|$)" | report R1 neon-color
+for file in "${FILES[@]+"${FILES[@]}"}"; do
+    pastel_hues="$({ grep -oE "(^|[^a-z0-9-])(bg|from|via|to)-($HUES)-(50|100|200)([^0-9]|$)" "$file" || true; } \
+        | sed -E "s/^.*-($HUES)-(50|100|200).*$/\1/" | sort -u | wc -l | tr -d ' ')"
+    if [ "$pastel_hues" -ge 3 ]; then
+        grep -nHE -m1 "(^|[^a-z0-9-])(bg|from|via|to)-($HUES)-(50|100|200)([^0-9]|$)" "$file" | report R1 pastel-rainbow
+    fi
+done
+
+scan "(^|[^A-Za-z])(Sparkles|Sparkle|WandSparkles|SparklesIcon)([^A-Za-z]|$)|lucide-sparkles|✨" | report R15 sparkle-icon
+scan "(radial|linear)-gradient\([^)]*[^0-9.][12]px[^)]*transparent|DotPattern|GridPattern|dot-pattern|grid-pattern" | report R15 dot-grid
+scan "rounded-full" \
+    | { grep -E "blur-(2xl|3xl|\[[0-9]+px\])" || true; } \
+    | report R15 gradient-orb
+scan_insensitive "filter[[:space:]]*:[[:space:]]*blur\(([4-9][0-9]|[1-9][0-9][0-9])px\)" | report R15 gradient-orb
+scan_insensitive "backdrop-blur|backdrop-saturate|backdrop-filter[[:space:]]*:" | report R15 glass-surface
+scan "hover:(-translate-y-|scale-1[0-9][0-9])|hover:shadow-(xl|2xl)" | report R15 hover-lift
+scan "hover:-?translate-x-" \
+    | { grep -E "Arrow|arrow|Chevron|chevron|→" || true; } \
+    | report R15 animated-arrow
+scan "font-family[^;]*(Inter|Geist|Space Grotesk)([^A-Za-z]|$)|(^|[^A-Za-z_])(Inter|Space_Grotesk|Geist|Geist_Mono)[[:space:]]*\(\{|[\"']geist/font|family=(Inter|Space\+Grotesk|Geist)([^A-Za-z]|$)" | report R15 default-font
+if [ "${#FILES[@]}" -gt 0 ]; then
+    { LC_ALL=C grep -nHF $'\xf0\x9f' "${FILES[@]}" 2>/dev/null || true; } | report R15 emoji
+fi
+CHECK_PATTERN="<(Check|CheckIcon|CheckCircle|CheckCircle2|CircleCheck|CircleCheckBig|BadgeCheck)[[:space:]/>]|✓|✔|✅"
+for file in "${FILES[@]+"${FILES[@]}"}"; do
+    checks="$(grep -cE "$CHECK_PATTERN" "$file" || true)"
+    if [ "${checks:-0}" -ge 3 ]; then
+        grep -nHE -m1 "$CHECK_PATTERN" "$file" | report R15 checkmark-bullets
+    fi
+    if { grep -qiE "#ff5f5[67]" "$file" && grep -qiE "#ffbd2e|#febc2e" "$file" && grep -qiE "#27c93f|#28c840" "$file"; } \
+        || { grep -qE "rounded-full[^\"']*bg-red-(400|500)|bg-red-(400|500)[^\"']*rounded-full" "$file" \
+            && grep -qE "rounded-full[^\"']*bg-(yellow|amber)-(400|500)|bg-(yellow|amber)-(400|500)[^\"']*rounded-full" "$file" \
+            && grep -qE "rounded-full[^\"']*bg-(green|emerald)-(400|500)|bg-(green|emerald)-(400|500)[^\"']*rounded-full" "$file"; }; then
+        grep -nHiE -m1 "#ff5f5[67]|bg-red-(400|500)" "$file" | report R15 fake-terminal
+    fi
+done
+
 scan "rounded" \
     | { grep -E "(^|[^a-z-])(size|w|h)-(6|7|8|9|10|11|12|14|16)([^0-9]|$)" || true; } \
     | { grep -E "bg-[a-z]+-(50|100|200|300|400|500|600|700)([^0-9]|$)" || true; } \
@@ -150,6 +189,6 @@ echo ""
 sort "$RESULTS"
 echo ""
 echo "FINDINGS: $(wc -l <"$RESULTS" | tr -d ' ')"
-for rule in R1 R3 R4 R5 R6 R7 R9 R10 R11 R13 R14; do
+for rule in R1 R3 R4 R5 R6 R7 R9 R10 R11 R13 R14 R15; do
     echo "$rule: $(grep -c "^$rule " "$RESULTS" || true)"
 done

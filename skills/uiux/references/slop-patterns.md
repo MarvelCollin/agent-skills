@@ -19,6 +19,7 @@
 | C03 | Cyan-on-Dark | `text-cyan-400` on `bg-slate-900/950`, neon cyan as primary accent on dark theme |
 | C04 | Neon Glow Borders | `box-shadow: 0 0 20px rgba(color, 0.8)`, colored `ring-*` at full saturation on dark |
 | C13 | Saturated Default Fills | Tailwind 500/600 fills (`bg-blue-500`, `bg-green-500`, `bg-purple-500`, `bg-orange-500`) or their hex values used as surface or icon fills when the user never chose those colors |
+| C15 | Purple on Black | Near-black page (`bg-black`, `bg-neutral-950`, `#000` to `#0a0a0a`) with a violet or purple accent, often glowing |
 
 ### P1
 
@@ -29,6 +30,10 @@
 | C07 | Cream/Beige Default Surface | `bg-amber-50`, `bg-stone-50`, warm beige as background without brand reason |
 | C08 | Dark Mode Colored Glows | `shadow-[0_0_20px_rgba(139,92,246,0.3)]` or similar colored shadow |
 | C09 | Timid Even Palette | Multiple accent colors at similar saturation, no dominant/accent hierarchy |
+| C12 | Rainbow Sibling Colors | Each sibling card, accent bar, icon or chart series takes the next hue in the palette (`border-l-*`, icon colors, card fills) |
+| C14 | Harsh Gradients | Two or more saturated stops with far-apart hues on large surfaces, buttons or text (`from-pink-500 via-red-500 to-yellow-500`, `linear-gradient(90deg, #ff0080, #7928ca)`) |
+| C16 | Neon Accents | Maximum chroma lime, cyan, magenta or electric green as accent or text (`#39ff14`, `#00ffff`, `#ff00ff`, `#ccff00`, `text-lime-400`, `text-fuchsia-400`) |
+| C17 | Stock Pastel Rainbow | Tailwind 50 to 200 tints of three or more unrelated hues on sibling cards or sections (`bg-pink-100`, `bg-sky-100`, `bg-lime-100`), candy pastels with no lead hue and plain gray text. The R1 palette is one hue family plus one accent, not this |
 
 ### P2
 
@@ -36,7 +41,6 @@
 |----|---------|-----------|
 | C10 | Safe Green Fallback | `bg-emerald-500` as "alternative to purple" without brand logic |
 | C11 | Pure White/Black No Nuance | `#fff` or `#000` backgrounds with zero warmth or depth |
-| C12 | Rainbow Accent Bars | Each sibling card has different `border-l-*` color cycling through palette |
 
 ---
 
@@ -46,7 +50,7 @@
 
 | ID | Pattern | Detection |
 |----|---------|-----------|
-| T01 | Inter Everywhere | `font-family: 'Inter'` as sole font across all elements |
+| T01 | Default AI Sans Everywhere | Inter, Geist or Space Grotesk as the sole font across all elements (`font-family: 'Inter'`, `Inter({ subsets })`, `geist/font`) |
 | T02 | Single Font Everything | Computed font-family identical on `h1` through `p`, `button`, `label` |
 | T03 | Oversized Italic Serif Hero | `font-style: italic` + serif family on hero `h1`, often Instrument Serif or Playfair |
 
@@ -80,6 +84,7 @@
 | L02 | Centered Hero + Pill Badge | Small uppercase pill/badge sitting above oversized centered hero `h1` |
 | L03 | Three Feature Cards | Exactly 3 identical cards in a row: icon + heading + text |
 | L04 | Reflexive Bento Grid | CSS grid with mixed `col-span-*` on a marketing page with no content justification |
+| L17 | No Real Product Shown | Hero and feature sections show abstract art, gradients, icons or a mock dashboard full of lorem data instead of a real screenshot, recording or live demo of the product |
 
 ### P1
 
@@ -92,6 +97,8 @@
 | L09 | Hero Metric Layout | Big number + small label + gradient accent line on left |
 | L10 | Sidebar Emoji Icons | Navigation using emoji characters instead of SVG/icon library |
 | L11 | Dashboard Template Default | Sidebar (240-280px) + 4-6 KPI cards + charts below |
+| L15 | Three Pricing Tiers | Exactly three plans, the middle one raised and labeled "Most popular", each with a list of checkmarks, whether or not the product has three plans |
+| L16 | Fake Terminal Window | A dark terminal or code panel with red, yellow and green window dots and typed commands in the hero, for a product that is not a developer tool or with commands that do not exist |
 
 ### P2
 
@@ -110,12 +117,13 @@
 | ID | Pattern | Detection |
 |----|---------|-----------|
 | K01 | Icon-in-Rounded-Square | Any icon wrapped in a tinted or solid rounded square or circle (`bg-{color}-50 rounded-lg p-2`, `size-10 rounded-xl bg-blue-500 grid place-items-center`), in feature cards, stat blocks, list items, headers or empty states |
-| K02 | Reflexive Glassmorphism | `backdrop-filter: blur(10px)` + `bg-white/10` + semi-transparent border everywhere |
+| K02 | Reflexive Glassmorphism or Liquid Glass | `backdrop-filter: blur(10px)` + `bg-white/10` + semi-transparent border everywhere, or the liquid glass look (`backdrop-saturate-*`, a bright inset highlight, refraction on panels and nav) |
 | K03 | Untouched shadcn Defaults | `rounded-2xl shadow-lg p-6` on every surface, default shadcn card |
-| K04 | Purple/Violet Gradient Orbs | Absolute-positioned `bg-gradient-to-*` + `blur-3xl` + `opacity-*` blobs behind hero |
+| K04 | Gradient or Radial Orbs | Absolute-positioned `bg-gradient-to-*` or `radial-gradient` blobs with `blur-3xl` and `opacity-*` behind the hero or sections, usually purple or violet |
 | K11 | Pill Badges | `rounded-full` + `px-2`/`px-3` + `text-xs` tinted labels for status, role, category or tags ("Student", "Active", "New"), or Badge/Chip/Pill components that render that way |
 | K15 | Icon-Tile Stat Cards | Row of 3-6 identical white cards, each with a saturated colored icon tile, a small gray label and a big number, one rainbow color per card ("Total Users 5", "Test Results 7") |
 | K16 | Initials Avatar | A circle with a person's initials as the profile-picture fallback ("JD" on a colored disc), instead of a real photo or a non-letter placeholder |
+| K19 | Sparkle Icons | The sparkles emoji or a `Sparkles`, `WandSparkles` icon used to mean AI, magic or new |
 
 ### P1
 
@@ -127,14 +135,18 @@
 | K08 | Mandatory FAQ Accordion | FAQ accordion at page bottom regardless of product needs |
 | K09 | Logo Cloud Strip | "Trusted by" logo bar with recognizable company logos |
 | K10 | Testimonial Card Grid | Identical card format: circular avatar + name + title + quote |
+| K18 | Checkmark Bullets | Every list item starts with a check icon or check glyph (`<Check />`, `CheckCircle`, a check mark character) in hero, feature and pricing lists |
+| K21 | Dot or Grid Backgrounds | `radial-gradient` dot grids or 1px line grids as the hero or section background, often faded with a mask (`DotPattern`, `GridPattern`) |
 
 ### P2
 
 | ID | Pattern | Detection |
 |----|---------|-----------|
-| K12 | Emoji Feature Bullets | Emoji Unicode characters as feature list icons |
+| K12 | Emoji as Icons | Emoji characters as icons in feature bullets, headings, buttons or navigation |
 | K13 | Status Dots No Meaning | Small colored circles on elements with no defined state |
 | K14 | Decorative Stripe Patterns | `repeating-linear-gradient` as surface decoration |
+| K17 | Drop Shadow on Everything | `shadow-md`, `shadow-lg` or `shadow-xl` on every card, button, image and input, usually the stock `0 10px 15px -3px rgb(0 0 0 / 0.1)` |
+| K20 | Untouched Lucide Icons | Lucide, the shadcn default set, at 24px and stroke 2 everywhere, an icon before every heading and button, never sized or stroked to match the type |
 
 ---
 
@@ -147,6 +159,7 @@
 | X01 | Marketing Buzzwords | "Streamline," "empower," "supercharge," "world-class," "enterprise-grade," "cutting-edge," "best-in-class," "revolutionary" |
 | X02 | Vague Aspirational Headlines | "Build the future of," "Your all-in-one platform," "Scale without limits," "Elevate your workflow" |
 | X03 | Fake Social Proof | "Trusted by X,000+ teams" on new/unknown products with no evidence |
+| X13 | Fake Testimonials | Invented names, stock or generated headshots, flawless five star quotes with no company, link or date, written in the same voice as the marketing copy |
 
 ### P1
 
@@ -157,7 +170,7 @@
 | X06 | Hedging Value Props | "May help you," "can potentially," "designed to possibly" in value proposition |
 | X07 | Generic Audience Copy | "For modern teams," "for forward-thinking companies," "for the next generation" |
 | X08 | Beta Announcement Badge | Pill badge above hero with "Now in beta," "New," "Introducing" |
-| X09 | Aphoristic Cadence | Short punchy rebuttals and manufactured-contrast sentences repeated |
+| X09 | Not X, It's Y Cadence | Manufactured contrast and punchy rebuttals repeated: "It's not X, it's Y", "This isn't just X. It's Y.", "Less X. More Y." |
 
 ### P2
 
@@ -187,6 +200,8 @@
 | M05 | No Transition on Buttons | Missing `transition` property on button hover/active states |
 | M06 | Meaningless Hover States | `:hover` that only changes opacity slightly, communicates nothing |
 | M07 | Cursor Followers | Custom element following mouse position via JS |
+| M10 | Animated Arrows | An arrow on every button and link that slides right on hover (`group-hover:translate-x-1`, "Get started" plus an arrow) |
+| M11 | Hover Lift Everywhere | Cards, buttons and images lift, scale or glow on hover (`hover:-translate-y-1`, `hover:scale-105`, `hover:shadow-2xl`), including things that are not clickable |
 
 ### P2
 
@@ -211,13 +226,15 @@
 |----|---------|-----------|
 | S02 | Missing UI States | No `:focus-visible`, `[disabled]`, `.error`, empty, loading states |
 | S03 | Inconsistent Shadow Recipes | Multiple different `box-shadow` values across components, no system |
-| S04 | 16px Border Radius Everywhere | Single `border-radius` value on all elements |
+| S04 | Soft Radius Everywhere | One large soft radius (12 to 24px, `rounded-xl`, `rounded-2xl`) on every element regardless of size |
 | S05 | No Responsive Consideration | Desktop-only layout with missing/broken media queries |
 | S06 | Inline Styles Everywhere | High count of `style=""` attributes from AI generation |
 | S07 | Browser Default Controls | Native `<select>`, `<input type="date">`, checkboxes, radios, range sliders, file inputs, default scrollbars, `alert()`/`confirm()` dialogs or `title` tooltips left in the browser's own look |
 | S08 | Fixed-Size Overlays | Every modal or drawer shares one fixed width or height (`w-[500px]`, `width: 480px`) regardless of content, clipping or leaving empty space |
 | S09 | Bare Data Tables | Data tables with no search and no per-column filters, so users scan rows by eye |
 | S10 | Unbounded Data Load | A table or list that fetches the whole dataset and pages, sorts or filters in the browser, with no backend pagination and no skeleton while it loads |
+| S11 | No Skeleton Loaders | A blank screen, a layout jump or a lone centered spinner while content loads |
+| S12 | Missing Legal Pages | No privacy policy or terms of service linked from the footer on a site that collects emails, accounts or payments |
 
 ---
 

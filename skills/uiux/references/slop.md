@@ -35,9 +35,12 @@ Fetch the page HTML via WebFetch. Analyze:
 - Check for gradient text (C06)
 - Check for colored glow shadows (C04, C08)
 - Check for saturated default fills such as Tailwind 500/600 blue, green, purple, orange (C13)
+- Check for rainbow sibling colors, harsh multi hue gradients, purple on black, neon accents and stock pastel rainbows (C12, C14, C15, C16, C17)
+- Check for a pure white or pure black page with no tint (C11)
 
 **Typography**
 - Identify all font families loaded (Google Fonts, local fonts, system stack)
+- Flag Inter, Geist or Space Grotesk as the only typeface (T01)
 - Check against AI default font list from detection rules
 - Verify type scale system exists (ratio between heading levels)
 - Check for italic serif hero pattern (T03)
@@ -50,6 +53,9 @@ Fetch the page HTML via WebFetch. Analyze:
 - Check for bento grid usage (L04)
 - Check for stat banner rows (L07)
 - Check for colored left-border cards (L05)
+- Check for three pricing tiers with a raised "Most popular" middle plan (L15)
+- Check for a fake terminal or code window in the hero (L16)
+- Check whether the real product is shown anywhere: a screenshot, recording or live demo, not abstract art or a lorem dashboard (L17)
 
 **Components**
 - Check for icon-in-rounded-square pattern (K01)
@@ -62,11 +68,20 @@ Fetch the page HTML via WebFetch. Analyze:
 - Check for testimonial grid (K10)
 - Check for pill badges on status, role or tag labels (K11)
 - Check for rows of stat cards with colored icon tiles (K15)
+- Check for drop shadows on every surface (K17)
+- Check for check icons before every bullet (K18)
+- Check for sparkle icons that mean AI or new (K19)
+- Check for Lucide icons at default size and stroke on every heading and button (K20)
+- Check for dot grid or line grid backgrounds (K21)
+- Check for emoji used as icons (K12)
+- Check for liquid glass panels as well as classic glassmorphism (K02)
 
 **Content**
 - Scan all visible text for buzzwords from detection list
 - Check headlines against vague aspirational patterns
 - Check for fake social proof claims
+- Check testimonials for invented names, stock or generated faces and quotes with no company, link or date (X13)
+- Check for "It's not X, it's Y" and other manufactured contrast lines (X09)
 - Flag any em dash or semicolon in copy (X04)
 - Check for abstract opening verbs
 - Check CTA copy quality
@@ -77,17 +92,20 @@ Fetch the page HTML via WebFetch. Analyze:
 - Check for bounce/elastic easing (M02)
 - Check for image hover transforms (M03)
 - Check for parallax (M04)
+- Hover buttons and links: do arrows slide on every one (M10)
+- Hover cards and images: do they lift, scale or glow, even when not clickable (M11)
 
 **Structure**
 - Check if dark mode is default with no light toggle (S01)
 - Check for consistent shadow recipes (S03)
-- Check for uniform border-radius (S04)
+- Check for one soft radius on every element (S04)
 - Test responsive behavior (S05)
 - Check for browser default controls: native selects, date inputs, checkboxes, scrollbars, alert or confirm dialogs (S07)
 - Open two or three modals and check whether they all share one fixed size (S08)
 - Check whether data tables offer search and per-column filters (S09)
 - Check whether large tables and lists paginate from the backend, or load the whole dataset and page in the browser (S10, R10)
-- Check whether content shows a skeleton while loading, or a blank screen or a bare spinner (R10)
+- Check whether content shows a skeleton while loading, or a blank screen or a bare spinner (S11, R10)
+- Check the footer for a privacy policy and terms of service link when the site collects data (S12)
 - Check profile pictures: a real photo or a non-letter placeholder, not an initials circle (K16, R11)
 
 ### Step 3: Responsive Check

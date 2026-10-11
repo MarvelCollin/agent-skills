@@ -1,6 +1,6 @@
 # UI Build Rules
 
-These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R14 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
+These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R15 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
 
 Read these alongside [color.md](color.md), [navigation.md](navigation.md), [golden-rules.md](golden-rules.md) and the slop catalog in [slop-patterns.md](slop-patterns.md).
 
@@ -12,6 +12,10 @@ Never:
 - Use saturated default fills such as Tailwind `bg-blue-500`, `bg-green-500`, `bg-purple-500`, `bg-orange-500` or their hex values (`#3B82F6`, `#22C55E`, `#A855F7`, `#F97316`)
 - Give sibling items one rainbow color each (blue card, green card, purple card, orange card)
 - Default to indigo, violet or lavender (slop patterns C01 and C02)
+- Use stock pastels: Tailwind 50 to 200 tints of three or more unrelated hues side by side (`bg-pink-100`, `bg-sky-100`, `bg-lime-100`) is candy, not a palette (C17)
+- Use harsh multi hue gradients, purple on black, or neon accents such as `#39ff14` and `text-lime-400` (C14, C15, C16)
+
+Pastel here means the recipe in [color.md](color.md): one hue family chosen for the product, one accent, and neutrals tinted with the same hue.
 
 Pastel does not mean low contrast. Text on pastel surfaces uses a dark shade of the same hue (4.5:1 or better). Borders, focus rings and icons that carry meaning reach 3:1 against what they sit on.
 
@@ -233,13 +237,38 @@ When a modal grows past its container, change the container instead of shrinking
 - Toggle rows keep the label and description on the left and the switch on the right, vertically centered, with the same padding as the fields around them
 - Under 640px every row becomes one column and the overlay becomes a full height sheet with the footer pinned above the keyboard (`100dvh`)
 
+## R15: No AI Template Tells
+
+People now spot the defaults of AI generated sites on sight, and once they do, the whole product feels fake. Avoid every row below unless the user asks for that exact thing or the brand already uses it. The IDs point to [slop-patterns.md](slop-patterns.md).
+
+| Avoid | Do instead | IDs |
+|-------|------------|-----|
+| Sparkle icons or the sparkles emoji to mean AI, magic or new | Name the feature in words and show what it does | K19 |
+| A check icon before every bullet | A plain list. Use a check only in a yes or no comparison | K18 |
+| Dot grids, line grids, radial orbs and blurred blobs behind sections | A plain tinted surface, a real product image, or nothing | K04, K21 |
+| Glassmorphism and liquid glass panels | Solid surfaces from the token scale | K02 |
+| Hover lift, scale or glow on every card, and an arrow that slides on every button | Hover feedback only on what is clickable, as a color, underline or border change | M10, M11 |
+| A fake terminal or code window, or a mock dashboard full of lorem data | A real screenshot, recording or live demo of the product | L16, L17 |
+| Three pricing tiers with a raised "Most popular" middle card by default | The plans the product really has. More than two plans go in a comparison table | L15 |
+| Invented testimonials, stock headshots, "Trusted by 10,000+ teams" | Real quotes with name, role and a link, or no section at all | X03, X13 |
+| Inter, Geist or Space Grotesk as the only typeface | A pairing chosen for the product (R8) | T01, T04 |
+| Emoji as icons in navigation, headings, buttons or bullets | Words, or icons from one set sized to the text | K12, L10 |
+| Lucide at its default size and stroke before every heading and button | Fewer icons, sized and stroked to match the type | K20 |
+| Drop shadows on every surface | 2 or 3 elevation levels used for layering only (R8) | K17, S03 |
+| One soft radius such as `rounded-2xl` on everything | The radius scale from R8 | S04 |
+| Harsh gradients, purple on black, neon accents, a flat pure white page | The R1 palette with tinted neutrals | C11, C14, C15, C16 |
+| Bento grids, three equal feature cards, a colored left stripe on cards | A layout built from the main task (R8) | L03, L04, L05 |
+| Copy like "It's not X, it's Y" or "Less X. More Y." | One plain sentence about what it does | X09 |
+
+The review rates the build against the whole catalog and it must come out Clean. The rule scan flags the tells that leave a trace in code.
+
 ## Every Component Ships with Every State
 
 Default, hover, focus-visible, active, disabled, loading, empty, error and success, where they apply. A screen is not done until its loading, empty and error states exist.
 
 ## Checking the Rules
 
-Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7, R9, R10, R11, R13 and R14 violations with file and line:
+Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7, R9, R10, R11, R13, R14 and R15 violations with file and line:
 
 ```bash
 bash "<skill-dir>/scripts/rule-scan.sh" "<project-or-folder>"
@@ -251,4 +280,4 @@ On Windows without bash:
 powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/rule-scan.ps1" -Path "<project-or-folder>"
 ```
 
-The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2, R8, the rest of R10 and the rest of R14 in the rendered UI. For R14, open every form overlay with the most content it can hold and at a 700px tall window: the footer must be visible without scrolling and there must be one scrollbar. Check R12 by comparing the names and style of new files against the conventions report.
+The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2, R8, the rest of R10, the rest of R14 and the rest of R15 in the rendered UI. For R14, open every form overlay with the most content it can hold and at a 700px tall window: the footer must be visible without scrolling and there must be one scrollbar. Check R12 by comparing the names and style of new files against the conventions report.
