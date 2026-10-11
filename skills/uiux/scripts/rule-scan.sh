@@ -203,6 +203,9 @@ for file in "${MARKUP[@]+"${MARKUP[@]}"}"; do
         if ! grep -qiE "<title([[:space:]>]|$)" "$file"; then
             { grep -inHE -m1 "<head([[:space:]>]|$)" "$file" || true; } | report R16 missing-title
         fi
+        if ! grep -qiE "name=[\"']?description" "$file"; then
+            { grep -inHE -m1 "<head([[:space:]>]|$)" "$file" || true; } | report R16 missing-description
+        fi
     fi
     if grep -qiE "<html([[:space:]>]|$)" "$file" && ! grep -qiE "<html[^>]*[[:space:]]lang=" "$file"; then
         { grep -inHE -m1 "<html([[:space:]>]|$)" "$file" || true; } | report R16 missing-lang

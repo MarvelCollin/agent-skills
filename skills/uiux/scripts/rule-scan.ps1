@@ -175,6 +175,7 @@ foreach ($file in @($markupFiles | Where-Object { @(".html", ".htm") -contains $
         $head = Select-String -LiteralPath $file.FullName -Pattern "<head([\s>]|$)" -Encoding UTF8 | Select-Object -First 1
         if ($html -notmatch "name=[`"']?viewport") { Add-Findings $head "R16" "missing-viewport" }
         if ($html -notmatch "<title([\s>]|$)") { Add-Findings $head "R16" "missing-title" }
+        if ($html -notmatch "name=[`"']?description") { Add-Findings $head "R16" "missing-description" }
     }
     if ($html -match "<html([\s>]|$)" -and $html -notmatch "<html[^>]*\slang=") {
         Add-Findings (Select-String -LiteralPath $file.FullName -Pattern "<html([\s>]|$)" -Encoding UTF8 | Select-Object -First 1) "R16" "missing-lang"
