@@ -1,0 +1,26 @@
+\documentclass{article}
+\usepackage{natbib}
+\begin{document}
+
+\title{Attention Models for Short Text Classification}
+\maketitle
+
+\begin{abstract}
+We compare attention based and recurrent models for classifying short texts.
+\end{abstract}
+
+\section{Introduction}
+Recurrent networks with gated memory cells were long the default for sequence modeling \citep{hochreiter1997long}.
+Attention based models replaced recurrence with self attention \citep{vaswani2017attention}, and pretrained encoders now lead most text classification benchmarks \citep{devlin2019bert}.
+Residual connections made very deep networks trainable \citep{he2016deep}.
+Over 80\% of papers at recent NLP conferences use transformer models.
+A recent survey covers these trends in detail \citep{liu2023survey}.
+Neural citation checkers have been shown to remove most citation errors \citep{doe2024neural}.
+Earlier work used convolutional models for this task [12].
+
+\section{Method}
+We follow the original transformer configuration \citep{vaswani2017}.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+\end{document}
