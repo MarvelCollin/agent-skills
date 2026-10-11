@@ -114,6 +114,8 @@ Open the URL, take a screenshot, and form a gut reaction:
 2. What is the main action I'm supposed to take?
 3. Does the visual design feel trustworthy or sketchy?
 4. Is anything broken or missing?
+5. Is the main call to action visible without scrolling, at desktop and at 375px wide?
+6. Is the real product shown (a screenshot, recording or demo), or only abstract art and a mockup?
 
 #### Phase 2: Navigation
 
@@ -154,6 +156,7 @@ Never submit real purchases, payments, or messages to real people. Stop at the f
 4. Navigate away mid-action and come back
 5. Use the browser back button during multi-step flows
 6. Open pages that need prior state by direct URL
+7. Check what each form does after a valid submit: a success state or thank you page that says what happens next. Submit for real only on a local or staging build. On a live site, never send a real message, sign up or payment, and judge from the page, the network request and its response instead
 
 #### Phase 6: Performance
 
@@ -194,6 +197,7 @@ Test at each viewport from the browser protocol:
 4. Check for horizontal scrolling at each size
 5. Check touch targets at mobile size (minimum 44x44px)
 6. Check that navigation collapses into a usable mobile menu
+7. On long pages, is the main action still in reach at 375px (a sticky bar, or a repeat near the end)?
 
 #### Phase 8: Accessibility
 
@@ -203,7 +207,7 @@ Follow [references/accessibility.md](references/accessibility.md). Use WCAG leve
 
 1. Does a cookie consent banner appear on first visit?
 2. Is "Reject all" as easy as "Accept all"?
-3. Is the privacy policy linked from every page?
+3. Are the privacy policy and terms of service linked from every page, and are real contact details shown?
 4. Do forms explain why data is collected?
 5. Does the site still work with cookies rejected?
 6. Which third-party trackers load before consent? Check the browser's network requests.
