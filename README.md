@@ -60,6 +60,8 @@ Claude also loads the skill on its own whenever you ask it to build or restyle U
 | R12 Project conventions | New files follow the project's naming, code style and placement |
 | R13 Layered structure | Types, API calls, hooks and components each live in their own files |
 | R14 Form overlays | Header and action buttons stay pinned, only the body scrolls, fields in a row line up, and the container grows from modal to sheet to page as the content does |
+| R15 No AI template tells | No sparkle icons, checkmark bullets, dot grids, orbs, glass, hover lift, sliding arrows, fake terminals, three default pricing tiers, invented testimonials, emoji icons, default fonts, harsh gradients, purple on black or neon |
+| R16 Launch ready pages | A CTA above the fold, a sticky mobile CTA on long pages, a title, description and share image per page, a favicon set, alt text, a custom 404 that returns 404, inline form errors, a thank you state, and a footer with legal links and real contact details |
 
 It also applies the guides on [navigation](skills/uiux/references/navigation.md), [color picking](skills/uiux/references/color.md) and [Shneiderman's Eight Golden Rules](skills/uiux/references/golden-rules.md).
 
@@ -107,11 +109,11 @@ It works in phases, based on the OWASP WSTG and ASVS:
 
 1. **Scope.** Confirms authorization and writes the rules of engagement. Nothing active runs before this. A `scope-check` script verifies each target is in scope, and flags out-of-scope hosts.
 2. **Recon.** Maps the attack surface inside scope, preferring the app's own source and traffic over noisy scanning.
-3. **Testing.** Works through vulnerability classes matched to what recon found: injection, broken auth and access control, SSRF and server-side, XSS and client-side, session and tokens, business logic, misconfiguration, exposed secrets, client exposure (env values in the bundle, tokens in storage, over-fetched responses, public source maps), client tampering (an edited request that forges a role, owner, price or status), API, and LLM features. Lightest touch that proves the issue, nothing destructive.
+3. **Testing.** Works through vulnerability classes matched to what recon found: injection, broken auth and access control, SSRF and server-side, XSS and client-side, session and tokens, business logic, misconfiguration, exposed secrets, client exposure (env values in the bundle, tokens in storage, over-fetched responses, public source maps), client tampering (an edited request that forges a role, owner, price or status), data the client reaches directly (tables without RLS, public buckets, open Firebase rules), API, and LLM features. Lightest touch that proves the issue, nothing destructive.
 4. **Validation.** Six gates kill false positives. A finding ships only when reproduced with evidence and real impact.
 5. **Report.** Every finding gets severity, evidence, impact and a concrete fix, mapped to OWASP and CWE, with fixes ranked by risk over effort.
 
-A `grep-audit` script speeds up code review by flagging risky sinks and hardcoded secrets for a human to read, including secrets behind public env prefixes, tokens in web storage, public source maps, decoded but unverified JWTs, cookies without `HttpOnly`, and roles, prices and identity headers taken from the client. The skill only tests targets the user owns or is authorized to test, and never helps evade detection, target at scale, run denial-of-service, or attack third parties.
+A `grep-audit` script speeds up code review by flagging risky sinks and hardcoded secrets for a human to read, including secrets behind public env prefixes, tokens in web storage, public source maps, decoded but unverified JWTs, cookies without `HttpOnly`, roles, prices and identity headers taken from the client, RLS switched off, write policies open to everyone, public buckets and open Firebase rules. The skill only tests targets the user owns or is authorized to test, and never helps evade detection, target at scale, run denial-of-service, or attack third parties.
 
 ## `/backend`
 
@@ -147,13 +149,14 @@ Every build follows these hard rules, then ends with a Rules Check that says pas
 | B10 Metrics, traces, health | RED metrics, OpenTelemetry tracing, separate liveness and readiness |
 | B11 Safe errors | One handler, RFC 9457 problem details, nothing leaked, nothing swallowed |
 | B12 Slow work off the request path | Durable idempotent jobs, nothing that blocks the event loop |
-| B13 Config and shutdown | Typed config validated at startup, no secret fallbacks, graceful shutdown |
+| B13 Config and shutdown | Typed config validated at startup, no secret fallbacks, graceful shutdown, a secret scan of the git history and a dependency audit in CI |
 | B14 Correct types | Money as integer cents or decimal, UTC `timestamptz`, UUIDv7 or bigint keys |
 | B15 Prove it with tests | Real-database integration tests, authorization matrix, query counts, parallel and idempotency tests, tamper tests, a build check for leaked secrets |
 | B16 Nothing secret reaches the client | No secret behind a public env prefix or in the bundle, no public source maps or debug pages, an opaque `HttpOnly` session cookie, no tokens in web storage, DTO responses with no hashes or config |
 | B17 The server decides | Role, owner, price, total and status come from the server and a forged field changes nothing, hidden UI is never the check, tokens are verified and not only decoded |
+| B18 Lock the data the client can reach | RLS on every table the browser can reach with owner scoped policies, no `using (true)` on writes, private storage buckets with signed URLs, Firebase rules that check the owner, and the service role key only on the server |
 
-The rules link to 21 topic guides: API design, authentication, authorization, validation, database and N+1, migrations, concurrency, caching, performance, resilience, background jobs, logging, observability, errors, testing, config and deploy, architecture, distributed systems, real-time, client trust (secrets out of the browser, never trust client values), and a security baseline mapped to the OWASP API Security Top 10 (2023). A Postgres guide ranks its rules by impact with wrong and right SQL, and a stack guide covers the concrete fixes for Node, Python, Rails, Laravel, Spring, .NET, Go and GraphQL.
+The rules link to 22 topic guides: API design, authentication, authorization, validation, database and N+1, migrations, concurrency, caching, performance, resilience, background jobs, logging, observability, errors, testing, config and deploy, architecture, distributed systems, real-time, client trust (secrets out of the browser, never trust client values), client data access (RLS, storage buckets and Firebase rules), and a security baseline mapped to the OWASP API Security Top 10 (2023). A Postgres guide ranks its rules by impact with wrong and right SQL, and a stack guide covers the concrete fixes for Node, Python, Rails, Laravel, Spring, .NET, Go and GraphQL.
 
 ### Design
 
@@ -163,18 +166,18 @@ The rules link to 21 topic guides: API design, authentication, authorization, va
 
 `/backend review <path>` maps the system, runs the `backend-scan` script, walks 13 areas against the rules, measures query counts and plans when the app runs locally, and confirms every finding through five gates before it is reported. The report has a weighted score out of 100, a severity for each finding, and a fix plan ranked by impact over effort.
 
-`backend-scan` flags leads with a rule tag: N+1 calls inside loops, maps and comprehensions, unscoped id lookups, client-supplied roles, mass assignment, unbounded queries, `SELECT *`, offset pagination, blocking index builds, HTTP calls without timeouts, unstructured or secret-leaking logs, swallowed and leaked errors, blocking calls, credentials in connection strings, secret fallbacks, float money, naive timestamps, decoded but unverified JWTs, cookies without `HttpOnly`, secrets behind public env prefixes, public source maps, the whole environment sent in a response, tokens in web storage, and client-sent prices, status and identity headers. It skips tests, vendored code and build output. `/backend review diff [base]` reviews only a branch, pull request or the current changes.
+`backend-scan` flags leads with a rule tag: N+1 calls inside loops, maps and comprehensions, unscoped id lookups, client-supplied roles, mass assignment, unbounded queries, `SELECT *`, offset pagination, blocking index builds, HTTP calls without timeouts, unstructured or secret-leaking logs, swallowed and leaked errors, blocking calls, credentials in connection strings, secret fallbacks, float money, naive timestamps, decoded but unverified JWTs, cookies without `HttpOnly`, secrets behind public env prefixes, public source maps, the whole environment sent in a response, tokens in web storage, client-sent prices, status and identity headers, public storage buckets and open Firebase rules. It skips tests, vendored code and build output. `/backend review diff [base]` reviews only a branch, pull request or the current changes.
 
-`db-lint` does the same for SQL migrations and Prisma schemas: blocking index builds, constraints validated under lock, `NOT NULL` without a default, column type changes, unbatched backfills, foreign keys without an index, float money, timestamps without a time zone and random UUID keys.
+`db-lint` does the same for SQL migrations and Prisma schemas: blocking index builds, constraints validated under lock, `NOT NULL` without a default, column type changes, unbatched backfills, foreign keys without an index, float money, timestamps without a time zone and random UUID keys. In Supabase style migrations it also flags tables created without RLS, write policies of `using (true)` and public storage buckets.
 
 ### Checklist
 
-`/backend checklist [path] [maintenance|security|db|caching|speed]` is the fast pass for the essentials. It stress tests first, when it has a runnable target you own, to find the real bottleneck, then grades 48 items in five groups and ranks the fixes so the ones that explain the bottleneck come first. Each item links to its rule and topic file, and every `pass` needs proof (file and line, config value, command output). With no runnable target the baseline is reported as `not measured`, never invented. Items that live outside the repo, such as backups, CDN and HTTPS at the load balancer, are marked `unverified` instead of guessed.
+`/backend checklist [path] [maintenance|security|db|caching|speed]` is the fast pass for the essentials. It stress tests first, when it has a runnable target you own, to find the real bottleneck, then grades 52 items in five groups and ranks the fixes so the ones that explain the bottleneck come first. Each item links to its rule and topic file, and every `pass` needs proof (file and line, config value, command output). With no runnable target the baseline is reported as `not measured`, never invented. Items that live outside the repo, such as backups, CDN and HTTPS at the load balancer, are marked `unverified` instead of guessed.
 
 | Group | Items |
 |-------|-------|
 | Maintenance | Migrations, health check, logging, error monitoring, database backups, tests, profiling slow endpoints |
-| Security | Password hashing, rate limiting, parameterized queries, input validation, secrets in env vars, HTTPS, CORS whitelist, httpOnly and secure cookies, JWT expiry with refresh tokens, no stack traces to users, secrets and sessions kept out of the browser, no trust in client-sent roles or prices |
+| Security | Password hashing, rate limiting, parameterized queries, input validation, secrets in env vars, HTTPS, CORS whitelist, httpOnly and secure cookies, JWT expiry with refresh tokens, no stack traces to users, secrets and sessions kept out of the browser, no trust in client-sent roles or prices, RLS on tables the client can reach, locked storage buckets, a git history secret scan, a dependency audit |
 | Database speed | Indexes, composite and covering indexes, N+1, selected columns, `LIMIT`, cursor pagination, batching, pooling, precomputed counts, denormalized hot reads, `EXPLAIN`, query timeouts, transactions |
 | Caching | Redis for reads and sessions, HTTP cache headers, CDN, TTL, invalidation on update |
 | Response speed | Compression, small payloads, pagination, HTTP/2 and keep-alive, async I/O, background jobs, parallel calls, request timeouts, image resizing on upload |
@@ -236,13 +239,13 @@ skills/
   security/
     SKILL.md                  Entry point: scope, recon, test, validate, report, code review
     references/               Authorization, recon, validation, reporting, code review,
-                              testing/ (12 vulnerability classes)
+                              testing/ (13 vulnerability classes)
     templates/                Report and finding templates
     scripts/                  dev-detect, scope-init, scope-check, grep-audit (.sh + .ps1)
   backend/
     SKILL.md                  Entry point: build, design, review, checklist, load test and topic modes
-    references/               Build rules B1 to B17, design, review, essentials checklist, load testing,
-                              Postgres guide, stack notes, topics/ (21 backend topic guides)
+    references/               Build rules B1 to B18, design, review, essentials checklist, load testing,
+                              Postgres guide, stack notes, topics/ (22 backend topic guides)
     templates/                Design, review and load test report templates, OpenAPI starter
     scripts/                  backend-scan, db-lint, conventions, load-test (.sh + .ps1)
   explain/
