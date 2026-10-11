@@ -36,7 +36,11 @@
     "learning",
     "teaching",
     "eli5",
-    "feynman"
+    "feynman",
+    "research",
+    "citations",
+    "academic-writing",
+    "peer-review"
   ],
   "skills": "./skills/"
 }

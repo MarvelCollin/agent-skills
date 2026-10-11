@@ -11,6 +11,7 @@ skills/uiux/                     /uiux UI build rules, UI review and UX audit
 skills/security/                 /security authorized security review and code review
 skills/backend/                  /backend build rules, backend review and load testing
 skills/explain/                  /explain simple explanations, teach, quiz, explain back, remember
+skills/research/                 /research references, audit, write and review for research documents
   SKILL.md                       Entry point (each skill)
   references/                    Loaded on demand by SKILL.md
   templates/                     Report templates
@@ -66,6 +67,15 @@ tests/                           Script unit tests, fixture server, fake npx
 - Simplify the words, never the facts. Every picture states where it stops being true
 - Short by default (80 to 200 words). Simpler must be a new angle, not the same text cut down
 - Same copy rule as the other skills, in the skill's prose and in every explanation it writes
+
+## /research Principles
+
+- Never invent a reference, DOI, author, number or result. Each comes from the document, a registry record fetched in the session, or the user. Otherwise a visible placeholder
+- Every finding quotes the exact text and its location. An inconsistency quotes both places
+- Audit passes run in a fixed order. Script output is leads, confirmed in the document before it becomes a finding
+- Keep the author's meaning. Never make a claim stronger than its evidence
+- `cite-check --online` sends only DOIs to Crossref, never the manuscript. Tests use the local stub, never the network
+- Same copy rule as the other skills
 
 ## Checks
 

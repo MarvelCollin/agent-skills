@@ -10,6 +10,7 @@ A growing set of skills for Claude Code, packaged as one plugin. Each skill live
 | `/backend` | `/backend [what to build]`, `/backend design <system>`, `/backend review <path>`, `/backend checklist [path]`, `/backend load <url>` or `/backend <topic>` | Designs and builds backend code under expert rules, reviews it for production readiness, runs the essentials checklist, or load tests a service you own |
 | `/uiux` | `/uiux [what to build]` or `/uiux <url> [focus]` | Builds UI/UX frontend that follows strict UX rules and reviews it, or audits a live site as a real user |
 | `/security` | `/security <target-or-path> [phase]` | Runs an authorized security review of an app you own or are cleared to test, or a static code review |
+| `/research` | `/research references [path]`, `/research audit [path]`, `/research write <section> [path]` or `/research review [path] [venue]` | Verifies every reference against a registry, audits a paper's logic, numbers and consistency, drafts sections to the field's conventions, or reviews it like a tough peer reviewer |
 | `/explain` | `/explain <topic>`, `/explain simpler`, `/explain deeper`, `/explain teach <topic>`, `/explain quiz`, `/explain back <topic>` or `/explain remember <thing>` | Explains anything in the simplest true way, easy to understand and remember, teaches step by step, quizzes you, checks your own explanation, or drills something into memory |
 
 ## Installation
@@ -21,7 +22,7 @@ claude plugin marketplace add MarvelCollin/agent-skills
 claude plugin install agent-skills@marvelcollin
 ```
 
-Or copy one skill into your personal skills folder. Each skill keeps everything it needs inside its own folder, so it works on its own. Swap `backend` for `uiux`, `security` or `explain`:
+Or copy one skill into your personal skills folder. Each skill keeps everything it needs inside its own folder, so it works on its own. Swap `backend` for `uiux`, `security`, `research` or `explain`:
 
 ```bash
 git clone https://github.com/MarvelCollin/agent-skills
@@ -188,6 +189,28 @@ The rules link to 22 topic guides: API design, authentication, authorization, va
 
 Load tests only run against services you own. Local and private hosts are allowed by default. Any other host needs you to state your authorization, and the script refuses it without `--authorized` and a rate cap. The skill never load tests third parties.
 
+## `/research`
+
+Checks, audits, drafts and reviews research documents (papers, theses, reports, proposals) in any field, written in LaTeX, Markdown, Word exported to text or plain text. Claude also loads it on its own when you ask to check citations, sanity check a paper, rewrite an abstract or predict reviewer objections.
+
+```
+/research references paper.tex        # every citation real, resolvable and where a claim needs it
+/research audit thesis/               # logic, numbers and consistency, quoted with locations
+/research write abstract paper.md     # draft or restructure a section to the field's conventions
+/research review paper.tex NeurIPS    # tough peer review with scores, objections and a rebuttal plan
+```
+
+| Mode | What it does |
+|------|--------------|
+| References | Runs `cite-check`, then resolves each entry against Crossref or the publisher, flags invented or mismatched entries, checks that every claim that needs a citation has one that supports it, and makes the style consistent |
+| Audit | Runs fixed passes in order (map, claims, numbers, missing pieces, logic, consistency, structure). Finds numbers that differ between abstract, text and tables, missing baselines, ablations, definitions and limitations, causal claims from correlation, circular reasoning and contradictions between sections. Every finding quotes the text, gives its location, a severity and a fix |
+| Write | Gathers the facts first, outlines before prose, then writes paragraph by paragraph with a claim to evidence map. Anything it cannot source becomes a visible placeholder |
+| Review | Reads as a reviewer for the stated venue, scores five dimensions, ranks the objections that decide the outcome, and plans the rebuttal |
+
+Two scripts speed it up. `cite-check` reads `.tex`, `.md` and `.bib` files and lists cited keys missing from the bibliography, entries never cited, entries with no DOI or URL, malformed DOIs and duplicates. With `--online` it checks each DOI against Crossref and reports DOIs that do not exist and titles or years that do not match. `numbers-extract` lists every number with its zone and sentence, and flags abstract numbers found nowhere else, sample sizes that change, and percentages that do not add up.
+
+It never invents a reference, DOI, author, number or result. What it cannot confirm becomes a placeholder such as `[CITE: source for the 62 percent figure]`.
+
 ## `/explain`
 
 Explains anything you do not understand in the simplest true way, so it is easy to understand and easy to remember. Claude also loads it on its own when you say you do not get something or ask for a simple explanation.
@@ -248,6 +271,11 @@ skills/
                               Postgres guide, stack notes, topics/ (22 backend topic guides)
     templates/                Design, review and load test report templates, OpenAPI starter
     scripts/                  backend-scan, db-lint, conventions, load-test (.sh + .ps1)
+  research/
+    SKILL.md                  Entry point: references, audit, write and review modes
+    references/               One file per mode, field conventions, statistics checklist
+    templates/                Audit, review and references report templates
+    scripts/                  cite-check, numbers-extract (.sh + .ps1)
   explain/
     SKILL.md                  Entry point: explain, simpler, deeper, example, teach, quiz, explain back and remember
     references/               Rules E1 to E14, plain words, pictures and examples, teach mode, remember mode,
