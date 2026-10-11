@@ -3,6 +3,8 @@ security-*/
 backend-review-*/
 backend-design-*/
 backend-load-*/
+research-*/
+checkprod-*/
 load-results/
 uiux-report-*.md
 screenshots/
@@ -20,3 +22,7 @@ Thumbs.db
 !evals/security-*/**
 !evals/backend-*/
 !evals/backend-*/**
+!evals/research-*/
+!evals/research-*/**
+!evals/checkprod-*/
+!evals/checkprod-*/**
