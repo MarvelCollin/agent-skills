@@ -12,6 +12,7 @@ skills/security/                 /security authorized security review and code r
 skills/backend/                  /backend build rules, backend review and load testing
 skills/explain/                  /explain simple explanations, teach, quiz, explain back, remember
 skills/research/                 /research references, audit, write and review for research documents
+skills/checkprod/                /checkprod production readiness, 40 launch items with proof
   SKILL.md                       Entry point (each skill)
   references/                    Loaded on demand by SKILL.md
   templates/                     Report templates
@@ -67,6 +68,14 @@ tests/                           Script unit tests, fixture server, fake npx
 - Simplify the words, never the facts. Every picture states where it stops being true
 - Short by default (80 to 200 words). Simpler must be a new angle, not the same text cut down
 - Same copy rule as the other skills, in the skill's prose and in every explanation it writes
+
+## /checkprod Principles
+
+- Items FE1 to FE20 and BE1 to BE20 live in `skills/checkprod/references/checklist.md`. Keep `scripts/prod-scan.*` and `scripts/prod-url.*` in sync with it, and the two languages in sync key for key
+- Every pass needs proof. Items a scan cannot see are `manual`, never guessed
+- It looks, it does not attack. Active tests go to `/security`. Exposure probes run only on local or private hosts or with `--authorized`
+- Never print a secret, never invent contact details, legal text, testimonials or analytics IDs
+- Same copy rule as the other skills
 
 ## /research Principles
 

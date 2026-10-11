@@ -1,6 +1,6 @@
 # Backend Essentials Checklist
 
-A fast pass over a backend against five groups: Maintenance, Security, Database Speed, Caching and Response Speed. Each item maps to a build rule or topic file and says what proof counts. Use it when the user asks for "the essentials", a quick health check, or a pre-launch pass. For a scored deep review use [review.md](review.md) instead.
+A fast pass over a backend against five groups: Maintenance, Security, Database Speed, Caching and Response Speed. Each item maps to a build rule or topic file and says what proof counts. Use it when the user asks for "the essentials", a quick health check, or a pre-launch pass. For a scored deep review use [review.md](review.md) instead. For the whole launch list, frontend and SEO items included, use `/checkprod`.
 
 Arguments after `checklist`: an optional path (default the current project) and an optional group (`maintenance`, `security`, `db`, `caching`, `speed`). No group means all five.
 

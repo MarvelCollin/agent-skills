@@ -10,6 +10,7 @@ A growing set of skills for Claude Code, packaged as one plugin. Each skill live
 | `/backend` | `/backend [what to build]`, `/backend design <system>`, `/backend review <path>`, `/backend checklist [path]`, `/backend load <url>` or `/backend <topic>` | Designs and builds backend code under expert rules, reviews it for production readiness, runs the essentials checklist, or load tests a service you own |
 | `/uiux` | `/uiux [what to build]` or `/uiux <url> [focus]` | Builds UI/UX frontend that follows strict UX rules and reviews it, or audits a live site as a real user |
 | `/security` | `/security <target-or-path> [phase]` | Runs an authorized security review of an app you own or are cleared to test, or a static code review |
+| `/checkprod` | `/checkprod [path]`, `/checkprod <url>`, `/checkprod <path> <url>`, `/checkprod frontend` or `/checkprod backend`, `/checkprod fix` | Grades 40 launch items (20 frontend, 20 backend) with proof for every pass, from a static project scan and a live URL check, then fixes what failed |
 | `/research` | `/research references [path]`, `/research audit [path]`, `/research write <section> [path]` or `/research review [path] [venue]` | Verifies every reference against a registry, audits a paper's logic, numbers and consistency, drafts sections to the field's conventions, or reviews it like a tough peer reviewer |
 | `/explain` | `/explain <topic>`, `/explain simpler`, `/explain deeper`, `/explain teach <topic>`, `/explain quiz`, `/explain back <topic>` or `/explain remember <thing>` | Explains anything in the simplest true way, easy to understand and remember, teaches step by step, quizzes you, checks your own explanation, or drills something into memory |
 
@@ -22,7 +23,7 @@ claude plugin marketplace add MarvelCollin/agent-skills
 claude plugin install agent-skills@marvelcollin
 ```
 
-Or copy one skill into your personal skills folder. Each skill keeps everything it needs inside its own folder, so it works on its own. Swap `backend` for `uiux`, `security`, `research` or `explain`:
+Or copy one skill into your personal skills folder. Each skill keeps everything it needs inside its own folder, so it works on its own. Swap `backend` for `uiux`, `security`, `checkprod`, `research` or `explain`:
 
 ```bash
 git clone https://github.com/MarvelCollin/agent-skills
@@ -189,6 +190,26 @@ The rules link to 22 topic guides: API design, authentication, authorization, va
 
 Load tests only run against services you own. Local and private hosts are allowed by default. Any other host needs you to state your authorization, and the script refuses it without `--authorized` and a rate cap. The skill never load tests third parties.
 
+## `/checkprod`
+
+Checks whether a web app is really ready for production, the things a vibe coded site usually misses. Claude also loads it on its own when you ask if a site is ready to launch or production ready.
+
+```
+/checkprod                             # the current project
+/checkprod ./app https://myapp.com     # static scan plus live check, the strongest proof
+/checkprod backend                     # only BE1 to BE20
+/checkprod fix                         # fix the failed items, blockers first
+```
+
+| Group | Items |
+|-------|-------|
+| Frontend FE1 to FE20 | Custom 404, CTA above the fold, title and description per page, Open Graph image, favicon set, robots.txt, sitemap.xml, alt text, mobile breakpoints, sticky mobile CTA, loading, form error and success states, privacy and terms pages, cookie consent, analytics, real contact details with no placeholder content, HTTPS on the real domain |
+| Backend BE1 to BE20 | Hidden API keys, RLS, IDOR, git history secrets, admin routes, user isolation, rate limits, storage buckets, input validation, unauthenticated routes, SQL injection, sensitive logs, field tampering, file uploads, server logic, trimmed responses, auth sessions, dependency audit, record access, production config |
+
+`prod-scan` reads the project once and prints a graded line per item with file and line evidence, plus leads such as images without alt, secrets behind public env prefixes, open Firebase rules, tables without RLS and placeholder text. It also searches the git history for committed keys (commit hashes only, never the secret) and names the dependency audit command for the stack. `prod-url` acts like one visitor with about a dozen requests: HTTPS and security headers, title, description, Open Graph and favicon, robots.txt, sitemap, the 404 status, images without alt and load time. Its exposure probes (`/.env`, `/.git/HEAD`, public source maps) only run on local and private hosts, or with `--authorized` after you confirm you own the host.
+
+Every pass needs proof. Items a scan cannot see are graded `manual` and checked in a browser at 375 and 1440 when one is available. The active tests (IDOR, SQL injection, user isolation, record access) are handed to `/security`, never run by checkprod. In fix mode it asks you for real contact details, the legal entity, analytics IDs and keys instead of inventing them, never writes testimonials, and marks any drafted legal page as a draft for review.
+
 ## `/research`
 
 Checks, audits, drafts and reviews research documents (papers, theses, reports, proposals) in any field, written in LaTeX, Markdown, Word exported to text or plain text. Claude also loads it on its own when you ask to check citations, sanity check a paper, rewrite an abstract or predict reviewer objections.
@@ -271,6 +292,11 @@ skills/
                               Postgres guide, stack notes, topics/ (22 backend topic guides)
     templates/                Design, review and load test report templates, OpenAPI starter
     scripts/                  backend-scan, db-lint, conventions, load-test (.sh + .ps1)
+  checkprod/
+    SKILL.md                  Entry point: project, live site, frontend, backend and fix modes
+    references/               The 40 item checklist, where each item lives per framework
+    templates/                Launch report template
+    scripts/                  prod-scan, prod-url (.sh + .ps1)
   research/
     SKILL.md                  Entry point: references, audit, write and review modes
     references/               One file per mode, field conventions, statistics checklist
