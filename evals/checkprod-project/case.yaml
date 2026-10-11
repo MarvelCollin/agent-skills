@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: checkprod-project
+context:
+  add_dirs: [fixture]
