@@ -1,0 +1,13 @@
+Remote Work and Team Output
+
+Abstract
+Teams that worked remotely closed 18% more tickets in a sample of 64 teams (n = 64).
+
+Keywords: remote work, productivity
+
+1. Introduction
+Remote work grew quickly after 2020. We compare 64 teams over 6 months.
+Output rose by 14% on average, and N = 60 teams completed the survey.
+
+References
+Lee, A. (2019). Remote teams. Journal of Work, 12(3), 45-67.
