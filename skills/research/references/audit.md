@@ -55,6 +55,7 @@ Use the numbers-extract output as the index, then read each number in context.
 - **Impossible values.** Negative standard deviations, p values above 1, correlations outside minus 1 to 1, percentages above 100, means outside the scale's range, more events than participants
 - **Statistics.** Follow [statistics.md](statistics.md) for test reporting, effect sizes, multiple comparisons and the quick consistency checks
 - **Figures.** When the text describes a figure, open the image if it is available and compare. If you cannot see it, list the check as not done instead of assuming
+- **Numbers credited to a source.** When a sentence gives a number and cites someone for it ("Lee et al. report 41 percent"), fetch the source when you can and check the number, the population and the condition it came from. A misquoted or out of context number is a Data finding. When you cannot fetch the source, list the check as not done
 
 ## Pass 3. Missing Pieces
 
@@ -85,6 +86,7 @@ For each claim from Pass 1 that is not fully supported, and for every conclusion
 | Unfair comparison | Baselines with less tuning, data, compute or an older version | Equalize or state the difference |
 | Alternative explanations ignored | A plausible confound or rival mechanism never discussed | Discuss it, test it, or narrow the claim |
 | Results contradict the conclusion | A table shows the opposite of the text, or a key comparison is reversed | Fix the text or the table, whichever is wrong |
+| Unchecked priority or superlative | "the first", "the only", "state of the art", "no prior work" with no search or comparison behind it | Search the literature (References Mode) before accepting it, cite the closest prior work, or soften to what was checked |
 
 ## Pass 5. Consistency
 
