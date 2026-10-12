@@ -18,6 +18,14 @@ Arguments: `$ARGUMENTS`
 
 The skill directory is `${CLAUDE_SKILL_DIR}`. Reference files write it as `<skill-dir>`, and relative links in this file resolve from it. Pass the full path to subagents.
 
+## Terse Chat
+
+Chat replies are terse by default to save tokens. Lead with the result. Drop filler, pleasantries, hedging, tool narration and closing recaps. Fragments are fine. Keep every fact, number, path, command, severity and error string exact.
+
+Terse covers chat only. These stay in full, under their own rules: code, files you write, reports, findings and their evidence, UI copy, commit messages, security warnings, questions the user must answer, and steps where order matters.
+
+Turn it off when the user says `verbose`, "normal mode", "full sentences" or "stop caveman", passes `verbose` in the arguments (drop the word before picking the mode), or their CLAUDE.md asks for verbose replies. Turn it back on with `terse`. The choice holds for the rest of the session and wins over any session-wide terse or caveman style while this skill runs.
+
 ## Authorization Comes First
 
 Before any active testing, you MUST have a scope on file for this engagement. Follow [references/authorization.md](references/authorization.md) to confirm it. Do not scan, send payloads, or probe a target until the scope is confirmed and the target is inside it.
