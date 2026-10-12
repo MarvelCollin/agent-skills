@@ -14,6 +14,15 @@ A growing set of skills for Claude Code, packaged as one plugin. Each skill live
 | `/research` | `/research references [path]`, `/research audit [path]`, `/research write <section> [path]` or `/research review [path] [venue]` | Verifies every reference against a registry, audits a paper's logic, numbers and consistency, drafts sections to the field's conventions, or reviews it like a tough peer reviewer |
 | `/explain` | `/explain <topic>`, `/explain simpler`, `/explain deeper`, `/explain teach <topic>`, `/explain quiz`, `/explain back <topic>` or `/explain remember <thing>` | Explains anything in the simplest true way, easy to understand and remember, teaches step by step, quizzes you, checks your own explanation, or drills something into memory |
 
+## Terse Chat
+
+Every skill except `/explain` keeps its chat replies terse to save tokens. The result comes first, with no filler, pleasantries or recaps. Code, files, reports, findings with their evidence, UI copy, commit messages, security warnings and ordered steps are always written in full.
+
+- Turn it off: say `verbose`, "normal mode" or "full sentences", or add `verbose` to the arguments, for example `/backend verbose review src`. To turn it off for good, ask for verbose replies in your CLAUDE.md
+- Turn it back on: say `terse`
+
+`/explain` always writes full sentences, even when terse or [caveman](https://github.com/JuliusBrussee/caveman) mode is on, because a learner needs the linking words.
+
 ## Installation
 
 As a plugin, which installs every skill:

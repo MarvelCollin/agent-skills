@@ -24,6 +24,7 @@ tests/                           Script unit tests, fixture server, fake npx
 ## Conventions
 
 - Every skill has a SKILL.md with `name`, `description` and `when_to_use` frontmatter
+- Every skill except `/explain` has the same Terse Chat section under its copy rule. Keep the copies identical. `/explain` stays in full sentences even when terse or caveman mode is on
 - A skill keeps everything it needs inside its own folder so it also works when copied to `~/.claude/skills/`
 - `${CLAUDE_SKILL_DIR}` only expands inside SKILL.md. Reference files write `<skill-dir>` instead
 - Do not use `!` command injection for anything that can fail. A failing injected command aborts the whole skill
