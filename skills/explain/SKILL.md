@@ -14,6 +14,8 @@ Arguments: `$ARGUMENTS`
 
 The skill directory is `${CLAUDE_SKILL_DIR}`. Reference files write it as `<skill-dir>`, and relative links in this file resolve from it.
 
+Every explanation keeps the full style in this file even when a terse or caveman mode is on in the session. Those modes cut the articles, linking words and full sentences a learner needs, so never compress an explanation, a lesson, a quiz or a memory aid.
+
 ## Pick the Mode
 
 | Arguments or request | Mode | What to do |
