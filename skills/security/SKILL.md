@@ -24,7 +24,7 @@ Chat replies are terse by default to save tokens. Lead with the result. Drop fil
 
 Terse covers chat only. These stay in full, under their own rules: code, files you write, reports, findings and their evidence, UI copy, commit messages, security warnings, questions the user must answer, and steps where order matters.
 
-Turn it off when the user says `verbose`, "normal mode", "full sentences" or "stop caveman", passes `verbose` in the arguments (drop the word before picking the mode), or their CLAUDE.md asks for verbose replies. Turn it back on with `terse`. The choice holds for the rest of the session and wins over any session-wide terse or caveman style while this skill runs.
+Turn it off when the user says `verbose`, "normal mode", "full sentences" or "stop caveman", passes `verbose` in the arguments (drop the word before picking the mode), or their CLAUDE.md asks for verbose replies. Turn it back on with `terse`. Never announce or name the style. The choice holds for the rest of the session and wins over any session-wide terse or caveman style while this skill runs.
 
 ## Authorization Comes First
 
