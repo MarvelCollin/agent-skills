@@ -13,7 +13,6 @@ A growing set of skills for Claude Code, packaged as one plugin. Each skill live
 | `/checkprod` | `/checkprod [path]`, `/checkprod <url>`, `/checkprod <path> <url>`, `/checkprod frontend` or `/checkprod backend`, `/checkprod fix` | Grades 40 launch items (20 frontend, 20 backend) with proof for every pass, from a static project scan and a live URL check, then fixes what failed |
 | `/research` | `/research references [path]`, `/research audit [path]`, `/research write <section> [path]` or `/research review [path] [venue]` | Verifies every reference against a registry, audits a paper's logic, numbers and consistency, drafts sections to the field's conventions, or reviews it like a tough peer reviewer |
 | `/explain` | `/explain <topic>`, `/explain simpler`, `/explain deeper`, `/explain teach <topic>`, `/explain quiz`, `/explain back <topic>` or `/explain remember <thing>` | Explains anything in the simplest true way, easy to understand and remember, teaches step by step, quizzes you, checks your own explanation, or drills something into memory |
-| `/upwork` | `/upwork`, `/upwork find <focus>`, `/upwork check <job-url>`, `/upwork propose <job-url>`, `/upwork setup` or `/upwork queries` | Finds Upwork jobs that fit your stack, rate and part-time hours, scores them with a local script, checks the best by hand and writes a ranked shortlist. Drafts a proposal from your real CV for you to review. Never applies or spends Connects |
 
 ## Terse Chat
 
@@ -33,7 +32,7 @@ claude plugin marketplace add MarvelCollin/agent-skills
 claude plugin install agent-skills@marvelcollin
 ```
 
-Or copy one skill into your personal skills folder. Each skill keeps everything it needs inside its own folder, so it works on its own. Swap `backend` for `uiux`, `security`, `checkprod`, `research`, `explain` or `upwork`:
+Or copy one skill into your personal skills folder. Each skill keeps everything it needs inside its own folder, so it works on its own. Swap `backend` for `uiux`, `security`, `checkprod`, `research` or `explain`:
 
 ```bash
 git clone https://github.com/MarvelCollin/agent-skills
@@ -242,30 +241,6 @@ Two scripts speed it up. `cite-check` reads `.tex`, `.md` and `.bib` files and l
 
 It never invents a reference, DOI, author, number or result. What it cannot confirm becomes a placeholder such as `[CITE: source for the 62 percent figure]`.
 
-## `/upwork`
-
-Finds Upwork jobs worth your Connects and drafts proposals for the ones you pick. Claude also loads it on its own when you ask for Upwork leads, whether a job fits you, or a proposal for a job.
-
-```
-/upwork setup                      # build your profile and saved searches in ~/.upwork-jobs/
-/upwork                            # run every saved search and write a ranked shortlist
-/upwork find docker                # only the searches about Docker, plus one for docker itself
-/upwork check https://www.upwork.com/jobs/~01...   # is this one job worth applying to
-/upwork propose https://www.upwork.com/jobs/~01... # draft a proposal for you to review
-/upwork queries                    # show or edit the saved searches
-```
-
-| Step | What happens |
-|------|--------------|
-| Search | Runs your saved searches in Claude in Chrome when it is connected (signed in, so payment status, client rating and Connects cost show), or the built-in browser signed out. At most 12 searches and 20 job pages a run, one page at a time |
-| Extract | Reads every job card and the promising job pages into `jobs.tsv` with fixed field rules |
-| Score | `job-score` skips full-time, region locked, unverified, underpaid, off-platform scam, avoided and unrelated jobs, plus jobs seen in earlier runs, then scores the rest from 0 to 100 on stack fit, pay, client quality, competition and level |
-| Check | Reads each top job in full for real fit, scope against budget, fake jobs, hours and timezone, client signals and Connects cost |
-| Shortlist | Writes Apply now and Worth a look tables with a reason, a risk and a pitch angle from your real experience, and records the job ids so the next run shows only new jobs |
-| Propose | Reads one job page and writes `proposal-<id>.md`: the client's problem first, every screening question and code word answered, one or two proof points from your CV, part-time hours in your timezone and a small first milestone, plus a fact check table that ties every claim to your CV |
-
-Your profile, searches, seen ids and runs live in `~/.upwork-jobs/`, never in the skill folder. Set `cv=`, `timezone=` and `hours_per_week=` in `profile.conf` so drafts use your real CV and hours. Drafts never claim a tool, client or number your CV does not show. It never submits a proposal, spends or buys Connects, messages a client, saves a job or edits your profile unless you ask for that exact action.
-
 ## `/explain`
 
 Explains anything you do not understand in the simplest true way, so it is easy to understand and easy to remember. Claude also loads it on its own when you say you do not get something or ask for a simple explanation.
@@ -340,11 +315,6 @@ skills/
     SKILL.md                  Entry point: explain, simpler, deeper, example, teach, quiz, explain back and remember
     references/               Rules E1 to E14, plain words, pictures and examples, teach mode, remember mode,
                               research sources
-  upwork/
-    SKILL.md                  Entry point: find, check, setup and queries modes
-    references/               Search URLs and extraction, scoring and hand checks
-    templates/                Profile, saved searches and shortlist templates
-    scripts/                  job-score (.sh + .ps1)
 evals/                        Cases for claude plugin eval
 tests/                        Unit tests for the scripts
 ```

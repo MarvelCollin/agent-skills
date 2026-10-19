@@ -1,7 +1,7 @@
 {
   "name": "agent-skills",
   "displayName": "Agent Skills",
-  "version": "0.14.2",
+  "version": "0.15.0",
   "description": "A growing set of Claude Code skills in one plugin.",
   "author": {
     "name": "MarvelCollin",
@@ -43,10 +43,7 @@
     "peer-review",
     "production-readiness",
     "launch-checklist",
-    "seo",
-    "upwork",
-    "freelance",
-    "job-search"
+    "seo"
   ],
   "skills": "./skills/"
 }
