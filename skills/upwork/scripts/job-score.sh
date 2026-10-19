@@ -84,6 +84,7 @@ BEGIN {
     nscam = split("telegram,whatsapp,outside upwork,outside of upwork,off upwork,off platform,off-platform,registration fee,training fee,upfront payment,pay to start,security deposit,crypto wallet", scam, ",")
     ntz = split("us only,u.s. only,us based only,us-based only,must be in the us,est hours,pst hours,est time zone,pst time zone,us business hours,us working hours,us/uk business hours,uk business hours,overlap with us,overlap with est,overlap with pst,us central time,us eastern time,us pacific time,uk only,europe only,eu only", tz, ",")
     nft = split("full-time,full time,40 hours,40 hrs,40+ hours,40 hours per week", ft, ",")
+    nmulti = split("multiple freelancers,several freelancers,more than one freelancer,multiple positions,several positions,multiple hires,several hires,hire multiple,hiring multiple,hire several,hiring several,multiple developers,several developers", multi, ",")
     p["rate"] = 15; p["min_hourly"] = 10; p["min_fixed"] = 50; p["require_verified"] = "yes"; p["min_score"] = 55
 }
 FNR == 1 { fileno = (fileno == 0 && FILENAME == seenf) ? 1 : ((fileno <= 1 && FILENAME == proff) ? 2 : 3) }
@@ -103,6 +104,7 @@ fileno == 2 {
 fileno == 3 && !header {
     for (i = 1; i <= NF; i++) cidx[tolower(trim($i))] = i
     header = 1
+    hasact = ("interviewing" in cidx) || ("invites_sent" in cidx) || ("hires_on_job" in cidx) || ("last_viewed_hours" in cidx)
     ncore = split_list(p["core"], core)
     nsec = split_list(p["secondary"], sec)
     navoid = split_list(p["avoid"], avoid)
@@ -158,6 +160,11 @@ fileno == 3 {
     if (reason == "" && avoidhit != "" && corehits == 0) reason = "avoid:" avoidhit
     if (reason == "" && type == "hourly" && hourly > 0 && hourly < p["min_hourly"] + 0) reason = "low-pay"
     if (reason == "" && type == "fixed" && budget > 0 && budget < p["min_fixed"] + 0) reason = "low-pay"
+    iv = num(col("interviewing")); inv = num(col("invites_sent")); hj = num(col("hires_on_job")); lv = num(col("last_viewed_hours"))
+    multipos = 0
+    for (i = 1; i <= nmulti; i++) if (has(lx, multi[i])) { multipos = 1; break }
+    if (reason == "" && hj >= 1 && !multipos) reason = "filled"
+    if (reason == "" && iv >= 5) reason = "interviewing"
 
     if (reason != "") {
         bump(reason ~ /^scam:/ ? "scam" : (reason ~ /^avoid:/ ? "avoid" : reason))
@@ -190,6 +197,11 @@ fileno == 3 {
     props = num(col("proposals")); posted = num(col("posted_hours"))
     if (props < 0) scomp = 4; else if (props < 5) scomp = 10; else if (props < 10) scomp = 7; else if (props < 15) scomp = 4; else if (props < 20) scomp = 2; else scomp = 0
     if (posted < 0) scomp += 1; else if (posted <= 6) scomp += 5; else if (posted <= 24) scomp += 3; else if (posted <= 72) scomp += 1
+    if (iv == 0) scomp += 3; else if (iv >= 3) scomp -= 4
+    if (inv > 0 && iv > 0) scomp -= 3
+    if (lv >= 0 && lv <= 1) scomp += 2; else if (lv > 24) scomp -= 4
+    if (scomp < 0) scomp = 0
+    if (scomp > 15) scomp = 15
 
     level = tolower(col("level"))
     if (level == "entry") slevel = 10; else if (level == "intermediate") slevel = 8; else if (level == "expert") slevel = 4; else slevel = 5
@@ -200,6 +212,9 @@ fileno == 3 {
     if (verified != "1" && verified != "0") flags = flags (flags == "" ? "" : ",") "payment-unknown"
     connects = num(col("connects"))
     if (connects >= 16) flags = flags (flags == "" ? "" : ",") "connects:" connects
+    if (inv > 0 && iv > 0) flags = flags (flags == "" ? "" : ",") "invited-shortlist"
+    if (lv > 24) flags = flags (flags == "" ? "" : ",") "client-inactive"
+    if (hj >= 1) flags = flags (flags == "" ? "" : ",") "hired:" hj
 
     score = sstack + spay + sclient + scomp + slevel - penalty
     if (score < 0) score = 0
@@ -214,7 +229,7 @@ END {
     skipped = 0
     for (r in skipcount) skipped += skipcount[r]
     printf "JOBS: %d\nSHORTLIST: %d\nLOW: %d\nSKIPPED: %d\nMIN_SCORE: %d\n", total, shortlist, low, skipped, minscore > summary
-    n = split("seen,duplicate,scam,region-lock,full-time,unverified,no-stack-match,avoid,low-pay", order, ",")
+    n = split("seen,duplicate,scam,region-lock,full-time,unverified,no-stack-match,avoid,low-pay" (hasact ? ",filled,interviewing" : ""), order, ",")
     for (i = 1; i <= n; i++) printf "SKIP_%s: %d\n", toupper(order[i]), skipcount[order[i]] + 0 > summary
 }
 ' "$SEEN_IN" "$PROFILE" "$JOBS"

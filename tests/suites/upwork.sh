@@ -30,6 +30,33 @@ upwork_score_checks() {
     expect_contains "$label reports the threshold" "$out" "MIN_SCORE: 55"
     expect_contains "$label applies a stricter threshold" "$strict" "LOW 68 ~01dotnet"
     expect_contains "$label reports the stricter threshold" "$strict" "MIN_SCORE: 70"
+    if printf '%s\n' "$out" | grep -q "SKIP_FILLED\|SKIP_INTERVIEWING"; then
+        fail "$label keeps the old summary for a TSV without activity columns" "$out"
+    else
+        pass "$label keeps the old summary for a TSV without activity columns"
+    fi
+}
+
+upwork_activity_checks() {
+    local label="$1" out="$2"
+    expect_contains "$label scores a job with empty activity columns as before" "$out" "JOB 84 ~02blank"
+    expect_contains "$label leaves competition alone with no activity" "$(printf '%s\n' "$out" | grep '~02blank')" "comp 5 level"
+    expect_contains "$label adds for no interviews and a client viewing within the hour" "$(printf '%s\n' "$out" | grep '~02fresh')" "comp 10 level"
+    expect_contains "$label caps competition at 15" "$(printf '%s\n' "$out" | grep '~02ceil')" "comp 15 level"
+    expect_contains "$label takes off for 3 to 4 interviewing" "$(printf '%s\n' "$out" | grep '~02busy')" "comp 1 level"
+    expect_contains "$label takes off for invites with interviews" "$(printf '%s\n' "$out" | grep '~02some')" "comp 2 level"
+    expect_contains "$label flags an invited shortlist" "$(printf '%s\n' "$out" | grep '~02some')" "flags invited-shortlist"
+    expect_contains "$label takes off for a client not seen in a day" "$(printf '%s\n' "$out" | grep '~02cold')" "comp 4 level"
+    expect_contains "$label flags an inactive client" "$(printf '%s\n' "$out" | grep '~02cold')" "flags client-inactive"
+    expect_contains "$label floors competition at 0" "$(printf '%s\n' "$out" | grep '~02floor')" "comp 0 level"
+    expect_contains "$label skips a job with a hire" "$out" "SKIP ~02filled filled"
+    expect_contains "$label keeps a hire on a several position job" "$out" "JOB 84 ~02multi"
+    expect_contains "$label flags the hire on a several position job" "$(printf '%s\n' "$out" | grep '~02multi')" "flags hired:1"
+    expect_contains "$label skips a job with 5 interviewing" "$out" "SKIP ~02crowd interviewing"
+    expect_contains "$label ranks the open window first" "$(printf '%s\n' "$out" | sed -n 4p)" "JOB 89 ~02fresh"
+    expect_contains "$label counts filled skips" "$out" "SKIP_FILLED: 1"
+    expect_contains "$label counts interviewing skips" "$out" "SKIP_INTERVIEWING: 1"
+    expect_contains "$label counts all activity skips" "$out" "SKIPPED: 2"
 }
 
 echo "job-score.sh"
@@ -37,6 +64,9 @@ UP_OUT=$(bash "$UPSCRIPTS/job-score.sh" "$UPFIX/jobs.tsv" --profile "$UPFIX/prof
 expect_exit "exits cleanly" "$CODE" 0
 UP_STRICT=$(bash "$UPSCRIPTS/job-score.sh" "$UPFIX/jobs.tsv" --profile "$UPFIX/profile.conf" --seen "$UPFIX/seen.txt" --min 70 2>&1)
 upwork_score_checks "it" "$UP_OUT" "$UP_STRICT"
+UP_ACT=$(bash "$UPSCRIPTS/job-score.sh" "$UPFIX/jobs-activity.tsv" --profile "$UPFIX/profile.conf" 2>&1); CODE=$?
+expect_exit "exits cleanly with activity columns" "$CODE" 0
+upwork_activity_checks "it" "$UP_ACT"
 
 OUT=$(bash "$UPSCRIPTS/job-score.sh" "$UPFIX/jobs.tsv" --profile "$UPFIX/profile.conf" 2>&1)
 expect_contains "scores a first run with no seen file" "$OUT" "JOB 94 ~01dock"
@@ -70,6 +100,14 @@ if [ -n "$POWERSHELL" ]; then
         pass "matches the bash output"
     else
         fail "matches the bash output" "$(diff <(printf '%s\n' "$UP_OUT" | tail -n +3) <(printf '%s\n' "$PS_OUT" | tail -n +3))"
+    fi
+    PS_ACT=$(run_ps "$UPSCRIPTS/job-score.ps1" -Path "$UPFIX/jobs-activity.tsv" -Profile "$UPFIX/profile.conf" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "exits cleanly with activity columns" "$CODE" 0
+    upwork_activity_checks "it" "$PS_ACT"
+    if [ "$(printf '%s\n' "$UP_ACT" | tail -n +3)" = "$(printf '%s\n' "$PS_ACT" | tail -n +3)" ]; then
+        pass "matches the bash output with activity columns"
+    else
+        fail "matches the bash output with activity columns" "$(diff <(printf '%s\n' "$UP_ACT" | tail -n +3) <(printf '%s\n' "$PS_ACT" | tail -n +3))"
     fi
     OUT=$(run_ps "$UPSCRIPTS/job-score.ps1" -Path "$UPFIX/jobs.tsv" -Profile "$UPFIX/profile.conf" 2>&1 | tr -d '')
     expect_contains "scores a first run with no seen file" "$OUT" "JOB 94 ~01dock"

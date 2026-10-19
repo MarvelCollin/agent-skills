@@ -73,6 +73,7 @@ foreach ($line in [IO.File]::ReadAllLines($Profile)) {
 $scam = "telegram,whatsapp,outside upwork,outside of upwork,off upwork,off platform,off-platform,registration fee,training fee,upfront payment,pay to start,security deposit,crypto wallet" -split ','
 $tz = "us only,u.s. only,us based only,us-based only,must be in the us,est hours,pst hours,est time zone,pst time zone,us business hours,us working hours,us/uk business hours,uk business hours,overlap with us,overlap with est,overlap with pst,us central time,us eastern time,us pacific time,uk only,europe only,eu only" -split ','
 $ft = "full-time,full time,40 hours,40 hrs,40+ hours,40 hours per week" -split ','
+$multi = "multiple freelancers,several freelancers,more than one freelancer,multiple positions,several positions,multiple hires,several hires,hire multiple,hiring multiple,hire several,hiring several,multiple developers,several developers" -split ','
 
 $core = Split-List $p["core"]
 $sec = Split-List $p["secondary"]
@@ -90,12 +91,14 @@ $batch = @{}
 $skipCount = @{}
 $total = 0; $shortlist = 0; $low = 0
 $header = $false
+$hasAct = $false
 
 foreach ($raw in $lines) {
     $cells = ($raw -replace "`r", "") -split "`t"
     if (-not $header) {
         for ($i = 0; $i -lt $cells.Count; $i++) { $cidx[(Trim-Value $cells[$i]).ToLower()] = $i }
         $header = $true
+        $hasAct = $cidx.ContainsKey("interviewing") -or $cidx.ContainsKey("invites_sent") -or $cidx.ContainsKey("hires_on_job") -or $cidx.ContainsKey("last_viewed_hours")
         continue
     }
     if ((Trim-Value $raw) -eq "") { continue }
@@ -156,6 +159,11 @@ foreach ($raw in $lines) {
     if (-not $reason -and $avoidHit -and $coreHits -eq 0) { $reason = "avoid:$avoidHit" }
     if (-not $reason -and $type -eq "hourly" -and $hourly -gt 0 -and $hourly -lt $minHourly) { $reason = "low-pay" }
     if (-not $reason -and $type -eq "fixed" -and $budget -gt 0 -and $budget -lt $minFixed) { $reason = "low-pay" }
+    $iv = To-Num (& $col "interviewing"); $inv = To-Num (& $col "invites_sent"); $hj = To-Num (& $col "hires_on_job"); $lv = To-Num (& $col "last_viewed_hours")
+    $multiPos = $false
+    foreach ($m in $multi) { if (Has-Term $lx $m) { $multiPos = $true; break } }
+    if (-not $reason -and $hj -ge 1 -and -not $multiPos) { $reason = "filled" }
+    if (-not $reason -and $iv -ge 5) { $reason = "interviewing" }
 
     if ($reason) {
         $bucket = if ($reason -like "scam:*") { "scam" } elseif ($reason -like "avoid:*") { "avoid" } else { $reason }
@@ -183,6 +191,10 @@ foreach ($raw in $lines) {
     $props = To-Num (& $col "proposals"); $posted = To-Num (& $col "posted_hours")
     $sComp = if ($props -lt 0) { 4 } elseif ($props -lt 5) { 10 } elseif ($props -lt 10) { 7 } elseif ($props -lt 15) { 4 } elseif ($props -lt 20) { 2 } else { 0 }
     $sComp += if ($posted -lt 0) { 1 } elseif ($posted -le 6) { 5 } elseif ($posted -le 24) { 3 } elseif ($posted -le 72) { 1 } else { 0 }
+    $sComp += if ($iv -eq 0) { 3 } elseif ($iv -ge 3) { -4 } else { 0 }
+    if ($inv -gt 0 -and $iv -gt 0) { $sComp -= 3 }
+    $sComp += if ($lv -ge 0 -and $lv -le 1) { 2 } elseif ($lv -gt 24) { -4 } else { 0 }
+    $sComp = [Math]::Max(0, [Math]::Min(15, $sComp))
 
     $level = (& $col "level").ToLower()
     $sLevel = switch ($level) { "entry" { 10 } "intermediate" { 8 } "expert" { 4 } default { 5 } }
@@ -193,6 +205,9 @@ foreach ($raw in $lines) {
     if ($verified -ne "1" -and $verified -ne "0") { $flags = Add-Flag $flags "payment-unknown" }
     $connects = To-Num (& $col "connects")
     if ($connects -ge 16) { $flags = Add-Flag $flags "connects:$connects" }
+    if ($inv -gt 0 -and $iv -gt 0) { $flags = Add-Flag $flags "invited-shortlist" }
+    if ($lv -gt 24) { $flags = Add-Flag $flags "client-inactive" }
+    if ($hj -ge 1) { $flags = Add-Flag $flags "hired:$hj" }
 
     $score = [Math]::Max(0, [Math]::Min(100, $sStack + $sPay + $sClient + $sComp + $sLevel - $penalty))
     $tag = if ($score -ge $minScore) { "JOB" } else { "LOW" }
@@ -220,7 +235,9 @@ $out.Add("SHORTLIST: $shortlist")
 $out.Add("LOW: $low")
 $out.Add("SKIPPED: $skipped")
 $out.Add("MIN_SCORE: $minScore")
-foreach ($k in "seen,duplicate,scam,region-lock,full-time,unverified,no-stack-match,avoid,low-pay" -split ',') {
+$order = "seen,duplicate,scam,region-lock,full-time,unverified,no-stack-match,avoid,low-pay"
+if ($hasAct) { $order += ",filled,interviewing" }
+foreach ($k in $order -split ',') {
     $out.Add("SKIP_$($k.ToUpper()): $([int]$skipCount[$k])")
 }
 if ($Record -and $ids.Count -gt 0) {

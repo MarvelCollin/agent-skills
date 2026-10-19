@@ -137,7 +137,7 @@ A signed-in card can show "Not in my preferred location" where the client's coun
 
 ## Reading a Job Page
 
-Open `https://www.upwork.com/jobs/<id>`. Signed out, it shows the full description, all skills, proposals, interviewing, the client's country, member since, total spent and hires. Signed in, it also shows payment verified, the client rating, hire rate, the average hourly rate paid, the Connects needed to apply and the Connects available.
+Open `https://www.upwork.com/jobs/<id>`. Signed out, it shows the full description, all skills, proposals, interviewing, the client's country, member since, total spent and hires. Signed in, it also shows payment verified, the client rating, hire rate, the average hourly rate paid, the Connects needed to apply and the Connects available. The Activity on this job block shows proposals, last viewed by client, hires, interviewing, invites sent and unanswered invites.
 
 The page text tool truncates a long page, so the client block and the activity numbers near the bottom can be cut off. Read the fields with this compact extractor instead, and use the page text tool only when it returns empty fields.
 
@@ -145,17 +145,34 @@ The page text tool truncates a long page, so the client block and the activity n
 (() => {
   const t = document.body.innerText;
   const flat = s => s.replace(/\s+/g, ' ').trim();
-  const f = re => flat((t.match(re) || [])[1] || '');
+  const f = re => flat((t.match(re) || []).slice(1).find(Boolean) || '');
   const block = (start, n) => {
     const i = t.indexOf(start);
     return i < 0 ? '' : flat(t.slice(i, i + n));
   };
+  const hours = s => {
+    s = s.toLowerCase();
+    const n = parseInt((s.match(/(\d+)/) || [])[1] || '1', 10);
+    if (!s) return '';
+    if (/second|minute|just now/.test(s)) return 0;
+    if (/hour/.test(s)) return n;
+    if (/yesterday/.test(s)) return 24;
+    if (/day/.test(s)) return n * 24;
+    if (/week/.test(s)) return n * 168;
+    if (/month/.test(s)) return n * 720;
+    return '';
+  };
+  const lastViewed = f(/Last viewed by client:\s*([^\n]+)/i);
   return {
     description: flat(document.querySelector('[data-test*="Description" i]')?.innerText || '').slice(0, 3000),
     proposals: f(/Proposals:\s*([^\n]+)/),
-    interviewing: f(/Interviewing:\s*([^\n]+)/),
-    hires: f(/Hires:\s*([^\n]+)/),
-    connects: f(/Send a proposal for:\s*(\d+)\s*Connects/i),
+    last_viewed: lastViewed,
+    last_viewed_hours: hours(lastViewed),
+    hires: f(/Hires:\s*(\d+)/),
+    interviewing: f(/Interviewing:\s*(\d+)/),
+    invites_sent: f(/Invites sent:\s*(\d+)/i),
+    unanswered_invites: f(/Unanswered invites:\s*(\d+)/i),
+    connects: f(/Send a proposal for:\s*(\d+)\s*Connects|Required Connects to submit a proposal:\s*(\d+)/i),
     available_connects: f(/Available Connects:\s*(\d+)/i),
     about_client: block('About the client', 900),
     recent_history: block("Client's recent history", 1500)
@@ -163,15 +180,19 @@ The page text tool truncates a long page, so the client block and the activity n
 })()
 ```
 
-Fill the row from it. `proposals` takes the lower bound as above, `connects` the number and `text` the description. `payment_verified`, `client_spent`, `hire_rate`, `client_rating` and `country` come from `about_client`. Keep `recent_history` and the average hourly rate paid for the hand checks.
+Fill the row from it. `proposals` takes the lower bound as above, `connects` the number and `text` the description. `interviewing`, `invites_sent`, `hires_on_job` (from `hires`) and `last_viewed_hours` go in their own columns. `payment_verified`, `client_spent`, `hire_rate`, `client_rating` and `country` come from `about_client`. Keep `unanswered_invites`, `recent_history` and the average hourly rate paid for the hand checks.
+
+The Connects label comes in two forms, "Send a proposal for: 12 Connects" and "Required Connects to submit a proposal: 12". The extractor reads both. Activity changes within the hour, so read the page again right before the user applies.
 
 ## TSV Columns
 
 Write `<run>/jobs.tsv` with this header, tab separated, one job per line. Replace tabs and line breaks inside a value with a space.
 
 ```
-id	title	url	posted_hours	type	rate_min	rate_max	budget	proposals	payment_verified	client_spent	hire_rate	client_rating	country	workload	level	connects	skills	text
+id	title	url	posted_hours	type	rate_min	rate_max	budget	proposals	payment_verified	client_spent	hire_rate	client_rating	country	workload	level	connects	skills	text	interviewing	invites_sent	hires_on_job	last_viewed_hours
 ```
+
+The script finds columns by header name, so the last four are optional. An older TSV without them scores as before. Leave them empty for card-only rows, since only the job page shows activity.
 
 | Column | Rule |
 |--------|------|
@@ -187,9 +208,13 @@ id	title	url	posted_hours	type	rate_min	rate_max	budget	proposals	payment_verifi
 | `client_rating` | Number from "4.9 of 5". Empty when the client has no reviews |
 | `workload` | `part` for "Less than 30 hrs/week" or "As needed", `full` for "30+ hrs/week" or "More than 30 hrs/week", `unknown` otherwise |
 | `level` | `entry`, `intermediate` or `expert` |
-| `connects` | Number from "Send a proposal for: 12 Connects". Empty when not shown |
+| `connects` | Number from "Send a proposal for: 12 Connects" or "Required Connects to submit a proposal: 12". Empty when not shown |
 | `skills` | Comma separated skill tags |
 | `text` | The description, first 1500 characters |
+| `interviewing` | Number from "Interviewing: 3". Empty when not shown |
+| `invites_sent` | Number from "Invites sent: 7". Empty when not shown |
+| `hires_on_job` | Number from "Hires: 1" in the job's activity block, not the client's total hires. Empty when not shown |
+| `last_viewed_hours` | Hours since "Last viewed by client", with the same rules as `posted_hours`. "25 seconds ago" is 0, "3 hours ago" is 3. Empty when not shown |
 
 ## Pace and Stops
 

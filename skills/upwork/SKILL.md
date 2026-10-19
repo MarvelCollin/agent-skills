@@ -119,10 +119,10 @@ Follow [references/proposal.md](references/proposal.md).
 |------|---------|
 | `JOB <score> <id> \| ...` | At or above `min_score`. Has stack matches, pay, proposals, posted age, the five score parts, flags and the URL |
 | `LOW <score> <id> \| ...` | Passed the hard filters but scored under `min_score` |
-| `SKIP <id> <reason> \| <title>` | Failed a hard filter: `seen`, `duplicate`, `scam:<term>`, `region-lock`, `full-time`, `unverified`, `no-stack-match`, `avoid:<term>` or `low-pay` |
+| `SKIP <id> <reason> \| <title>` | Failed a hard filter: `seen`, `duplicate`, `scam:<term>`, `region-lock`, `full-time`, `unverified`, `no-stack-match`, `avoid:<term>`, `low-pay`, `filled` or `interviewing` |
 | `JOBS`, `SHORTLIST`, `LOW`, `SKIPPED`, `SKIP_*` | Counts |
 
-Flags on a `JOB` line (`timezone:<phrase>`, `full-time-wording`, `avoid:<term>`, `connects:<n>`, `payment-unknown`) are risks to name in the shortlist.
+Flags on a `JOB` line (`timezone:<phrase>`, `full-time-wording`, `avoid:<term>`, `connects:<n>`, `payment-unknown`, `invited-shortlist`, `client-inactive`, `hired:<n>`) are risks to name in the shortlist.
 
 ## Before You Send
 
