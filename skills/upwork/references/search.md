@@ -35,33 +35,135 @@ The URL is the base plus `q=<query>` plus the extra parameters. For `find <focus
 
 ## Reading the Cards
 
-Run this in the page with the browser's JavaScript tool. It returns one object per card. If it returns an empty list, the markup changed, so fall back to the page text tool and read the cards from the text.
+Search pages render the cards a second or two after load, so every snippet below waits up to 10 seconds for `article[data-test="JobTile"]` before it reads. Run them with the browser's JavaScript tool. If one returns no cards, the markup changed, so fall back to the page text tool and read the cards from the text.
+
+Match every field with `[data-test*="..."]`, never `[data-test="..."]`. Signed-in cards add classes to the attribute, such as `data-test="job-pubilshed-date UpCBadge"`, and an exact match then finds nothing. The `job-pubilshed-date` spelling is Upwork's own.
+
+Raw fields, one object per card, for checking what the cards show:
 
 ```js
-[...document.querySelectorAll('article[data-test="JobTile"]')].map(t => {
-  const q = s => (t.querySelector(s)?.innerText || '').replace(/\s+/g, ' ').trim();
-  const a = t.querySelector('a[data-test*="job-tile-title-link"]');
-  const m = (a?.href || '').match(/_(~0[0-9a-z]+)/);
-  return {
-    id: m ? m[1] : '',
-    title: q('[data-test*="job-tile-title-link"]'),
-    url: m ? 'https://www.upwork.com/jobs/' + m[1] : '',
-    posted: q('[data-test="job-pubilshed-date"]'),
-    type: q('[data-test="job-type-label"]'),
-    level: q('[data-test="experience-level"]'),
-    budget: q('[data-test="is-fixed-price"]'),
-    duration: q('[data-test="duration-label"]'),
-    skills: [...t.querySelectorAll('[data-test="token"]')].map(e => e.innerText.trim()).join(', '),
-    text: q('[data-test*="JobDescription"]').slice(0, 600)
-  };
-})
+(async () => {
+  for (let i = 0; i < 40 && !document.querySelector('article[data-test="JobTile"]'); i++) await new Promise(r => setTimeout(r, 250));
+  return [...document.querySelectorAll('article[data-test="JobTile"]')].map(t => {
+    const q = s => (t.querySelector(`[data-test*="${s}"]`)?.innerText || '').replace(/\s+/g, ' ').trim();
+    const m = (t.querySelector('a[data-test*="job-tile-title-link"]')?.href || '').match(/_(~0[0-9a-z]+)/);
+    return {
+      id: m ? m[1] : '',
+      title: q('job-tile-title-link'),
+      posted: q('job-pubilshed-date'),
+      type: q('job-type-label'),
+      level: q('experience-level'),
+      budget: q('is-fixed-price'),
+      duration: q('duration-label'),
+      proposals: q('proposals-tier'),
+      payment: q('payment-verified'),
+      feedback: q('total-feedback'),
+      spent: q('total-spent'),
+      location: q('location'),
+      skills: [...t.querySelectorAll('[data-test*="token"]')].map(e => e.innerText.trim()).join(', '),
+      text: q('JobDescription').slice(0, 600)
+    };
+  });
+})()
 ```
 
-The `data-test="job-pubilshed-date"` spelling is Upwork's own. The card shows only some skills, so the job page fills in the rest. For page 2, add `&page=2`.
+Normalized rows, one TSV line per card in the [TSV Columns](#tsv-columns) order. It also adds the rows to the page's `localStorage` under `upworkRows`, keyed by id, so many cards can be moved out without retyping them (see Find in SKILL.md). It returns the card count, the stored total and the rows.
+
+```js
+(async () => {
+  for (let i = 0; i < 40 && !document.querySelector('article[data-test="JobTile"]'); i++) await new Promise(r => setTimeout(r, 250));
+  const clean = v => String(v ?? '').replace(/\s+/g, ' ').trim();
+  const hours = s => {
+    s = s.toLowerCase();
+    const n = parseInt((s.match(/(\d+)/) || [])[1] || '1', 10);
+    if (/second|minute|just now/.test(s)) return 0;
+    if (/hour/.test(s)) return n;
+    if (/yesterday/.test(s)) return 24;
+    if (/day/.test(s)) return n * 24;
+    if (/week/.test(s)) return n * 168;
+    if (/month/.test(s)) return n * 720;
+    return '';
+  };
+  const money = s => {
+    const m = s.replace(/,/g, '').match(/\$([\d.]+)\s*([KM])?/i);
+    if (!m) return '';
+    return Math.round(parseFloat(m[1]) * ({ k: 1000, m: 1000000 }[(m[2] || '').toLowerCase()] || 1));
+  };
+  const lower = s => /less than/i.test(s) ? 0 : ((s.match(/(\d+)/) || [])[1] ?? '');
+  const tiles = [...document.querySelectorAll('article[data-test="JobTile"]')];
+  const rows = tiles.map(t => {
+    const q = s => clean(t.querySelector(`[data-test*="${s}"]`)?.innerText);
+    const m = (t.querySelector('a[data-test*="job-tile-title-link"]')?.href || '').match(/_(~0[0-9a-z]+)/);
+    const all = clean(t.innerText);
+    const type = q('job-type-label');
+    const rates = /hourly/i.test(type) ? (type.replace(/,/g, '').match(/\$[\d.]+/g) || []).map(x => parseFloat(x.slice(1))) : [];
+    const pay = q('payment-verified');
+    const loc = q('location').replace(/^location\s*/i, '');
+    const level = q('experience-level').toLowerCase();
+    return [
+      m ? m[1] : '',
+      q('job-tile-title-link'),
+      m ? 'https://www.upwork.com/jobs/' + m[1] : '',
+      hours(q('job-pubilshed-date')),
+      /hourly/i.test(type) ? 'hourly' : /fixed/i.test(type) ? 'fixed' : '',
+      rates[0] ?? '',
+      rates[1] ?? rates[0] ?? '',
+      /fixed/i.test(type) ? money(q('is-fixed-price')) : '',
+      lower(q('proposals-tier')),
+      /unverified/i.test(pay) ? 0 : /verified/i.test(pay) ? 1 : '?',
+      money(q('total-spent')),
+      '',
+      (q('total-feedback').match(/\b([0-5](?:\.\d+)?)\b/) || [])[1] || '',
+      /preferred location/i.test(loc) ? '' : loc,
+      /less than 30 hrs|as needed/i.test(all) ? 'part' : /30\+ hrs|more than 30 hrs/i.test(all) ? 'full' : 'unknown',
+      ['entry', 'intermediate', 'expert'].find(l => level.includes(l)) || '',
+      '',
+      [...t.querySelectorAll('[data-test*="token"]')].map(e => clean(e.innerText)).join(', '),
+      q('JobDescription').slice(0, 1500)
+    ].map(clean).join('\t');
+  });
+  const store = JSON.parse(localStorage.getItem('upworkRows') || '{}');
+  rows.forEach(r => { const id = r.split('\t')[0]; if (id) store[id] = r });
+  localStorage.setItem('upworkRows', JSON.stringify(store));
+  return { cards: rows.length, stored: Object.keys(store).length, rows };
+})()
+```
+
+What it normalizes: "Posted 3 hours ago" to 3, "yesterday" to 24, "2 days ago" to 48, "last week" to 168. "Proposals: 5 to 10" to 5, "Less than 5" to 0, "50+" to 50. "$1K+ spent" to 1000, "$10K+" to 10000, "$1M+" to 1000000. "Less than 30 hrs/week" to `part`, "30+ hrs/week" to `full`, nothing shown to `unknown`. Hire rate and Connects are not on the cards, so they stay empty until the job page fills them in. The card shows only some skills, and the job page fills in the rest. For page 2, add `&page=2`.
+
+### "Not in my preferred location"
+
+A signed-in card can show "Not in my preferred location" where the client's country would be. That is the freelancer's own client-location preference from their settings, saying the client is outside the countries the user prefers to work with. It is not a client lock on freelancers, so never treat it as region-lock and never skip a job for it. The snippet leaves `country` empty for it. A real region lock is the job page's own "Only freelancers located in" line, which the script reads from `text`.
 
 ## Reading a Job Page
 
-Open `https://www.upwork.com/jobs/<id>` and read it with the page text tool. Signed out, it shows the full description, all skills, proposals, interviewing, the client's country, member since, total spent and hires. Signed in, it also shows payment verified, the client rating, hire rate and the Connects needed to apply.
+Open `https://www.upwork.com/jobs/<id>`. Signed out, it shows the full description, all skills, proposals, interviewing, the client's country, member since, total spent and hires. Signed in, it also shows payment verified, the client rating, hire rate, the average hourly rate paid, the Connects needed to apply and the Connects available.
+
+The page text tool truncates a long page, so the client block and the activity numbers near the bottom can be cut off. Read the fields with this compact extractor instead, and use the page text tool only when it returns empty fields.
+
+```js
+(() => {
+  const t = document.body.innerText;
+  const flat = s => s.replace(/\s+/g, ' ').trim();
+  const f = re => flat((t.match(re) || [])[1] || '');
+  const block = (start, n) => {
+    const i = t.indexOf(start);
+    return i < 0 ? '' : flat(t.slice(i, i + n));
+  };
+  return {
+    description: flat(document.querySelector('[data-test*="Description" i]')?.innerText || '').slice(0, 3000),
+    proposals: f(/Proposals:\s*([^\n]+)/),
+    interviewing: f(/Interviewing:\s*([^\n]+)/),
+    hires: f(/Hires:\s*([^\n]+)/),
+    connects: f(/Send a proposal for:\s*(\d+)\s*Connects/i),
+    available_connects: f(/Available Connects:\s*(\d+)/i),
+    about_client: block('About the client', 900),
+    recent_history: block("Client's recent history", 1500)
+  };
+})()
+```
+
+Fill the row from it. `proposals` takes the lower bound as above, `connects` the number and `text` the description. `payment_verified`, `client_spent`, `hire_rate`, `client_rating` and `country` come from `about_client`. Keep `recent_history` and the average hourly rate paid for the hand checks.
 
 ## TSV Columns
 

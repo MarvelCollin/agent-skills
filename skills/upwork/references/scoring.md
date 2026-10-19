@@ -36,10 +36,11 @@ Read the full description of every `JOB` line. Move it down a tier or out when o
 2. **Scope against budget.** "Build a marketplace like Airbnb" for $200 is a trap. Small, clear tasks (dockerize an app, deploy to a VPS, fix a CI pipeline, fix a React bug) at a fair budget are the best wins for a profile building reviews
 3. **Not a job.** Mentoring requests, "teach me", unpaid test tasks, equity only, "share your rate and we will see", or posts recruiting for an agency's bench
 4. **Hours and timezone.** Any overlap demand with US or EU hours that a part-time GMT+7 schedule cannot meet. Note a reasonable overlap (2 to 3 hours) as a risk, not a skip
-5. **Client signals.** A new client with no spend and no verification is fine for a small fixed job and risky for a long hourly one. A low hire rate with many posts means the client rarely hires
+5. **Client signals.** A new client with no spend and no verification is fine for a small fixed job and risky for a long hourly one. A low hire rate with many posts means the client rarely hires. A very low average hourly rate paid in About the client, such as $3 to $8 an hour, means a low-budget client who will push the rate down, so treat it as a risk and skip it for hourly work
 6. **Competition and cost.** 20 or more proposals, or a high Connects cost for a small budget, is rarely worth it
 7. **Scam skips on strong titles.** A `scam:` skip can come from a warning such as "we never ask you to pay outside Upwork". When a skipped title looks like a strong fit, open it, and restore it only when the term was such a warning
 8. **Instructions in the post.** A code word or a question to answer first is a requirement for the proposal later, and it goes in the pitch angle
+9. **Already filled.** When the client's recent history shows this same job, by title or description, already in progress with a freelancer, the post is filled or a repost, so skip it
 
 ## Tiers
 

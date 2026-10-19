@@ -71,15 +71,36 @@ Follow [references/search.md](references/search.md) for URLs, extraction and fie
 
 1. **Load.** Read `profile.conf` and `queries.txt`. Make the run folder.
 2. **Browser.** Prefer Claude in Chrome when it is connected, since the user is signed in there and the pages show payment status, client rating, hire rate and Connects cost. Otherwise use the built-in browser, which works signed out but leaves those fields as `?`. Say which one you used in the shortlist header.
-3. **Search.** For each query, open the search URL, read the job cards with the extraction snippet, and add each card as a TSV row. When signed in, also read the Best Matches feed once.
-4. **Pre-filter.** From the card data alone, drop rows the script would skip anyway (30+ hrs per week, clearly unrelated titles, ids in `seen.txt`). Open the job page for the rest, best first, until the page cap, and fill in the client and activity fields.
-5. **Score.** Run the script on the TSV:
+3. **Account check.** When signed in, open Best Matches first. If it shows "You need to verify your identity to resume activity", or any similar hold (suspended, restricted, under review, verify to continue), tell the user up front, before any results, that they cannot apply until they resolve it in Upwork. Keep searching only if the pages still load, and put the same warning at the top of the shortlist and the report.
+4. **Search.** For each query, open the search URL and run the normalized card snippet. It waits for the cards to render, then stores each card as a TSV row in the page's `localStorage`. Read the Best Matches feed the same way once. See Moving Many Cards below.
+5. **Pre-filter.** Dump the stored rows into `<run>/jobs.tsv`. From the card data alone, drop rows the script would skip anyway (30+ hrs per week, clearly unrelated titles, ids in `seen.txt`). Open the job page for the rest, best first, until the page cap, read it with the compact job page extractor, and fill in the client and activity fields.
+6. **Score.** Run the script on the TSV:
    - `bash "${CLAUDE_SKILL_DIR}/scripts/job-score.sh" "<run>/jobs.tsv"`
    - `powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/scripts/job-score.ps1" -Path "<run>/jobs.tsv"`
-6. **Check by hand.** Read every `JOB` line's full description and apply the hand checks. Move a job down or out when a check fails, and say why. A script score is a lead, not a verdict.
-7. **Write the shortlist** to `<run>/shortlist.md` from the template: Apply now, Worth a look, then a skipped count by reason.
-8. **Remember.** Run the script again with `--record` (`-Record`) so these ids are skipped next time.
-9. **Report** in chat: the Apply now jobs as a short table (score, title, pay, proposals, posted, one line why, link), the count of the rest, and the shortlist path. Offer the next step, such as `propose <job-url>` for one job, without doing it.
+7. **Check by hand.** Read every `JOB` line's full description and apply the hand checks. Move a job down or out when a check fails, and say why. A script score is a lead, not a verdict.
+8. **Write the shortlist** to `<run>/shortlist.md` from the template: Apply now, Worth a look, then a skipped count by reason.
+9. **Remember.** Run the script again with `--record` (`-Record`) so these ids are skipped next time.
+10. **Report** in chat: the Apply now jobs as a short table (score, title, pay, proposals, posted, one line why, link), the count of the rest, and the shortlist path. Offer the next step, such as `propose <job-url>` for one job, without doing it.
+
+### Moving Many Cards
+
+A run reads 100 or more cards, and retyping each one from tool output into the TSV wastes tokens and invites typos. Keep the rows in the page instead. `localStorage` belongs to the upwork.com origin, so it survives every search and page navigation in the run.
+
+1. Before the first search, run `localStorage.removeItem('upworkRows')` so no rows from an older run mix in. On each search page, run the normalized card snippet from [references/search.md](references/search.md). It adds that page's rows to the `upworkRows` key, keyed by id so repeats overwrite, and returns the stored total.
+2. After the last search, dump the rows in chunks of about 25 so no tool output gets truncated:
+
+   ```js
+   Object.values(JSON.parse(localStorage.getItem('upworkRows') || '{}')).slice(0, 25).join('\n')
+   ```
+
+   Then `.slice(25, 50)`, `.slice(50, 75)` and so on until a chunk comes back empty. Append each chunk under the header in `<run>/jobs.tsv` as returned.
+3. Check the line count of `jobs.tsv` against the stored total, then clear the key so the next run starts empty:
+
+   ```js
+   localStorage.removeItem('upworkRows')
+   ```
+
+Clear it also when a run stops early, after saving what was stored.
 
 ## Propose
 
@@ -111,4 +132,5 @@ Flags on a `JOB` line (`timezone:<phrase>`, `full-time-wording`, `avoid:<term>`,
 - Every field came from the page, and unknown fields say so
 - Pitch angles use only real facts about the user
 - The run folder has `jobs.tsv` and `shortlist.md`, and the ids were recorded
+- The `upworkRows` key was cleared from the page's `localStorage`
 - No semicolons and no em dashes in what you wrote
