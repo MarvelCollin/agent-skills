@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: upwork-propose
+context:
+  add_dirs: [fixture]
