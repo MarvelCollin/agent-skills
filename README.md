@@ -73,6 +73,9 @@ Claude also loads the skill on its own whenever you ask it to build or restyle U
 | R14 Form overlays | Header and action buttons stay pinned, only the body scrolls, fields in a row line up, and the container grows from modal to sheet to page as the content does |
 | R15 No AI template tells | No sparkle icons, checkmark bullets, dot grids, orbs, glass, hover lift, sliding arrows, fake terminals, three default pricing tiers, invented testimonials, emoji icons, default fonts, harsh gradients, purple on black or neon |
 | R16 Launch ready pages | A CTA above the fold, a sticky mobile CTA on long pages, a title, description and share image per page, a favicon set, alt text, a custom 404 that returns 404, inline form errors, a thank you state, and a footer with legal links and real contact details |
+| R17 Forms on one grid | Every form uses one field component and one CSS grid with subgrid rows, so labels, inputs, selects, pickers and buttons line up and share one height. A browser check measures it |
+| R18 Calm motion | Small motion everywhere it explains a change, 100 to 300ms, ease out, only transform and opacity, no bounce, reduced motion honored, checked in a Performance trace |
+| R19 Fit the screen | Main content fits 1366x768 without scrolling, content that can be split goes into tabs with their own URL, and when a view must scroll its page header, tabs and table header stay sticky |
 
 It also applies the guides on [navigation](skills/uiux/references/navigation.md), [color picking](skills/uiux/references/color.md) and [Shneiderman's Eight Golden Rules](skills/uiux/references/golden-rules.md).
 

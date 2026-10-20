@@ -182,6 +182,41 @@ foreach ($file in @($markupFiles | Where-Object { @(".html", ".htm") -contains $
     }
 }
 
+$labelPattern = "<label|<Label|<FormLabel|<FieldLabel|<legend|<Legend|aria-label|aria-labelledby|\slabel="
+$controlPattern = "<(input|Input|select|Select|SelectTrigger|button|Button|DatePicker|Combobox|ComboboxInput)([\s>]|$)"
+$heightPattern = "[`"'\s]h-(7|8|9|10|11|12|14)([`"'\s]|$)"
+foreach ($file in $markupFiles) {
+    $placeholders = @(Select-String -LiteralPath $file.FullName -Pattern "<(input|Input|textarea|Textarea)[^>]*placeholder=" -Encoding UTF8 -CaseSensitive)
+    $hasLabel = Select-String -LiteralPath $file.FullName -Pattern $labelPattern -Encoding UTF8 -CaseSensitive -Quiet
+    if ($placeholders.Count -gt 0 -and -not $hasLabel) {
+        Add-Findings ($placeholders | Select-Object -First 1) "R17" "placeholder-as-label"
+    }
+    $sized = @(Select-String -LiteralPath $file.FullName -Pattern $controlPattern -Encoding UTF8 -CaseSensitive | Where-Object { $_.Line -cmatch $heightPattern })
+    $heights = @($sized | ForEach-Object { [regex]::Matches($_.Line, $heightPattern) } | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+    if ($heights.Count -ge 2) {
+        Add-Findings ($sized | Select-Object -First 1) "R17" "mixed-control-heights"
+    }
+    $headers = @(Select-String -LiteralPath $file.FullName -Pattern "<(thead|TableHeader)([\s>]|$)" -Encoding UTF8 -CaseSensitive)
+    $hasSticky = Select-String -LiteralPath $file.FullName -Pattern "sticky" -Encoding UTF8 -CaseSensitive -Quiet
+    if ($headers.Count -gt 0 -and -not $hasSticky) {
+        Add-Findings ($headers | Select-Object -First 1) "R19" "header-not-sticky"
+    }
+}
+
+Add-Findings (Find-Lines $files "(^|[`"'\s])transition-all([`"'\s]|$)|transition(-property)?\s*:\s*[`"']?all([`"'\s;,]|$)") "R18" "transition-all"
+Add-Findings (Find-Lines $files "transition-\[(width|height|max-height|min-height|top|left|right|bottom|margin|padding|inset)|transition(-property)?\s*:\s*[`"']?[^;`"'{}]*(^|[\s,:`"'])(width|height|max-height|min-height|top|left|right|bottom|margin|margin-[a-z]+|padding|padding-[a-z]+)([\s,;`"']|$)|animate=\{\{[^}]*(width|height|top|left)\s*:") "R18" "layout-animation"
+Add-Findings (Find-Lines $files "(^|[`"'\s:])duration-(500|700|1000|\[([5-9][0-9]{2}|[1-9][0-9]{3,})ms\]|\[[1-9](\.[0-9]+)?s\])([`"'\s]|$)|(transition|animation)(-duration)?\s*:\s*[`"']?[^;`"'{}]*[^0-9.]([5-9][0-9]{2}|[1-9][0-9]{3,})ms|(transition|animation)(-duration)?\s*:\s*[`"']?[^;`"'{}]*\s(0?\.[5-9][0-9]*|[1-9](\.[0-9]+)?)s([^a-z]|$)" | Where-Object {
+    $_.Line -cnotmatch "infinite|spin|pulse|shimmer|skeleton|progress"
+}) "R18" "slow-motion"
+Add-Findings (Find-Lines $files "(^|[`"'\s])animate-bounce([`"'\s]|$)|cubic-bezier\([^,)]*,\s*(-|1\.[0-9]*[1-9]|[2-9])|cubic-bezier\([^,)]*,[^,)]*,[^,)]*,\s*(-|1\.[0-9]*[1-9]|[2-9])") "R18" "bounce"
+$animPattern = "@keyframes|(transition|animation)(-[a-z]+)?\s*:|(^|[`"'\s])(transition|transition-[a-z]+|animate-[a-z]+)([`"'\s]|$)|framer-motion|motion/react|<motion\.|startViewTransition"
+$reducedPattern = "prefers-reduced-motion|motion-reduce:|motion-safe:|useReducedMotion|reducedMotion|MotionConfig"
+if (@(Find-Lines $files $reducedPattern).Count -eq 0) {
+    foreach ($file in $files) {
+        Add-Findings (Select-String -LiteralPath $file.FullName -Pattern $animPattern -Encoding UTF8 -CaseSensitive | Select-Object -First 1) "R18" "missing-reduced-motion"
+    }
+}
+
 Add-Findings (Find-Lines $files "$emDash|&mdash;|&#8212;") "R9" "em-dash"
 Add-Findings (Find-Lines $jsonFiles $emDash) "R9" "em-dash"
 Add-Findings (Find-Lines $files "[A-Za-z0-9`"'/]>[^<>{}]*[A-Za-z0-9)]\s*;\s+[A-Za-z][^<>{}]*<") "R9" "semicolon-in-copy"
@@ -193,7 +228,7 @@ Write-Output ""
 $results | Sort-Object { $_ } -Culture "en-US" | ForEach-Object { Write-Output $_ }
 Write-Output ""
 Write-Output "FINDINGS: $($results.Count)"
-foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9", "R10", "R11", "R13", "R14", "R15", "R16")) {
+foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9", "R10", "R11", "R13", "R14", "R15", "R16", "R17", "R18", "R19")) {
     $count = @($results | Where-Object { $_.StartsWith("$rule ") }).Count
     Write-Output "${rule}: $count"
 }

@@ -1,8 +1,8 @@
 # UI Build Rules
 
-These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R16 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
+These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R19 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
 
-Read these alongside [color.md](color.md), [navigation.md](navigation.md), [golden-rules.md](golden-rules.md) and the slop catalog in [slop-patterns.md](slop-patterns.md).
+Read these alongside [color.md](color.md), [navigation.md](navigation.md), [golden-rules.md](golden-rules.md), [form-layout.md](form-layout.md), [motion.md](motion.md), the slop catalog in [slop-patterns.md](slop-patterns.md), and the page and component patterns in [patterns/](patterns/) that match the screen you are building.
 
 ## R1: Random Color Hunt Palette Unless the User Picks Colors
 
@@ -127,7 +127,7 @@ Specific means the layout comes from this product's content and main task, not f
 - One component per job. Every table, filter, date picker, dialog and empty state across the product uses the same component
 - Keep a clear hierarchy: one dominant element per screen, then supporting content. Avoid rows of equal boxes
 - Use whitespace and alignment to group before reaching for borders and cards. Do not nest cards inside cards (L08)
-- Motion is short (150 to 250ms), eases out, and explains a change. No bounce, no fade-in on every element (M01, M02)
+- Motion follows R18: short, calm, compositor only, and off when the user asks for reduced motion (M01, M02, M09)
 
 ## R9: No Semicolons or Em Dashes in Words
 
@@ -230,14 +230,9 @@ Every modal, drawer or sheet that holds a form is built from three regions. The 
 
 When a modal grows past its container, change the container instead of shrinking the content. Collapse optional helpers (an AI writer, advanced settings) into a section that opens on request, group fields under short section headings, and move the rest to a sheet or a page.
 
-### Fields in a Row Line Up
+### Fields Line Up
 
-- Fields that share a row share the same label baseline and the same input baseline. Use a grid with `align-items: start` and give every label the same height
-- Helper text belongs to every field in the row or to none. A single helper under one column leaves a hole under the other. Move it into the field (a unit suffix such as `%` or `min`) or below the whole row
-- Units live in the input as a suffix, not in the label in brackets
-- One spacing token between fields and a larger one between sections, the same in every overlay
-- Toggle rows keep the label and description on the left and the switch on the right, vertically centered, with the same padding as the fields around them
-- Under 640px every row becomes one column and the overlay becomes a full height sheet with the footer pinned above the keyboard (`100dvh`)
+Every field inside an overlay follows R17. Under 640px the overlay becomes a full height sheet with the footer pinned above the keyboard (`100dvh`).
 
 ## R15: No AI Template Tells
 
@@ -285,13 +280,55 @@ Never invent the facts these need. Ask the user for the contact details, the leg
 
 Before launch, run `/checkprod` for the production settings that live outside the UI: robots.txt, sitemap, analytics and consent, security headers, and the backend checks.
 
+## R17: Every Form Sits on One Grid
+
+Every form, on a page, in an overlay or in a settings panel, is built on one grid so every input, select, picker and button lines up. A form where controls start at different x positions, sit at different heights in a row or have different heights reads as broken. The full recipe, the shared field component and the measuring check live in [form-layout.md](form-layout.md).
+
+- **One field component.** Label on top, then the control, then one message slot for help or error. Every form in the product renders fields through it. Never hand-place a label beside one input and above the next
+- **One column by default.** Put fields side by side only when they belong together and are short (first and last name, start and end, city and postal code, min and max). Never two independent questions in a row
+- **One grid per form.** The form is a CSS grid with fixed tracks (`grid-template-columns: repeat(6, minmax(0, 1fr))` or a 12 column grid) and every field spans whole tracks. No flex rows with free widths, no `float`, no `inline-block`, no per field margins to nudge things into place
+- **Rows line up even when content differs.** A row of fields uses `grid-template-rows: subgrid` so the labels share one row, the controls share the next and the messages share the last. A wrapping label or a long error never pushes one input below its neighbour
+- **One control height.** Inputs, selects, comboboxes, date pickers, number fields and the buttons in a form row share one height token (`--control-h`, usually 36 to 44px), one border width, one radius and one horizontal padding. Text areas are the only taller control
+- **Left edges agree.** Labels, controls, helper text, section headings, checkbox groups and the action row start on the same left edge. Checkbox and radio labels align with the text of the control above, not with its border
+- **Widths match the answer.** A postal code, a year or a CVV gets a short field that still spans whole grid tracks (2 of 6 or 3 of 12). Variable text gets the full column. Never stretch a two digit field across the page, and never mix random widths
+- **Helpers belong to every field in a row or to none.** Units live inside the control as a suffix (`%`, `min`, `IDR`), not in the label in brackets
+- **Toggle rows** keep the label and description on the left and the switch on the right, vertically centered, with the same padding as the fields around them
+- **Spacing is two tokens only.** One gap between fields and a larger one between sections, identical in every form in the product
+- **Actions sit on the form's left edge** for page forms (primary first) and at the bottom right of overlays (R14). The primary button is as tall as the inputs
+- **Under 640px** every row collapses to one column and controls go full width. Inputs use 16px text so iOS does not zoom
+
+## R18: Motion Is Short, Calm and Never Janky
+
+Use small motion everywhere it explains a change: a panel opening, a row appearing, a toast arriving, a value saving. It must never slow the user down or drop frames. Details, tokens and per component recipes live in [motion.md](motion.md).
+
+- **Duration tokens only.** 100 to 150ms for controls (hover, press, toggle, checkbox), 200 to 250ms for overlays, menus and panels, 300ms at most for page level changes. Nothing over 400ms except a progress indicator. Exits are faster than entrances
+- **Easing tokens only.** Ease out (decelerate) for things entering, ease in (accelerate) for things leaving, standard for things moving on screen. No bounce, no overshoot, no elastic springs
+- **Compositor only.** Animate `transform` and `opacity`. Never `width`, `height`, `top`, `left`, `margin`, `padding` or `box-shadow`. Never `transition: all` or Tailwind `transition-all`. Fade shadows with an `opacity` change on a pseudo element. The one allowed layout animation is a single small collapsible panel growing through `grid-template-rows: 0fr` to `1fr` in 200ms or less, never a list of them at once
+- **Motion explains, never decorates.** Nothing animates on page load or on scroll for its own sake. No staggered reveals, no parallax, no looping motion except spinners and skeleton shimmer
+- **Never block input.** A transition never delays the next click. Menus and tooltips open on the first frame of the interaction, and the user can act during an exit
+- **Reduced motion is honored.** Under `prefers-reduced-motion: reduce`, movement becomes an instant change or a short fade. Use the project's `motion-reduce:` variants, a global media query, or the motion library's reduced motion setting
+- **Measure it.** No long tasks over 50ms during an animation, no layout or paint in the Performance panel for the animated frames, CLS stays near zero. `will-change` only on an element just before it animates, removed after
+
+## R19: Fit the Screen Before Scrolling
+
+The user should see what they came for without scrolling. Scrolling is the last resort, not the default.
+
+- **Design for the viewport first.** At 1440x900 and 1366x768, the page title, the main action and the main content of an app screen fit without page scrolling. Cut, group or move secondary content before accepting a scroll
+- **Split content the user does not need at the same time into tabs.** A record with details, activity, files and settings gets tabs, each with its own URL (`?tab=activity`). Tabs only for a few groups (2 to 6) that are parallel and that the user does not need to compare side by side. Content that must be compared stays on one view
+- **Use other splits where tabs do not fit:** a stepper for sequential input, local navigation for many sibling sections (settings), progressive disclosure for rare options, pagination or a capped list with "View all" for long collections
+- **When scrolling is truly needed, freeze what orients the user.** The app header and the page header (title, primary action, tabs) are sticky. Tables freeze their header row and first column (R5). Long forms keep the save bar pinned (R14 for overlays, a sticky action bar for page forms). Long documents get a sticky table of contents
+- **One scroll area per view.** The app shell is a fixed height layout (`height: 100dvh`) where only the content region scrolls. Never a page scroll and an inner scroll fighting each other, and never nested scroll areas in the same direction
+- **Sticky never eats the screen.** Sticky regions together take at most about a quarter of the viewport height. On screens under 700px tall or on mobile, shrink them (compact header on scroll) or let secondary rows scroll away
+- **Tell the user more is there.** If content continues below, a cut off row, a fade edge or a count ("Showing 10 of 48") makes it visible. Never a page that looks finished above the fold while the important part hides below
+- **Marketing pages are the exception.** Public long form pages scroll by design. They still keep the main action reachable (R16)
+
 ## Every Component Ships with Every State
 
 Default, hover, focus-visible, active, disabled, loading, empty, error and success, where they apply. A screen is not done until its loading, empty and error states exist.
 
 ## Checking the Rules
 
-Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7, R9, R10, R11, R13, R14, R15 and R16 violations with file and line:
+Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7, R9, R10, R11, R13, R14, R15, R16, R17, R18 and R19 violations with file and line:
 
 ```bash
 bash "<skill-dir>/scripts/rule-scan.sh" "<project-or-folder>"
@@ -303,4 +340,4 @@ On Windows without bash:
 powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/rule-scan.ps1" -Path "<project-or-folder>"
 ```
 
-The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2, R8, the rest of R10, the rest of R14, the rest of R15 and the rest of R16 in the rendered UI. For R16, screenshot every public page at 375x812 and 1440x900, open a made up URL and read its status code, and submit every form once with errors and once correctly. For R14, open every form overlay with the most content it can hold and at a 700px tall window: the footer must be visible without scrolling and there must be one scrollbar. Check R12 by comparing the names and style of new files against the conventions report.
+The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2, R8, the rest of R10, the rest of R14, the rest of R15, the rest of R16, the rest of R17, the rest of R18 and R19 in the rendered UI. For R16, screenshot every public page at 375x812 and 1440x900, open a made up URL and read its status code, and submit every form once with errors and once correctly. For R14, open every form overlay with the most content it can hold and at a 700px tall window: the footer must be visible without scrolling and there must be one scrollbar. For R17, run the alignment check in [form-layout.md](form-layout.md) on every form at 1440 and 375 wide, with errors showing and without. For R18, run the motion checks in [motion.md](motion.md) and record one Performance trace while opening each overlay. For R19, screenshot every app screen at 1440x900 and 1366x768 and note what sits below the fold, then scroll each long view and confirm the headers stay put. Check R12 by comparing the names and style of new files against the conventions report.

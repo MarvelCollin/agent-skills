@@ -212,6 +212,36 @@ for file in "${MARKUP[@]+"${MARKUP[@]}"}"; do
     fi
 done
 
+LABEL_PATTERN="<label|<Label|<FormLabel|<FieldLabel|<legend|<Legend|aria-label|aria-labelledby|[[:space:]]label="
+CONTROL_PATTERN="<(input|Input|select|Select|SelectTrigger|button|Button|DatePicker|Combobox|ComboboxInput)([[:space:]>]|$)"
+HEIGHT_PATTERN="[\"'[:space:]]h-(7|8|9|10|11|12|14)([\"'[:space:]]|$)"
+for file in "${MARKUP[@]+"${MARKUP[@]}"}"; do
+    if grep -qE "<(input|Input|textarea|Textarea)[^>]*placeholder=" "$file" && ! grep -qE "$LABEL_PATTERN" "$file"; then
+        grep -nHE -m1 "<(input|Input|textarea|Textarea)[^>]*placeholder=" "$file" | report R17 placeholder-as-label
+    fi
+    heights="$({ grep -E "$CONTROL_PATTERN" "$file" || true; } | { grep -oE "$HEIGHT_PATTERN" || true; } | tr -d "\"' " | sort -u | wc -l | tr -d ' ')"
+    if [ "$heights" -ge 2 ]; then
+        { grep -nHE "$CONTROL_PATTERN" "$file" || true; } | { grep -E "$HEIGHT_PATTERN" || true; } | head -n 1 | report R17 mixed-control-heights
+    fi
+    if grep -qE "<(thead|TableHeader)([[:space:]>]|$)" "$file" && ! grep -qE "sticky" "$file"; then
+        grep -nHE -m1 "<(thead|TableHeader)([[:space:]>]|$)" "$file" | report R19 header-not-sticky
+    fi
+done
+
+scan "(^|[\"'[:space:]])transition-all([\"'[:space:]]|$)|transition(-property)?[[:space:]]*:[[:space:]]*[\"']?all([\"'[:space:];,]|$)" | report R18 transition-all
+scan "transition-\[(width|height|max-height|min-height|top|left|right|bottom|margin|padding|inset)|transition(-property)?[[:space:]]*:[[:space:]]*[\"']?[^;\"'{}]*(^|[[:space:],:\"'])(width|height|max-height|min-height|top|left|right|bottom|margin|margin-[a-z]+|padding|padding-[a-z]+)([[:space:],;\"']|$)|animate=\{\{[^}]*(width|height|top|left)[[:space:]]*:" | report R18 layout-animation
+scan "(^|[\"'[:space:]:])duration-(500|700|1000|\[([5-9][0-9]{2}|[1-9][0-9]{3,})ms\]|\[[1-9](\.[0-9]+)?s\])([\"'[:space:]]|$)|(transition|animation)(-duration)?[[:space:]]*:[[:space:]]*[\"']?[^;\"'{}]*[^0-9.]([5-9][0-9]{2}|[1-9][0-9]{3,})ms|(transition|animation)(-duration)?[[:space:]]*:[[:space:]]*[\"']?[^;\"'{}]*[[:space:]](0?\.[5-9][0-9]*|[1-9](\.[0-9]+)?)s([^a-z]|$)" \
+    | { grep -vE "infinite|spin|pulse|shimmer|skeleton|progress" || true; } \
+    | report R18 slow-motion
+scan "(^|[\"'[:space:]])animate-bounce([\"'[:space:]]|$)|cubic-bezier\([^,)]*,[[:space:]]*(-|1\.[0-9]*[1-9]|[2-9])|cubic-bezier\([^,)]*,[^,)]*,[^,)]*,[[:space:]]*(-|1\.[0-9]*[1-9]|[2-9])" | report R18 bounce
+ANIM_PATTERN="@keyframes|(transition|animation)(-[a-z]+)?[[:space:]]*:|(^|[\"'[:space:]])(transition|transition-[a-z]+|animate-[a-z]+)([\"'[:space:]]|$)|framer-motion|motion/react|<motion\.|startViewTransition"
+REDUCED_PATTERN="prefers-reduced-motion|motion-reduce:|motion-safe:|useReducedMotion|reducedMotion|MotionConfig"
+if ! { [ "${#FILES[@]}" -gt 0 ] && grep -qE "$REDUCED_PATTERN" "${FILES[@]}" 2>/dev/null; }; then
+    for file in "${FILES[@]+"${FILES[@]}"}"; do
+        { grep -nHE -m1 "$ANIM_PATTERN" "$file" || true; } | report R18 missing-reduced-motion
+    done
+fi
+
 scan "—|&mdash;|&#8212;" | report R9 em-dash
 scan_json "—" | report R9 em-dash
 scan "[A-Za-z0-9\"'/]>[^<>{}]*[A-Za-z0-9)][[:space:]]*;[[:space:]]+[A-Za-z][^<>{}]*<" | report R9 semicolon-in-copy
@@ -223,6 +253,6 @@ echo ""
 sort "$RESULTS"
 echo ""
 echo "FINDINGS: $(wc -l <"$RESULTS" | tr -d ' ')"
-for rule in R1 R3 R4 R5 R6 R7 R9 R10 R11 R13 R14 R15 R16; do
+for rule in R1 R3 R4 R5 R6 R7 R9 R10 R11 R13 R14 R15 R16 R17 R18 R19; do
     echo "$rule: $(grep -c "^$rule " "$RESULTS" || true)"
 done
