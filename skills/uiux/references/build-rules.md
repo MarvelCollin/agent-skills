@@ -6,7 +6,7 @@ Read these alongside [color.md](color.md), [navigation.md](navigation.md), [gold
 
 ## R1: Random Color Hunt Palette Unless the User Picks Colors
 
-If the user has not named colors or a brand palette, run the palette picker (`scripts/pick-palette.sh` or `pick-palette.ps1`) and apply that palette with the method in [color.md](color.md). The picker draws at random from the Color Hunt popular all time list with purple palettes removed.
+If the user has not named colors or a brand palette, run the palette picker (`scripts/pick-palette.sh` or `pick-palette.ps1`) and apply that palette with the method in [color.md](color.md). The picker draws at random from the Color Hunt popular all time list with purple, neon and oversaturated palettes removed. Then run `scripts/palette-check.sh` (or `palette-check.ps1`) on the palette, or on the user's own colors, and resolve what it reports, so the colors are comfortable for long sessions (Eye Comfort in [color.md](color.md)).
 
 Never:
 - Use purple, violet, lavender or magenta (OKLCH hue 265 to 335 above chroma 0.03) unless the user names it (slop patterns C01 and C02)

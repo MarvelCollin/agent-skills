@@ -45,7 +45,7 @@ Prepend `https://` to a URL that has no scheme.
 2. Read [references/build-rules.md](references/build-rules.md) (hard rules R1 to R16), [references/performance.md](references/performance.md), [references/color.md](references/color.md), [references/navigation.md](references/navigation.md), [references/golden-rules.md](references/golden-rules.md), and the patterns to avoid in [references/slop-patterns.md](references/slop-patterns.md).
 3. Before writing code, settle and state briefly:
    - the conventions you will follow: file and folder naming, code style, export style, and where types, API calls, hooks and components go (R12, R13)
-   - the palette: the user's colors, or the palette from `scripts/pick-palette.sh` (`pick-palette.ps1` on Windows) applied as color.md describes, with its Color Hunt link, the token each hex fills and every derived color
+   - the palette: the user's colors, or the palette from `scripts/pick-palette.sh` (`pick-palette.ps1` on Windows) applied as color.md describes, with its Color Hunt link, the token each hex fills and every derived color, after `scripts/palette-check.sh` (`palette-check.ps1`) passes it for eye comfort or its warnings are fixed
    - the type pairing and the spacing, radius and elevation tokens
    - the navigation: destinations, how the current location is shown, and the mobile pattern
    - the main task of each screen and what gets the most space

@@ -228,10 +228,31 @@ palette_checks() {
     expect_contains "prints the colors in OKLCH" "$output" "OKLCH: oklch("
 }
 
+palette_check_checks() {
+    local label="$1" calm="$2" loud="$3" bad="$4" code="$5"
+    expect_contains "$label assigns the background" "$calm" "ROLE bg: #f9f7f7"
+    expect_contains "$label assigns the text color" "$calm" "ROLE ink: #112d4e"
+    expect_contains "$label measures body text" "$calm" "PAIR ink-on-bg: #112d4e on #f9f7f7 13.04:1 Lc 95.8"
+    expect_contains "$label passes a calm palette" "$calm" "RESULT: PASS"
+    expect_contains "$label fails oversaturated colors" "$loud" "FAIL oversaturated: #ff0060"
+    expect_contains "$label flags tinted backgrounds" "$loud" "WARN tinted-background: #f6fa70"
+    expect_contains "$label flags red next to blue" "$loud" "WARN red-blue: #ff0060 and #0079ff"
+    expect_contains "$label fails a palette with an oversaturated color" "$loud" "RESULT: FAIL"
+    expect_contains "$label warns about pure black backgrounds" "$bad" "WARN dark-background: #000000"
+    expect_contains "$label flags colors color blind users confuse" "$bad" "WARN color-blind:"
+    expect_exit "$label rejects a bad hex" "$code" 1
+}
+
 echo "pick-palette.sh"
 OUT=$(bash "$SCRIPTS/pick-palette.sh" 2>&1); CODE=$?
 expect_exit "exits 0" "$CODE" 0
 palette_checks "$OUT"
+echo "palette-check.sh"
+CALM=$(bash "$SCRIPTS/palette-check.sh" "#f9f7f7" "#dbe2ef" "#3f72af" "#112d4e" 2>&1)
+LOUD=$(bash "$SCRIPTS/palette-check.sh" 0079ff 00dfa2 f6fa70 ff0060 2>&1)
+DARK=$(bash "$SCRIPTS/palette-check.sh" 000000 ffffff d64545 4a9d4f 2>&1)
+bash "$SCRIPTS/palette-check.sh" ffffff zzzzzz >/dev/null 2>&1; CODE=$?
+palette_check_checks "palette-check.sh" "$CALM" "$LOUD" "$DARK" "$CODE"
 PURPLE=$("$PYTHON" - "$ROOT/skills/uiux/references/palettes.txt" <<'PY'
 import math, re, sys
 
@@ -247,6 +268,7 @@ def oklch(hex_color):
 
 count = 0
 purple = []
+loud = 0
 for line in open(sys.argv[1], encoding='utf-8'):
     colors = re.findall(r'#([0-9a-f]{6})\b', line.split('|')[0]) if re.match(r'#[0-9a-f]{6} ', line) else []
     if not colors:
@@ -258,11 +280,17 @@ for line in open(sys.argv[1], encoding='utf-8'):
         chroma, hue = oklch(color)
         if chroma > 0.03 and 265 <= hue <= 335:
             purple.append(color)
-print(f"palettes {count} purple {len(purple)}")
+        rgb = [int(color[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+        lr, lg, lb = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb]
+        lightness = 0.2104542553 * (0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb) ** (1 / 3) + 0.7936177850 * (0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb) ** (1 / 3) - 0.0040720468 * (0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb) ** (1 / 3)
+        if chroma > 0.25 or (chroma > 0.2 and lightness > 0.75):
+            loud += 1
+print(f"palettes {count} purple {len(purple)} loud {loud}")
 PY
 )
-expect_contains "ships the popular palette snapshot" "$PURPLE" "palettes 462"
+expect_contains "ships the popular palette snapshot" "$PURPLE" "palettes 458"
 expect_contains "leaves every purple palette out" "$PURPLE" "purple 0"
+expect_contains "leaves every neon and oversaturated palette out" "$PURPLE" "loud 0"
 
 SCOPE="$SECFIX/scope/scope.md"
 CODE_DIR="$SECFIX/code"
@@ -649,6 +677,15 @@ if [ -n "$POWERSHELL" ]; then
     OUT=$(run_ps "$SCRIPTS/pick-palette.ps1" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "exits 0" "$CODE" 0
     palette_checks "$OUT"
+    echo "palette-check.ps1"
+    CALM=$(run_ps "$SCRIPTS/palette-check.ps1" "#f9f7f7" "#dbe2ef" "#3f72af" "#112d4e" 2>&1 | tr -d '
+')
+    LOUD=$(run_ps "$SCRIPTS/palette-check.ps1" 0079ff 00dfa2 f6fa70 ff0060 2>&1 | tr -d '
+')
+    DARK=$(run_ps "$SCRIPTS/palette-check.ps1" 000000 ffffff d64545 4a9d4f 2>&1 | tr -d '
+')
+    run_ps "$SCRIPTS/palette-check.ps1" ffffff zzzzzz >/dev/null 2>&1; CODE=$?
+    palette_check_checks "palette-check.ps1" "$CALM" "$LOUD" "$DARK" "$CODE"
     echo "rule-scan.ps1"
     BAD=$(run_ps "$SCRIPTS/rule-scan.ps1" -Path "$RULES/bad" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "exits 0 when it finds violations" "$CODE" 0

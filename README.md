@@ -57,7 +57,7 @@ Claude also loads the skill on its own whenever you ask it to build or restyle U
 
 | Rule | What it means |
 |------|---------------|
-| R1 Color Hunt palette | A random palette from the Color Hunt popular all time list, applied with its exact colors, unless you name your own. Never purple. Contrast is still checked |
+| R1 Color Hunt palette | A random palette from the Color Hunt popular all time list, applied with its exact colors, unless you name your own. Never purple, neon or oversaturated. A palette check scores eye comfort: text contrast in WCAG and APCA, tinted backgrounds, red next to blue, color blind confusion and dark mode halation |
 | R2 No icon-tile stat cards | Totals go in one summary strip with context and links, not a row of identical cards with colored icon squares |
 | R3 No icons in rounded squares | Icons sit inline with their text, without a tinted tile |
 | R4 No pill badges | Status and role labels use plain column values, a shape plus a word, or weighted text |

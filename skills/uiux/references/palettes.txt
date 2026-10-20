@@ -1,6 +1,7 @@
 # Color Hunt popular palettes, all time, without purple
 # Source: https://colorhunt.co/palettes/popular (feed sort=popular, timeframe=all time), snapshot 2026-10-20
 # Removed: every palette with a color whose OKLCH chroma is above 0.03 and hue is between 265 and 335 (violet, purple, lavender, magenta)
+# Removed: every palette that palette-check fails for eye comfort (a color with OKLCH chroma above 0.25, or chroma above 0.2 at lightness above 0.75)
 # Format: four hex colors in Color Hunt order | the same colors in OKLCH | likes
 #e3fdfd #cbf1f5 #a6e3e9 #71c9ce | oklch(0.975 0.027 197) oklch(0.932 0.040 204) oklch(0.877 0.062 204) oklch(0.783 0.085 200) | 47631
 #f9f7f7 #dbe2ef #3f72af #112d4e | oklch(0.978 0.002 17) oklch(0.911 0.019 263) oklch(0.545 0.111 254) oklch(0.295 0.069 254) | 46685
@@ -31,7 +32,6 @@
 #c4dfdf #d2e9e9 #e3f4f4 #f8f6f4 | oklch(0.884 0.029 197) oklch(0.917 0.024 197) oklch(0.955 0.018 197) oklch(0.974 0.003 68) | 25129
 #fcd8d4 #fdf6f0 #f8e2cf #f5c6aa | oklch(0.911 0.041 25) oklch(0.977 0.011 63) oklch(0.926 0.035 63) oklch(0.861 0.066 52) | 24811
 #212121 #323232 #0d7377 #14ffec | oklch(0.248 0.000 90) oklch(0.317 0.000 90) oklch(0.506 0.083 199) oklch(0.900 0.157 185) | 24705
-#000000 #3d0000 #950101 #ff0000 | oklch(0.000 0.000 0) oklch(0.226 0.093 29) oklch(0.421 0.172 29) oklch(0.628 0.258 29) | 24242
 #93b5c6 #c9ccd5 #e4d8dc #ffe3e3 | oklch(0.754 0.044 230) oklch(0.846 0.013 271) oklch(0.893 0.014 355) oklch(0.939 0.031 18) | 24088
 #f5f7f8 #f4ce14 #495e57 #45474b | oklch(0.975 0.003 229) oklch(0.859 0.174 95) oklch(0.462 0.028 173) oklch(0.397 0.007 264) | 23812
 #fdefef #f4dfd0 #dad0c2 #cdbba7 | oklch(0.963 0.015 17) oklch(0.917 0.031 58) oklch(0.862 0.022 77) oklch(0.802 0.034 70) | 22901
@@ -257,7 +257,6 @@
 #334257 #476072 #548ca8 #eeeeee | oklch(0.375 0.041 257) oklch(0.476 0.042 240) oklch(0.612 0.073 231) oklch(0.949 0.000 90) | 12059
 #85603f #9e7540 #bd9354 #e3d18a | oklch(0.520 0.068 62) oklch(0.592 0.087 72) oklch(0.689 0.095 76) oklch(0.859 0.092 96) | 12033
 #800000 #982b1c #dad4b5 #f2e8c6 | oklch(0.377 0.155 29) oklch(0.457 0.147 31) oklch(0.867 0.042 98) oklch(0.930 0.046 94) | 12027
-#f7fd04 #f9b208 #f98404 #fc5404 | oklch(0.957 0.211 112) oklch(0.810 0.167 79) oklch(0.730 0.178 56) oklch(0.670 0.215 39) | 12026
 #faebe0 #c9e4c5 #b5cda3 #c1ac95 | oklch(0.949 0.022 59) oklch(0.891 0.051 142) oklch(0.819 0.063 132) oklch(0.756 0.040 70) | 12022
 #faf1e6 #fdfaf6 #e4efe7 #064420 | oklch(0.962 0.018 73) oklch(0.986 0.006 75) oklch(0.942 0.016 154) oklch(0.340 0.086 152) | 12007
 #ffedfa #ffb8e0 #ec7fa9 #be5985 | oklch(0.964 0.026 335) oklch(0.860 0.096 344) oklch(0.729 0.141 357) oklch(0.601 0.138 355) | 11996
@@ -276,7 +275,6 @@
 #d4ecdd #345b63 #152d35 #112031 | oklch(0.921 0.032 158) oklch(0.446 0.046 212) oklch(0.281 0.033 222) oklch(0.239 0.039 253) | 11731
 #f7a4a4 #febe8c #fffbc1 #b6e2a1 | oklch(0.800 0.099 19) oklch(0.849 0.098 59) oklch(0.977 0.074 104) oklch(0.865 0.099 136) | 11722
 #e5dcc3 #c7bea2 #aaa492 #9a9483 | oklch(0.895 0.035 91) oklch(0.801 0.039 92) oklch(0.719 0.026 92) oklch(0.667 0.025 91) | 11705
-#252525 #ff0000 #af0404 #414141 | oklch(0.264 0.000 90) oklch(0.628 0.258 29) oklch(0.475 0.193 29) oklch(0.375 0.000 90) | 11687
 #fb929e #ffdfdf #fff6f6 #aedefc | oklch(0.774 0.127 13) oklch(0.930 0.035 18) oklch(0.980 0.010 17) oklch(0.877 0.065 236) | 11670
 #f9ebc8 #fefbe7 #dae5d0 #a0bcc2 | oklch(0.942 0.048 89) oklch(0.985 0.026 100) oklch(0.908 0.030 130) oklch(0.776 0.032 212) | 11635
 #cc7351 #e08f62 #ded7b1 #9dab86 | oklch(0.648 0.122 41) oklch(0.724 0.116 49) oklch(0.875 0.051 99) oklch(0.720 0.054 125) | 11634
@@ -369,7 +367,6 @@
 #fee2b3 #ffa299 #ad6989 #562349 | oklch(0.924 0.068 81) oklch(0.803 0.112 26) oklch(0.605 0.096 351) oklch(0.344 0.092 338) | 10126
 #faf7f0 #d8d2c2 #b17457 #4a4947 | oklch(0.977 0.010 87) oklch(0.864 0.023 90) oklch(0.616 0.088 46) oklch(0.406 0.004 85) | 10116
 #dddddd #f9f3f3 #f7d9d9 #f25287 | oklch(0.898 0.000 90) oklch(0.969 0.006 17) oklch(0.910 0.033 18) oklch(0.669 0.199 4) | 10105
-#0079ff #00dfa2 #f6fa70 #ff0060 | oklch(0.601 0.219 258) oklch(0.801 0.169 165) oklch(0.956 0.160 111) oklch(0.637 0.255 12) | 10087
 #e7e7de #008891 #00587a #0f3057 | oklch(0.925 0.012 107) oklch(0.571 0.097 203) oklch(0.433 0.090 233) oklch(0.308 0.080 255) | 10082
 #420516 #7d1935 #b42b51 #e63e6d | oklch(0.248 0.090 11) oklch(0.393 0.134 10) oklch(0.516 0.173 10) oklch(0.624 0.205 9) | 10077
 #f6f1e9 #ffd93d #ff8400 #4f200d | oklch(0.960 0.012 80) oklch(0.893 0.167 95) oklch(0.738 0.183 55) oklch(0.309 0.077 41) | 10074
