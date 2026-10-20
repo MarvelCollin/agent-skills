@@ -221,6 +221,49 @@ OUT=$(bash "$SCRIPTS/rule-scan.sh" "$WORK/missing" 2>&1); CODE=$?
 expect_exit "fails on a missing path" "$CODE" 1
 expect_contains "prints an error for a missing path" "$OUT" "ERROR:"
 
+palette_checks() {
+    local output="$1"
+    expect_contains "prints a Color Hunt link" "$output" "Palette: https://colorhunt.co/palette/"
+    expect_contains "prints four hex colors" "$output" "Colors: #"
+    expect_contains "prints the colors in OKLCH" "$output" "OKLCH: oklch("
+}
+
+echo "pick-palette.sh"
+OUT=$(bash "$SCRIPTS/pick-palette.sh" 2>&1); CODE=$?
+expect_exit "exits 0" "$CODE" 0
+palette_checks "$OUT"
+PURPLE=$("$PYTHON" - "$ROOT/skills/uiux/references/palettes.txt" <<'PY'
+import math, re, sys
+
+def oklch(hex_color):
+    rgb = [int(hex_color[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+    r, g, b = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb]
+    l = (0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b) ** (1 / 3)
+    m = (0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b) ** (1 / 3)
+    s = (0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b) ** (1 / 3)
+    a = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s
+    bb = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s
+    return math.hypot(a, bb), math.degrees(math.atan2(bb, a)) % 360
+
+count = 0
+purple = []
+for line in open(sys.argv[1], encoding='utf-8'):
+    colors = re.findall(r'#([0-9a-f]{6})\b', line.split('|')[0]) if re.match(r'#[0-9a-f]{6} ', line) else []
+    if not colors:
+        continue
+    count += 1
+    if len(colors) != 4:
+        purple.append('bad line ' + line.strip())
+    for color in colors:
+        chroma, hue = oklch(color)
+        if chroma > 0.03 and 265 <= hue <= 335:
+            purple.append(color)
+print(f"palettes {count} purple {len(purple)}")
+PY
+)
+expect_contains "ships the popular palette snapshot" "$PURPLE" "palettes 462"
+expect_contains "leaves every purple palette out" "$PURPLE" "purple 0"
+
 SCOPE="$SECFIX/scope/scope.md"
 CODE_DIR="$SECFIX/code"
 
@@ -602,6 +645,10 @@ if [ -n "$POWERSHELL" ]; then
     OUT=$(PATH="$FAKES:$PATH" FAKE_NPX_MODE=fail run_ps "$SCRIPTS/lighthouse-audit.ps1" -Url "$BASE/" -OutputDir "$WORK/lh-ps-fail" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "fails when no report is written" "$CODE" 1
     expect_contains "prints an error when no report is written" "$OUT" "ERROR: Lighthouse audit failed"
+    echo "pick-palette.ps1"
+    OUT=$(run_ps "$SCRIPTS/pick-palette.ps1" 2>&1 | tr -d '\r'); CODE=$?
+    expect_exit "exits 0" "$CODE" 0
+    palette_checks "$OUT"
     echo "rule-scan.ps1"
     BAD=$(run_ps "$SCRIPTS/rule-scan.ps1" -Path "$RULES/bad" 2>&1 | tr -d '\r'); CODE=$?
     expect_exit "exits 0 when it finds violations" "$CODE" 0

@@ -4,20 +4,22 @@ These rules apply whenever you create or change UI: pages, components, dashboard
 
 Read these alongside [color.md](color.md), [navigation.md](navigation.md), [golden-rules.md](golden-rules.md) and the slop catalog in [slop-patterns.md](slop-patterns.md).
 
-## R1: Pastel Palette Unless the User Picks Colors
+## R1: Random Color Hunt Palette Unless the User Picks Colors
 
-If the user has not named colors or a brand palette, build a pastel palette with the method in [color.md](color.md).
+If the user has not named colors or a brand palette, run the palette picker (`scripts/pick-palette.sh` or `pick-palette.ps1`) and apply that palette with the method in [color.md](color.md). The picker draws at random from the Color Hunt popular all time list with purple palettes removed.
 
 Never:
-- Use saturated default fills such as Tailwind `bg-blue-500`, `bg-green-500`, `bg-purple-500`, `bg-orange-500` or their hex values (`#3B82F6`, `#22C55E`, `#A855F7`, `#F97316`)
+- Use purple, violet, lavender or magenta (OKLCH hue 265 to 335 above chroma 0.03) unless the user names it (slop patterns C01 and C02)
+- Pick a palette by hand or reuse one palette for every project instead of running the picker
+- Change the palette colors to make them pastel or to fit a recipe. The hex values go into the tokens as they are
+- Use saturated framework defaults that are not in the palette, such as Tailwind `bg-blue-500`, `bg-green-500`, `bg-purple-500`, `bg-orange-500` or their hex values (`#3B82F6`, `#22C55E`, `#A855F7`, `#F97316`)
 - Give sibling items one rainbow color each (blue card, green card, purple card, orange card)
-- Default to indigo, violet or lavender (slop patterns C01 and C02)
 - Use stock pastels: Tailwind 50 to 200 tints of three or more unrelated hues side by side (`bg-pink-100`, `bg-sky-100`, `bg-lime-100`) is candy, not a palette (C17)
 - Use harsh multi hue gradients, purple on black, or neon accents such as `#39ff14` and `text-lime-400` (C14, C15, C16)
 
-Pastel here means the recipe in [color.md](color.md): one hue family chosen for the product, one accent, and neutrals tinted with the same hue.
+Each palette color gets one role: background, surface, primary, accent or text. Colors the palette lacks, such as a text shade or a border, are derived from a palette hue and named as derived.
 
-Pastel does not mean low contrast. Text on pastel surfaces uses a dark shade of the same hue (4.5:1 or better). Borders, focus rings and icons that carry meaning reach 3:1 against what they sit on.
+The palette does not excuse low contrast. Body text reaches 4.5:1 on what it sits on. Borders, focus rings and icons that carry meaning reach 3:1. When a palette color fails as text, use it as a fill instead.
 
 If the user gives colors, use theirs and still meet the contrast rules.
 

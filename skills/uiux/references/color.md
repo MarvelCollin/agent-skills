@@ -1,6 +1,6 @@
 # Color Picking
 
-How to choose and check a palette, for building and for auditing. Rule R1 in [build-rules.md](build-rules.md) makes pastel the default when the user has not chosen colors.
+How to choose and check a palette, for building and for auditing. Rule R1 in [build-rules.md](build-rules.md) makes a random Color Hunt palette the default when the user has not chosen colors.
 
 ## Principles
 
@@ -16,47 +16,47 @@ OKLCH is perceptually uniform, so equal lightness steps look equal across hues, 
 
 OKLCH lightness is not the same as WCAG luminance, so always check the actual contrast ratio.
 
-## Default Pastel Recipe
+## Default: a Random Color Hunt Palette
 
 Use this when the user has not named colors.
 
-1. **Choose the hue from the product.** Calm and trustworthy (health, finance, education): teal or sage around H 160-200, or slate blue around H 230-250. Warm and friendly (community, food, kids): peach or apricot around H 40-70. Growth and nature: sage or moss around H 130-150. Avoid violet and lavender (H 270-300) as a default, because that is the most common AI tell (C02). Pick a different hue for each project unless the brand dictates one.
-2. **Accent hue:** 120 to 180 degrees away from the primary, at the same low chroma.
-3. **Build the scale per hue:**
+1. **Pick the palette at random.** Run `bash "<skill-dir>/scripts/pick-palette.sh"` (or `pick-palette.ps1` on Windows). It picks one palette from [palettes.txt](palettes.txt), a snapshot of the Color Hunt popular all time list (https://colorhunt.co/palettes/popular) with every purple, violet, lavender and magenta palette removed. It prints the palette link, the four hex colors and the same colors in OKLCH. Do not pick a favorite by hand, and do not use the same palette for two projects.
+2. **Never use purple.** No color with OKLCH hue between 265 and 335 at chroma above 0.03 goes into the UI, not even as an extra shade you derive. The snapshot already leaves those palettes out. Use purple only when the user names it.
+3. **Apply the palette colors as they are.** Put the four hex values into the tokens unchanged. Do not shift their hue, lightness or chroma to make them pastel or to match a recipe. Map them by role:
 
-| Token | OKLCH L | OKLCH C | Use |
-|-------|---------|---------|-----|
-| `bg` | 0.97-0.99 | 0.005-0.015 | Page background (the 60%) |
-| `surface` | 0.94-0.96 | 0.01-0.03 | Panels, sidebars, table header (the 30%) |
-| `tint` | 0.88-0.93 | 0.03-0.07 | Selected rows, hover, highlighted areas |
-| `soft` | 0.80-0.86 | 0.05-0.09 | Primary button fill, active nav marker |
-| `line` | 0.55-0.65 | 0.04-0.08 | Input borders, focus rings, meaningful icons (reaches 3:1 on `bg`) |
-| `strong` | 0.40-0.48 | 0.06-0.10 | Links, text on `tint` and `soft` |
-| `ink` | 0.20-0.28 | 0.02-0.05 | Body text and headings |
+| Palette color | Token | Use |
+|---------------|-------|-----|
+| Lightest color (OKLCH L 0.9 or higher) | `bg` | Page background (the 60%) |
+| Next lightest | `surface`, `tint` | Panels, sidebars, table header, selected rows (the 30%) |
+| Most saturated color | `primary` | Primary button fill, active nav marker, links when contrast allows (the 10%) |
+| Remaining color | `accent` | Secondary highlights, charts, state markers |
+| Darkest color (L 0.35 or lower) | `ink` | Body text and headings |
 
-4. **Neutrals** share the primary hue at very low chroma (C 0.005-0.02), so grays feel related rather than default zinc or slate (C05).
-5. **Semantic colors** use the same lightness steps: success around H 150, warning around H 80, danger around H 25, info around H 240. Danger may carry a little more chroma than the rest so it wins attention.
-6. **Buttons:** primary is a `soft` fill with `ink` text, or a `strong` fill with near-white text. Check both. Never pastel text on a pastel fill.
+4. **Fill only the roles the palette leaves empty.** When no palette color is light enough for `bg`, use white or a near-white with the hue of the lightest palette color at chroma 0.01 or less. When no color is dark enough for `ink`, use the hue of the darkest palette color at L 0.22 to 0.26. Derive `line` (borders, focus rings) and text on fills the same way. Every derived color takes its hue from a palette color and is listed as derived when you state the palette.
+5. **Contrast decides where a color may go, not whether it is used.** If a palette color fails 4.5:1 as text, keep it as a fill or surface and put `ink` or near-white text on it. If button text fails on the `primary` fill, pick the text color that passes (near-white or `ink`), never a lighter tint of the fill.
+6. **Semantic colors** for success, warning, danger and info come from the palette when it has a fitting hue (green for success, red or coral for danger). Otherwise derive them: success around H 150, warning around H 80, danger around H 25, info around H 240, at the same lightness as `primary`.
+7. **If the palette cannot work,** for example four near-identical light tints with no usable fill, run the picker again. Say that you rerolled and why.
 
-Example shape of the tokens:
+State the palette before writing code: the Color Hunt link, which hex goes to which token, and every derived color.
+
+Example with the palette https://colorhunt.co/palette/f9f7f7dbe2ef3f72af112d4e:
 
 ```css
 :root {
-  --bg: oklch(0.985 0.008 190);
-  --surface: oklch(0.955 0.02 190);
-  --tint: oklch(0.91 0.05 190);
-  --soft: oklch(0.83 0.07 190);
-  --line: oklch(0.6 0.06 190);
-  --strong: oklch(0.44 0.08 190);
-  --ink: oklch(0.24 0.03 190);
-  --accent-soft: oklch(0.86 0.07 45);
-  --accent-strong: oklch(0.47 0.1 45);
+  --bg: #f9f7f7;
+  --surface: #dbe2ef;
+  --primary: #3f72af;
+  --on-primary: #ffffff;
+  --ink: #112d4e;
+  --line: oklch(0.6 0.05 254);
 }
 ```
 
+Here `--on-primary` and `--line` are derived. The palette has no accent, so links use `--primary` and danger is derived at H 25.
+
 ## Dark Mode
 
-Keep the same hues. Swap the lightness roles: background around L 0.18-0.22 with a little chroma, surfaces a step lighter, text around L 0.92-0.95. Lower chroma slightly so pastels do not glow. Recheck every contrast pair.
+Keep the palette. Use its darkest color as the background when its L is 0.3 or lower, otherwise derive a background from its hue at L 0.18 to 0.22. Surfaces are a step lighter in the same hue, and text is the lightest palette color or a near-white with its hue. Keep `primary` and `accent` as they are when they pass contrast on the dark background, and lighten them only when they fail. Recheck every contrast pair.
 
 ## Checks
 
@@ -64,7 +64,8 @@ Keep the same hues. Swap the lightness roles: background around L 0.18-0.22 with
 - Squint test: the one primary action per screen should be the first thing you notice.
 - Grayscale test: view a screenshot in grayscale. States should still be distinguishable by text, shape or position.
 - No saturated default fills (C13), no rainbow of sibling cards (C12), no purple gradient (C01).
-- No stock pastel rainbow (C17), harsh multi hue gradient (C14), purple on black (C15) or neon accent (C16). A pastel palette has one lead hue, not one tint per card.
+- No stock pastel rainbow (C17), harsh multi hue gradient (C14), purple on black (C15) or neon accent (C16). Each palette color keeps one role, not one color per card.
+- No purple anywhere unless the user asked for it.
 
 ## Sources
 

@@ -41,7 +41,7 @@ Rate each of the Eight Golden Rules in [golden-rules.md](golden-rules.md) Pass, 
 
 Judge the feel, with evidence for each point:
 - Visual hierarchy: the main action and content are obvious first
-- Color: pastel palette or the user's colors, contrast checked (R1)
+- Color: the picked Color Hunt palette or the user's colors, no purple, contrast checked (R1)
 - Speed: pages load one at a time from the backend, skeletons hold the layout, nothing lags or jumps (R10)
 - Feedback: every action responds, motion is quick and meaningful
 - Craft: consistent spacing, radius and type tokens, every state designed
@@ -79,7 +79,7 @@ Write the review in chat, without semicolons or em dashes (R9):
 ### Hard Rules
 | Rule | Status | Evidence |
 |------|--------|----------|
-| R1 Pastel palette | Pass / Fixed / Not applicable | ... |
+| R1 Color Hunt palette | Pass / Fixed / Not applicable | ... |
 | R2 No icon-tile stat cards | | |
 | R3 No icons in rounded squares | | |
 | R4 No pill badges | | |

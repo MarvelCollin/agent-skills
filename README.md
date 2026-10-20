@@ -57,7 +57,7 @@ Claude also loads the skill on its own whenever you ask it to build or restyle U
 
 | Rule | What it means |
 |------|---------------|
-| R1 Pastel palette | Pastel colors built in OKLCH unless you name your own. No saturated default blue, green, purple or orange fills. Contrast is still checked |
+| R1 Color Hunt palette | A random palette from the Color Hunt popular all time list, applied with its exact colors, unless you name your own. Never purple. Contrast is still checked |
 | R2 No icon-tile stat cards | Totals go in one summary strip with context and links, not a row of identical cards with colored icon squares |
 | R3 No icons in rounded squares | Icons sit inline with their text, without a tinted tile |
 | R4 No pill badges | Status and role labels use plain column values, a shape plus a word, or weighted text |
@@ -286,9 +286,10 @@ skills/
     SKILL.md                  Entry point: build, review and audit modes
     references/               Build rules, color, navigation, golden rules, UI review,
                               browser protocol, personas, rubric, heuristics, flow test,
-                              accessibility, comparison, slop catalog, report
+                              accessibility, comparison, slop catalog, report,
+                              Color Hunt palette snapshot
     templates/                Report and flow test templates
-    scripts/                  rule-scan, perf-check, axe-scan, lighthouse-audit, conventions (.sh + .ps1)
+    scripts/                  rule-scan, perf-check, axe-scan, lighthouse-audit, conventions, pick-palette (.sh + .ps1)
   security/
     SKILL.md                  Entry point: scope, recon, test, validate, report, code review
     references/               Authorization, recon, validation, reporting, code review,
