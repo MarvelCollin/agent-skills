@@ -1,6 +1,6 @@
 ---
 name: uiux
-description: Build and audit web UI with real UX discipline. When building or changing UI, applies hard rules R1 to R19 (a random Color Hunt palette with no purple unless the user picks colors, no icon tile stat cards, icons in rounded squares or pill badges, search and filters on every table column, overlays that size to content, form modals with pinned actions and one scroll area, custom controls and scrollbars instead of browser built-ins, specific and consistent layouts, no semicolons or em dashes in copy, backend pagination with skeletons, real avatars, the project's conventions and file layering, no AI template tells like sparkle icons or fake testimonials, launch ready pages with a CTA above the fold, per page meta, alt text and a custom 404, forms on one aligned grid with one control height, short calm motion on transform and opacity that never janks, and screens that fit before scrolling with sticky headers and tabs) plus navigation, color and Shneiderman's Eight Golden Rules, then reviews the result for ease of use, feel and navigation. Given a URL, audits the site as a real first-time user and writes a scored report.
+description: Build and audit web UI with real UX discipline. When building or changing UI, applies hard rules R1 to R19 (a random Color Hunt palette with no purple unless the user picks colors, no icon tile stat cards, icons in rounded squares or pill badges, search and filters on every table column, overlays that size to content, form modals with pinned actions and one scroll area, custom controls and scrollbars instead of browser built-ins, specific and consistent layouts, no semicolons or em dashes in copy, backend pagination with skeletons, real avatars, the project's conventions and file layering, no AI template tells like sparkle icons or fake testimonials, launch ready pages with a CTA above the fold, per page meta, alt text and a custom 404, forms on one aligned grid with one control height, short calm motion on transform and opacity that never janks, and screens that fit before scrolling with sticky headers and tabs) plus navigation, color and Shneiderman's Eight Golden Rules, follows page and component patterns for every SaaS screen (lists, pagination, search, filters, detail pages, forms, settings, billing, dashboards, sign in, onboarding) and changes only what the user asked for, then reviews the result for ease of use, feel and navigation. Given a URL, audits the site as a real first-time user and writes a scored report.
 when_to_use: Use whenever creating, designing, restyling or reviewing any web UI (pages, dashboards, components, forms, tables, modals, date pickers, navigation), and when asked to UX test, usability test, audit or compare a website by URL, check accessibility, measure page speed, check for AI design slop, or turn UX findings into a report.
 argument-hint: '[what to build] | review [path-or-url] | <url> [focus] | <url> flow "<goal>" | <url> vs <url2> | report [output-path]'
 allowed-tools: Bash(bash "${CLAUDE_SKILL_DIR}/scripts/*) Bash(powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(pwsh -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(agent-browser *) Bash(curl *) WebFetch Read Write Glob Grep Agent mcp__Claude_Browser__* mcp__playwright__* mcp__plugin_playwright_playwright__*
@@ -41,21 +41,48 @@ Prepend `https://` to a URL that has no scheme.
 
 ## Build Mode
 
-1. Run the conventions script on the project (`bash "<skill-dir>/scripts/conventions.sh" "<project>"`, or `conventions.ps1 -Path` on Windows) and open two or three existing files like the ones you will write. New code follows what they show (R12).
-2. Read [references/build-rules.md](references/build-rules.md) (hard rules R1 to R19), [references/form-layout.md](references/form-layout.md), [references/motion.md](references/motion.md), [references/performance.md](references/performance.md), [references/color.md](references/color.md), [references/navigation.md](references/navigation.md), [references/golden-rules.md](references/golden-rules.md), and the patterns to avoid in [references/slop-patterns.md](references/slop-patterns.md).
-3. Before writing code, settle and state briefly:
+1. **Pin the scope first.** Read the request and name exactly what the user asked to change: one component, one table, one form, one page, or the whole product. Change only that. The rules and patterns below apply to what you touch, never to the rest of the app. A request to fix a table changes the table, and the page around it keeps its layout, colors and components. An existing project keeps its palette and tokens, so run the palette picker only for a product with no colors yet. Problems you notice outside the scope go under Still Open in the review, never into the diff. When the scope is unclear (does "redo the table" include its filters, its page header, the whole page?), ask one short question before writing code.
+2. Run the conventions script on the project (`bash "<skill-dir>/scripts/conventions.sh" "<project>"`, or `conventions.ps1 -Path` on Windows) and open two or three existing files like the ones you will write. New code follows what they show (R12).
+3. Read [references/build-rules.md](references/build-rules.md) (hard rules R1 to R19), [references/form-layout.md](references/form-layout.md), [references/motion.md](references/motion.md), [references/performance.md](references/performance.md), [references/color.md](references/color.md), [references/navigation.md](references/navigation.md), [references/golden-rules.md](references/golden-rules.md), and the patterns to avoid in [references/slop-patterns.md](references/slop-patterns.md). Then read the pattern files from the table below for every screen and component in scope, and only those.
+4. Before writing code, settle and state briefly:
+   - the scope: what will change and what will not
    - the conventions you will follow: file and folder naming, code style, export style, and where types, API calls, hooks and components go (R12, R13)
    - the palette: the user's colors, or the palette from `scripts/pick-palette.sh` (`pick-palette.ps1` on Windows) applied as color.md describes, with its Color Hunt link, the token each hex fills and every derived color, after `scripts/palette-check.sh` (`palette-check.ps1`) passes it for eye comfort or its warnings are fixed
    - the type pairing and the spacing, radius and elevation tokens
    - the navigation: destinations, how the current location is shown, and the mobile pattern
-   - the main task of each screen and what gets the most space
+   - the main task of each screen, the user's question it answers, the pattern file it follows, and what gets the most space
+   - what fits on the first screen at 1366x768, what goes into tabs, and what stays sticky (R19)
    - for public pages, the main call to action and where it sits at 375 and 1440, plus the title and description of each page (R16)
    - the states each component needs
    - how data loads: endpoints, server-side paging, sort and filter parameters, and the skeleton for each loading state
    - the avatar treatment when a person has no photo
-4. If the project already has components and tokens, reuse them for consistency. Anything new you build still follows R1 to R19. If existing code breaks a hard rule, do not rewrite unrelated code. List it under Still Open in the review.
-5. Build it. Custom, accessible controls (R7), filterable tables (R5), overlays that size to content (R6), form overlays with pinned actions and one scroll area (R14), forms on one aligned grid (R17), short motion that explains each change (R18), screens that fit with sticky headers and tabs (R19), every state designed.
-6. Run the UI Review in [references/ui-review.md](references/ui-review.md). Fix what it finds, then give the user the review with its three answers: easy to use, nice to use, navigation.
+5. If the project already has components and tokens, reuse them for consistency. Anything new you build still follows R1 to R19. If existing code breaks a hard rule, do not rewrite unrelated code. List it under Still Open in the review.
+6. Build it. Custom, accessible controls (R7), filterable tables (R5), overlays that size to content (R6), form overlays with pinned actions and one scroll area (R14), forms on one aligned grid (R17), short motion that explains each change (R18), screens that fit with sticky headers and tabs (R19), every state designed, and every item in the matching pattern files.
+7. Run the UI Review in [references/ui-review.md](references/ui-review.md). Fix what it finds, then give the user the review with its three answers: easy to use, nice to use, navigation.
+
+### Patterns by Screen
+
+Pattern files in `references/patterns/` say what a screen or component must offer so users get what they came for, and end with checks.
+
+| Building | Read |
+|----------|------|
+| App frame: sidebar, top bar, page header, workspace switcher, command palette, shortcuts | [app-shell.md](references/patterns/app-shell.md) |
+| A list or table of records, bulk actions, saved views, inline edit | [list-pages.md](references/patterns/list-pages.md), [pagination.md](references/patterns/pagination.md), [filters-sort.md](references/patterns/filters-sort.md), [search.md](references/patterns/search.md) |
+| Search boxes, global search, results, no results | [search.md](references/patterns/search.md) |
+| One record's page, tabs, related items | [detail-pages.md](references/patterns/detail-pages.md), [activity.md](references/patterns/activity.md) |
+| Create and edit forms, validation, saving | [forms.md](references/patterns/forms.md) and [form-layout.md](references/form-layout.md) |
+| Wizards, setup flows, task lists, check answers | [multi-step.md](references/patterns/multi-step.md) |
+| Modals, drawers, popovers, confirmations, delete and undo | [overlays.md](references/patterns/overlays.md) |
+| Loading, saving, toasts, banners, errors, notification center | [feedback.md](references/patterns/feedback.md) |
+| Empty, no results, no access, not found, error pages | [states.md](references/patterns/states.md) |
+| Dashboards and home screens | [dashboard.md](references/patterns/dashboard.md) |
+| Settings, members and roles, billing and plans, security, danger zone | [settings-account.md](references/patterns/settings-account.md) |
+| Sign up, sign in, reset, magic links, two factor | [auth.md](references/patterns/auth.md) |
+| First run, setup checklist, contextual help | [onboarding-help.md](references/patterns/onboarding-help.md) |
+| File upload, CSV import, export | [data-io.md](references/patterns/data-io.md) |
+| Activity feeds, comments, audit logs, version history | [activity.md](references/patterns/activity.md) |
+| Labels, button text, numbers, currency, dates | [content-format.md](references/patterns/content-format.md) |
+| Any single component: button, input, select, date picker, tabs, menu, tooltip, toast | [components.md](references/patterns/components.md) |
 
 ## Audit Mode
 
@@ -155,6 +182,8 @@ Never submit real purchases, payments, or messages to real people. Stop at the f
 6. Check loading states and skeleton screens
 7. For every data table, try to search and to filter each column. Note columns you cannot filter
 8. Note controls that use the browser's default look (selects, date inputs, checkboxes, scrollbars)
+9. For each kind of screen you meet (list, detail, form, settings, dashboard), run the Check list at the end of its pattern file in `references/patterns/` (see Patterns by Screen)
+10. Run the alignment check from [references/form-layout.md](references/form-layout.md) on every form and the motion check from [references/motion.md](references/motion.md) on every menu, modal and drawer
 
 #### Phase 5: Errors and Edge Cases
 

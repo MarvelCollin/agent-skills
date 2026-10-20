@@ -77,7 +77,9 @@ Claude also loads the skill on its own whenever you ask it to build or restyle U
 | R18 Calm motion | Small motion everywhere it explains a change, 100 to 300ms, ease out, only transform and opacity, no bounce, reduced motion honored, checked in a Performance trace |
 | R19 Fit the screen | Main content fits 1366x768 without scrolling, content that can be split goes into tabs with their own URL, and when a view must scroll its page header, tabs and table header stay sticky |
 
-It also applies the guides on [navigation](skills/uiux/references/navigation.md), [color picking](skills/uiux/references/color.md) and [Shneiderman's Eight Golden Rules](skills/uiux/references/golden-rules.md).
+It also applies the guides on [navigation](skills/uiux/references/navigation.md), [color picking](skills/uiux/references/color.md) and [Shneiderman's Eight Golden Rules](skills/uiux/references/golden-rules.md), plus [UX patterns for every SaaS screen and component](skills/uiux/references/patterns/): app shell, list pages, pagination, search, filters, detail pages, forms, wizards, overlays and confirmations, feedback, empty and error states, dashboards, settings with members and billing, sign in, onboarding, import and export, activity logs, formatting, and each component from buttons to date pickers. Each says what the screen must offer so users get what they came for, and ends with checks.
+
+It changes only what you asked for. A request to fix a table changes the table, not the page around it, and anything else it notices goes into the review as an open item.
 
 After building, it reviews its own work and answers three questions with evidence: **Is it easy to use? Is it nice to use? Is the navigation good?** It runs a rule scan on the code, uses the UI in a browser when it can, and fixes what it finds before reporting.
 

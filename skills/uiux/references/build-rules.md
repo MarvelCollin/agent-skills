@@ -6,7 +6,7 @@ Read these alongside [color.md](color.md), [navigation.md](navigation.md), [gold
 
 ## R1: Random Color Hunt Palette Unless the User Picks Colors
 
-If the user has not named colors or a brand palette, run the palette picker (`scripts/pick-palette.sh` or `pick-palette.ps1`) and apply that palette with the method in [color.md](color.md). The picker draws at random from the Color Hunt popular all time list with purple, neon and oversaturated palettes removed. Then run `scripts/palette-check.sh` (or `palette-check.ps1`) on the palette, or on the user's own colors, and resolve what it reports, so the colors are comfortable for long sessions (Eye Comfort in [color.md](color.md)).
+If the user has not named colors or a brand palette and the project has no colors yet, run the palette picker (`scripts/pick-palette.sh` or `pick-palette.ps1`) and apply that palette with the method in [color.md](color.md). The picker draws at random from the Color Hunt popular all time list with purple, neon and oversaturated palettes removed. Then run `scripts/palette-check.sh` (or `palette-check.ps1`) on the palette, or on the user's own colors, and resolve what it reports, so the colors are comfortable for long sessions (Eye Comfort in [color.md](color.md)).
 
 Never:
 - Use purple, violet, lavender or magenta (OKLCH hue 265 to 335 above chroma 0.03) unless the user names it (slop patterns C01 and C02)
@@ -21,7 +21,7 @@ Each palette color gets one role: background, surface, primary, accent or text. 
 
 The palette does not excuse low contrast. Body text reaches 4.5:1 on what it sits on. Borders, focus rings and icons that carry meaning reach 3:1. When a palette color fails as text, use it as a fill instead.
 
-If the user gives colors, use theirs and still meet the contrast rules.
+If the user gives colors, or the project already has a palette, use those and still meet the contrast rules. Run `palette-check` on them and report what it finds.
 
 ## R2: No Stat Cards with Icon Tiles
 

@@ -4,6 +4,8 @@ Run this after building or changing UI, and whenever the user asks `/uiux review
 
 Fix every hard-rule violation you find before you report. Only report what you could not fix or what needs a decision from the user.
 
+Review only what was in scope. First compare the diff with the user's request: every changed file and every changed part of a file belongs to what they asked for. Revert anything else, and list problems you saw outside the scope under Still Open.
+
 ## 1. Scan the Code
 
 Run the rule scan on the files you created or changed (see the end of [build-rules.md](build-rules.md)). For each finding, open the line and decide:
@@ -30,6 +32,7 @@ If the UI can run (a dev server, a static file, a preview), open it with a brows
 14. For forms (R17): run the alignment check in [form-layout.md](form-layout.md) on every form at 1440 and 375 wide, once clean and once after a submit with errors, until it prints `ALIGNED`. Then look at the screenshot: labels, controls, checkboxes and buttons share one left edge and controls in a row share one height
 15. For motion (R18): open every menu, popover, modal, drawer, toast and accordion, run the motion check from [motion.md](motion.md) right after each opens, and record one Performance trace with 4x CPU throttling. Repeat with reduced motion emulated
 16. For screen fit (R19): screenshot every app screen at 1440x900 and 1366x768. The title, the main action and the main content are visible without scrolling. Scroll every long view and confirm the page header, tabs and table header stay in place
+17. For every screen and component in scope, run the Check list at the end of its pattern file (Patterns by Screen in SKILL.md). Each failed check is fixed or listed under Still Open
 
 ## 3. Answer the Three Questions
 
