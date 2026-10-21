@@ -13,6 +13,7 @@ A growing set of skills for Claude Code, packaged as one plugin. Each skill live
 | `/checkprod` | `/checkprod [path]`, `/checkprod <url>`, `/checkprod <path> <url>`, `/checkprod frontend` or `/checkprod backend`, `/checkprod fix` | Grades 40 launch items (20 frontend, 20 backend) with proof for every pass, from a static project scan and a live URL check, then fixes what failed |
 | `/research` | `/research references [path]`, `/research audit [path]`, `/research write <section> [path]` or `/research review [path] [venue]` | Verifies every reference against a registry, audits a paper's logic, numbers and consistency, drafts sections to the field's conventions, or reviews it like a tough peer reviewer |
 | `/explain` | `/explain <topic>`, `/explain simpler`, `/explain deeper`, `/explain teach <topic>`, `/explain quiz`, `/explain back <topic>` or `/explain remember <thing>` | Explains anything in the simplest true way, easy to understand and remember, teaches step by step, quizzes you, checks your own explanation, or drills something into memory |
+| `/revision-doc` | `/revision-doc [folder]`, `/revision-doc build <folder>` or `/revision-doc check <file.docx>` | Turns a batch of changes into a before and after Word report with red boxes, the user's requests, what changed and how it was checked, authored by you and with a real preview thumbnail |
 
 ## Terse Chat
 
@@ -32,7 +33,7 @@ claude plugin marketplace add MarvelCollin/agent-skills
 claude plugin install agent-skills@marvelcollin
 ```
 
-Or copy one skill into your personal skills folder. Each skill keeps everything it needs inside its own folder, so it works on its own. Swap `backend` for `uiux`, `security`, `checkprod`, `research` or `explain`:
+Or copy one skill into your personal skills folder. Each skill keeps everything it needs inside its own folder, so it works on its own. Swap `backend` for `uiux`, `security`, `checkprod`, `research`, `explain` or `revision-doc`:
 
 ```bash
 git clone https://github.com/MarvelCollin/agent-skills
@@ -280,6 +281,18 @@ Every explanation follows rules E1 to E14 (answer first, plain words, what it do
 
 `/explain remember` is for things you need to memorize, like an essay template, a formula or a list. It explains the meaning first, builds a logic map that says the job of each part, then drills you through four levels (full text, first words only, the logic chain only, blank page) with feedback on each attempt. It gives a spacing schedule (day 1, 2, 4, 7, 14 and 30) and ends with practice using the material on new content, because rereading feels like learning but fades fast.
 
+## `/revision-doc`
+
+Builds a before and after revision report as a Word document for a batch of UI or product changes. Claude also loads it on its own when you ask for a before and after doc, a revision report or screenshots of each change.
+
+```
+/revision-doc                          # plan, capture before shots, change, capture after shots, build
+/revision-doc build "21 okt revision"  # build the docx from an existing revision folder
+/revision-doc check report.docx        # check the author and the preview thumbnail
+```
+
+Every change gets a landscape page with what was asked (your own request), what changed and how it was checked, then the same screen before and after side by side with red boxes on the difference. Before shots are taken before the code changes, or from an untouched copy of the last commit, never from `git stash`. The document is authored by the person signed in to the computer instead of python-docx, and it carries a real preview thumbnail of the title and the first change, so File Explorer no longer shows a blank white page. The script needs Python 3.8 or newer with `python-docx` and `pillow`.
+
 ## Project Structure
 
 ```
@@ -321,6 +334,10 @@ skills/
     SKILL.md                  Entry point: explain, simpler, deeper, example, teach, quiz, explain back and remember
     references/               Rules E1 to E14, plain words, pictures and examples, teach mode, remember mode,
                               research sources
+  revision-doc/
+    SKILL.md                  Entry point: report, build and check modes
+    references/               items.json and boxes.json format, how to capture before and after shots
+    scripts/                  revision-doc (.sh + .ps1) wrapping revision_doc.py
 evals/                        Cases for claude plugin eval
 tests/                        Unit tests for the scripts
 ```
