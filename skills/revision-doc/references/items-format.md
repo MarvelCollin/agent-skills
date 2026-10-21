@@ -27,7 +27,7 @@
   "items": [
     {
       "title": "Daftar bagian di kiri tetap terlihat saat discroll",
-      "asked": ["Kalau lagi di scroll bagian step di bagian kiri ini dibikin sticky ya."],
+      "asked": ["Daftar bagian di sisi kiri tab Detail ikut tergulir saat halaman discroll, jadi pengguna harus scroll ke atas lagi untuk pindah bagian."],
       "changed": ["Daftar bagian sekarang menempel saat halaman discroll"],
       "checked": ["Browser: tab Detail discroll 700px, daftar tetap terlihat", "Semua test FE lolos"],
       "before": "hr/01-flow-scrolled-nav.png",
@@ -35,7 +35,7 @@
     },
     {
       "title": "Pesan error langsung terlihat",
-      "asked": ["Error muncul tapi tidak kelihatan."],
+      "asked": ["Saat simpan gagal, pesan error muncul di atas halaman sementara pengguna ada di bawah, jadi pengguna tidak tahu kenapa gagal."],
       "changed": ["Halaman menggulir ke pesan error saat simpan ditolak"],
       "checked": ["Browser: simpan dari bawah halaman, pesan tampil di layar"],
       "before_note": "Sebelumnya pesan ada di atas halaman dan tidak terlihat dari tombol simpan.",
@@ -54,7 +54,7 @@
 | `viewport` | no | CSS width of the screenshots, default 1440, used to scale boxes |
 | `output` | no | File name of the docx, default `<title>.docx` |
 | `items[].title` | yes | Short name of the change, what the user sees |
-| `items[].asked` | no | List of the user's requests for this change |
+| `items[].asked` | no | List of problem statements behind the user's requests: what was wrong, where, and the effect on the user. Not the chat prompt itself |
 | `items[].changed` | no | List of what changed |
 | `items[].checked` | no | List of how it was checked |
 | `items[].before`, `after` | one of the pair | Path relative to `before/` or `after/` |

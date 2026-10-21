@@ -13,7 +13,7 @@ A growing set of skills for Claude Code, packaged as one plugin. Each skill live
 | `/checkprod` | `/checkprod [path]`, `/checkprod <url>`, `/checkprod <path> <url>`, `/checkprod frontend` or `/checkprod backend`, `/checkprod fix` | Grades 40 launch items (20 frontend, 20 backend) with proof for every pass, from a static project scan and a live URL check, then fixes what failed |
 | `/research` | `/research references [path]`, `/research audit [path]`, `/research write <section> [path]` or `/research review [path] [venue]` | Verifies every reference against a registry, audits a paper's logic, numbers and consistency, drafts sections to the field's conventions, or reviews it like a tough peer reviewer |
 | `/explain` | `/explain <topic>`, `/explain simpler`, `/explain deeper`, `/explain teach <topic>`, `/explain quiz`, `/explain back <topic>` or `/explain remember <thing>` | Explains anything in the simplest true way, easy to understand and remember, teaches step by step, quizzes you, checks your own explanation, or drills something into memory |
-| `/revision-doc` | `/revision-doc [folder]`, `/revision-doc build <folder>` or `/revision-doc check <file.docx>` | Turns a batch of changes into a before and after Word report with red boxes, the user's requests, what changed and how it was checked, authored by you and with a real preview thumbnail |
+| `/revision-doc` | `/revision-doc [folder]`, `/revision-doc build <folder>` or `/revision-doc check <file.docx>` | Turns a batch of changes into a before and after Word report with red boxes, the problem behind each request, what changed and how it was checked, authored by you and with a real preview thumbnail |
 
 ## Terse Chat
 
@@ -291,7 +291,7 @@ Builds a before and after revision report as a Word document for a batch of UI o
 /revision-doc check report.docx        # check the author and the preview thumbnail
 ```
 
-Every change gets a landscape page with what was asked (your own request), what changed and how it was checked, then the same screen before and after side by side with red boxes on the difference. Before shots are taken before the code changes, or from an untouched copy of the last commit, never from `git stash`. The document is authored by the person signed in to the computer instead of python-docx, and it carries a real preview thumbnail of the title and the first change, so File Explorer no longer shows a blank white page. The script needs Python 3.8 or newer with `python-docx` and `pillow`.
+Every change gets a landscape page with the problem behind each request (written as a problem, not as your chat prompt), what changed and how it was checked, then the same screen before and after side by side with red boxes on the difference. Before shots are taken before the code changes, or from an untouched copy of the last commit, never from `git stash`. The document is authored by the person signed in to the computer instead of python-docx, and it carries a real preview thumbnail of the title and the first change, so File Explorer no longer shows a blank white page. The script needs Python 3.8 or newer with `python-docx` and `pillow`.
 
 ## Project Structure
 

@@ -1,6 +1,6 @@
 ---
 name: revision-doc
-description: Build a before and after revision report as a Word document for a batch of UI or product changes. Captures a before screenshot of every screen before the code changes and an after screenshot of the same screen at the same size, draws red boxes on what changed, and writes a landscape .docx with one page per change holding what was asked (the user's own request), what changed and how it was checked, with the before and after shots side by side. The document is authored by the person signed in to the computer, not python-docx, and carries a real preview thumbnail so File Explorer and Finder show the first change instead of a blank white page.
+description: Build a before and after revision report as a Word document for a batch of UI or product changes. Captures a before screenshot of every screen before the code changes and an after screenshot of the same screen at the same size, draws red boxes on what changed, and writes a landscape .docx with one page per change holding the problem behind each request, what changed and how it was checked, with the before and after shots side by side. The document is authored by the person signed in to the computer, not python-docx, and carries a real preview thumbnail so File Explorer and Finder show the first change instead of a blank white page.
 when_to_use: Use when the user asks for a before and after document, a revision report, a revision doc, a change report with screenshots, before after shots for each change or feature, a docx of what changed, or says "like the revision of <date>" for a batch of fixes. Also use when an existing revision .docx shows python-docx as its author or a blank white thumbnail. Do not use for release notes without screenshots, changelogs, or single screenshots.
 argument-hint: '[folder] | build <folder> | check <file.docx>'
 allowed-tools: Bash(bash "${CLAUDE_SKILL_DIR}/scripts/*) Bash(powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/scripts/*) Bash(pwsh -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/*) Read Write Edit Glob Grep
@@ -44,7 +44,12 @@ Turn it off when the user says `verbose`, "normal mode", "full sentences" or "st
 
 ## Writing Rules
 
-- **Asked** holds the user's own request for that change, close to their words, with only typos fixed. Every prompt in the batch appears under at least one item.
+- **Asked** states the problem, not the prompt. Turn each request into a plain statement of what was wrong: what happened, where, and what it cost the user. Drop chat words like please, can you, "dong" or "ya", questions and first person. Every request in the batch is covered by at least one item.
+  - Prompt: "Pas gw tambahin step skill test lagi jadinya error. Kalau bug perbaiki dong."
+  - Problem: "Tahap Tes keahlian baru di lowongan yang sudah Dibuka tidak bisa disimpan. Sistem minta tes ditautkan dulu, tapi tes baru bisa ditautkan setelah tahap disimpan."
+  - Prompt: "Buat requirements dan benefits dibikin stacking aja, jangan kanan kiri."
+  - Problem: "Kolom Persyaratan dan Tunjangan berdampingan kiri kanan, jadi ruangnya sempit dan toolbar editornya terlipat dua baris."
+- When the user asked for a new feature rather than a fix, describe the gap it fills: "Dari halaman Tahap rekrutmen tidak ada jalan ke pengaturan templat alur, jadi HR tidak tahu di mana templat bisa diubah."
 - **Changed** says what is different for the user first, then the cause when it was a bug, then the technical change in plain words.
 - **Checked** names real evidence: the number of tests that passed and what was done in the browser with which account and data. Never write a check that was not run.
 - A change with no visible difference still gets a page, with a note in place of the missing shot.
@@ -53,7 +58,7 @@ Turn it off when the user says `verbose`, "normal mode", "full sentences" or "st
 
 ## Before You Send
 
-- [ ] Every change has a page, and every user prompt of the batch appears under Asked
+- [ ] Every change has a page, and every user request of the batch is covered by a problem statement under Asked, written as a problem, not as the prompt
 - [ ] Before and after shots of each page show the same screen at the same size
 - [ ] Every red box sits on the changed area
 - [ ] `check` shows the user's name as AUTHOR, `THUMBNAIL: embedded`, and no PROBLEM
