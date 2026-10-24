@@ -217,6 +217,43 @@ if (@(Find-Lines $files $reducedPattern).Count -eq 0) {
     }
 }
 
+$animateUtilityPattern = "(^|[`"'\s:])(animate-in|animate-out|fade-in-0|fade-out-0|zoom-in-95|zoom-out-95|slide-in-from-(top|bottom|left|right)(-[0-9]+)?)([`"'\s]|$)"
+$animatePluginPattern = "tw-animate-css|tailwindcss-animate"
+$hasAnimatePlugin = @(Find-Lines $files $animatePluginPattern).Count -gt 0
+if (-not $hasAnimatePlugin) {
+    $packages = @(Get-ChildItem -LiteralPath $root -Recurse -File -Force -Filter "package.json" -ErrorAction SilentlyContinue | Where-Object {
+        -not (($_.FullName.Substring($root.Length) -split '[\\/]') -contains "node_modules")
+    })
+    $dir = $root
+    for ($i = 0; $i -lt 4; $i++) {
+        $parent = Split-Path -Parent $dir
+        if (-not $parent -or $parent -eq $dir) { break }
+        $dir = $parent
+        $candidate = Join-Path $dir "package.json"
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) { $packages += Get-Item -LiteralPath $candidate }
+    }
+    foreach ($package in $packages) {
+        if (Select-String -LiteralPath $package.FullName -Pattern $animatePluginPattern -Encoding UTF8 -Quiet) {
+            $hasAnimatePlugin = $true
+            break
+        }
+    }
+}
+if (-not $hasAnimatePlugin) {
+    foreach ($file in $files) {
+        Add-Findings (Select-String -LiteralPath $file.FullName -Pattern $animateUtilityPattern -Encoding UTF8 -CaseSensitive | Select-Object -First 1) "R18" "motion-plugin-missing"
+    }
+}
+
+$fixedWidthPattern = "(^|[`"'\s])w-(64|72|80|96)([`"'\s]|$)"
+foreach ($file in $markupFiles) {
+    if (Select-String -LiteralPath $file.FullName -Pattern "<(input|Input|SearchInput|textarea|Textarea)([\s>/]|$)" -Encoding UTF8 -CaseSensitive -Quiet) {
+        Add-Findings (Select-String -LiteralPath $file.FullName -Pattern $fixedWidthPattern -Encoding UTF8 -CaseSensitive | Where-Object {
+            $_.Line -cnotmatch "(sm|md|lg|xl|2xl|@[a-z0-9]+):w-"
+        }) "R19" "fixed-width-control"
+    }
+}
+
 Add-Findings (Find-Lines $files "$emDash|&mdash;|&#8212;") "R9" "em-dash"
 Add-Findings (Find-Lines $jsonFiles $emDash) "R9" "em-dash"
 Add-Findings (Find-Lines $files "[A-Za-z0-9`"'/]>[^<>{}]*[A-Za-z0-9)]\s*;\s+[A-Za-z][^<>{}]*<") "R9" "semicolon-in-copy"

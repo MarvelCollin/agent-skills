@@ -14,6 +14,11 @@ Search inside an app (a table's search box, the global search, a picker's search
 ## Matching
 
 - Case and accent insensitive, tolerant of extra spaces and common typos
+- Every word must match somewhere, in any searchable field. "cement 50kg" finds "Cement Three Wheels 50kg" in the name and "paint litre" finds a paint whose unit is the litre. Matching the whole phrase inside one field misses both
+- Numbers match the way people type them. "58000", "58.000" and "58,000" all find a price shown as Rp 58.000. Strip thousand separators from the query and compare with the raw number and its local format, never joining digits across two fields
+- Dates match the local format shown on screen ("23/10/2026" and "23/10")
+- Search reaches the child records a row stands for. An invoice search finds invoices containing the product typed, a customer search finds customers by any of their saved addresses
+- On the server, every value is a bound parameter, LIKE wildcards (`%` and `_`) in the query are escaped, and the number of words is capped
 - Matches the fields the placeholder promised, including IDs pasted with or without prefixes
 - Exact matches rank first, then starts with, then contains, then recent and frequently used items
 - Highlight the matched text in results
@@ -62,6 +67,7 @@ Never a dead end. Show:
 2. Is the query still visible and editable on the results?
 3. Do suggestions work by keyboard alone?
 4. Does the scope show, and can the user widen it in one click?
+5. Search with two words from different columns, a price with and without thousand separators, a date, and a literal `%`. Is each handled?
 
 ## Sources
 

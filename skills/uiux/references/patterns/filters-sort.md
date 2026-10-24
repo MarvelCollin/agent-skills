@@ -9,6 +9,13 @@ Narrowing and ordering a collection. Rule R5 in [../build-rules.md](../build-rul
 - Applied filters show as removable chips above the results with "Clear all". Never only inside the filter panel
 - Sorting is separate from filtering: a sort control and sortable headers. Sorting reorders, filtering removes
 
+## Filter Bar Layout
+
+- Search first and widest, then the 2 to 4 most used filters, then sort, on one row with one control height (R17)
+- One summary line under the bar: "Showing 12 of 129 products", then each active filter as a removable squared tag ("Category: Paint ×"), then "Clear all". It is the only place the user needs to look to know why the list is short
+- Size the bar from its own width, not the window. In a split screen (a product list beside a cart, a list beside a detail pane) the list column can be narrow on a wide monitor. Use container queries with three tiers: one row when wide, search on its own row with the filters in an equal width grid below when medium, search plus a "Filters (2)" button opening a bottom sheet when narrow
+- The bottom sheet holds the same controls stacked full width, with "Clear filters" and "Show 48 products" pinned at the bottom
+
 ## Applying
 
 | Mode | Use when |
@@ -34,6 +41,7 @@ Narrowing and ordering a collection. Rule R5 in [../build-rules.md](../build-rul
 | Yes or no | Any, Yes, No |
 | People | Combobox with avatars, "Me" first |
 
+- Never a row of chips for one choice out of more than about 7 values. Thirty categories as chips wrap into six rows and push the results off screen. Use a single select combobox with search, "All" first, each option showing its count, the chosen one checked
 - Options that would return zero results show (0) and are disabled with the reason, not hidden. A toggle can hide them
 - Long option lists show 7 to 10 with "Show more" and a search
 - Remember recently used filter values
@@ -44,6 +52,8 @@ Narrowing and ordering a collection. Rule R5 in [../build-rules.md](../build-rul
 - Back from a detail page restores the exact filter state and scroll position
 - Users can save a combination as a view (see [list-pages.md](list-pages.md))
 - An incompatible combination shows a clear message instead of an empty list without explanation
+- Clearing wins over debounce. "Clear all" empties the search box and the URL at once. Write the debounced query to the URL only when the debounced value itself changes, never on every URL change, or a stale query writes itself back a moment after the clear
+- Unknown values in the URL (`?stock=everything`) fall back to the default instead of showing an empty list
 
 ## Sort
 
@@ -62,6 +72,9 @@ Narrowing and ordering a collection. Rule R5 in [../build-rules.md](../build-rul
 3. Is every active filter visible and removable in one click?
 4. Do filters keep working while results load?
 5. On mobile, does the sheet show the count on Apply?
+6. Type a search, then press "Clear all" at once. Does the old query stay gone, in the box, the URL and the results?
+7. Open the side panels so the list column is at its narrowest. Do the filters still fit, or move to a second row or the sheet, with nothing overflowing?
+8. Can a long single choice filter be searched by typing, and picked with the arrow keys and Enter?
 
 ## Sources
 

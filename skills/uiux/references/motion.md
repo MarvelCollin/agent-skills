@@ -66,6 +66,9 @@ Define these once and use only these. No hand typed durations or curves in compo
 | Tabs | Active indicator moves with `transform: translateX() scaleX()`, `--dur-base` | | Panel content swaps instantly or with a `--dur-fast` fade. No sliding panels |
 | Accordion, collapsible | Chevron rotates with `transform`. Panel grows with `grid-template-rows: 0fr` to `1fr`, `--dur-base` | `--dur-fast` | The single allowed layout animation. One panel at a time, never a long list |
 | Row added to a list or table | Background tint that fades out after about 1s | | Signals "this is new". Siblings do not animate |
+| Record saved or edited | The same tint on the row or card that changed, found by its id | | Only the changed record, and only when it is on screen. Nothing else moves |
+| Add to cart, quantity change | Tile press `scale(0.97)`. Count badge pops from `scale(0.5)` to 1 over `--dur-fast`. New cart line enters with `translateY(-4px)` plus opacity. Total bumps to `scale(1.06)` and back over `--dur-base` | Line fades out over `--dur-fast` | Give the badge and the total a React `key` of their value so the animation replays on every change |
+| Error or success message under a form | Opacity plus `translateY(-4px)` over `--dur-fast` | Instant | Gives a wrong password or a failed save a visible moment. No shake |
 | Row removed | Opacity to 0 over `--dur-fast`, then remove | | If siblings must close the gap smoothly, use a FLIP `transform`, not height |
 | Inline save | "Saving" text, then a check icon fading in over `--dur-fast` | Check fades after 2s | |
 | Skeleton | A shimmer pseudo element moving with `transform: translateX`, 1.2 to 1.6s linear loop | Content replaces it with no fade or a `--dur-fast` fade | Never animate `background-position`, it repaints. Static under reduced motion |
@@ -90,7 +93,7 @@ Define these once and use only these. No hand typed durations or curves in compo
 
 ## Checks
 
-1. Run the rule scan. It flags `transition-all`, layout properties in transitions, durations over 500ms, overshooting curves and animated files with no reduced motion handling (R18 leads)
+1. Run the rule scan. It flags `transition-all`, layout properties in transitions, durations over 500ms, overshooting curves, animated files with no reduced motion handling, and shadcn animation utilities with no animation plugin installed (R18 leads)
 2. Trigger each animation, then immediately run this in the page (with agent-browser, `agent-browser eval --stdin`). It lists running animations that move layout or paint properties or run too long:
 
 ```js
@@ -114,6 +117,7 @@ Define these once and use only these. No hand typed durations or curves in compo
 4. Record a Performance trace with 4x CPU throttling while opening the heaviest overlay and scrolling the longest list. Frames stay under 16ms, no long tasks during the animation, no purple layout blocks on animated frames
 5. Emulate reduced motion (`agent-browser set media light reduced-motion`, or DevTools Rendering) and repeat. Nothing moves, every state change is still visible
 6. Click quickly through a menu, a modal and a tab change. No animation ever delays the next click
+7. Open every overlay and read `getComputedStyle(document.querySelector('[role="dialog"]')).animationName` in the first 100ms. `none` means its motion classes are not doing anything, usually because the animation plugin is missing
 
 ## Sources
 

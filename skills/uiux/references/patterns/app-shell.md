@@ -8,6 +8,9 @@ The frame every SaaS screen lives in: sidebar, top bar, page header, workspace s
 - Sidebar for apps with more than about 5 areas or any hierarchy. A top bar alone for 3 to 6 flat areas. Most products combine them: top bar for global context (search, notifications, help, account), sidebar for primary navigation
 - Sidebar width 240 to 280px expanded, 56 to 64px collapsed. Collapse is a user choice that is remembered, never automatic on desktop. Collapsed items show a tooltip with the label on hover and focus
 - Under 1024px the sidebar becomes an overlay drawer opened from a visible "Menu" button. Under 640px use a bottom tab bar for up to 5 main areas plus "More"
+- A split screen (a list beside a cart, an editor beside a preview) keeps both panes only while both fit. Below that, the secondary pane becomes a summary bar pinned above the bottom tab bar ("Cart · 3 items Rp 80.000") that opens it as a bottom sheet. Never stack it under a long list where the user must scroll past every item to reach it
+- Touch screens get bigger targets without changing the desktop look. Tailwind v4 `pointer-coarse:` variants raise buttons, chips, table actions and select triggers to 40 to 44px only where the pointer is a finger, which also covers touchscreen point of sale monitors
+- Toasts and floating bars sit above the bottom tab bar and the device safe area, never behind them
 
 ## Sidebar Content
 

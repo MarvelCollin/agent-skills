@@ -242,6 +242,40 @@ if ! { [ "${#FILES[@]}" -gt 0 ] && grep -qE "$REDUCED_PATTERN" "${FILES[@]}" 2>/
     done
 fi
 
+ANIMATE_UTILITY_PATTERN="(^|[\"'[:space:]:])(animate-in|animate-out|fade-in-0|fade-out-0|zoom-in-95|zoom-out-95|slide-in-from-(top|bottom|left|right)(-[0-9]+)?)([\"'[:space:]]|$)"
+ANIMATE_PLUGIN_PATTERN="tw-animate-css|tailwindcss-animate"
+has_animate_plugin() {
+    if [ "${#FILES[@]}" -gt 0 ] && grep -qE "$ANIMATE_PLUGIN_PATTERN" "${FILES[@]}" 2>/dev/null; then
+        return 0
+    fi
+    local pkg dir
+    while IFS= read -r -d '' pkg; do
+        if grep -qE "$ANIMATE_PLUGIN_PATTERN" "$pkg" 2>/dev/null; then
+            return 0
+        fi
+    done < <(find "$ROOT" \( -type d -name node_modules -prune \) -o \( -type f -name package.json -print0 \) 2>/dev/null)
+    dir="$ROOT"
+    for _ in 1 2 3 4; do
+        dir="$(dirname "$dir")"
+        if [ -f "$dir/package.json" ] && grep -qE "$ANIMATE_PLUGIN_PATTERN" "$dir/package.json" 2>/dev/null; then
+            return 0
+        fi
+    done
+    return 1
+}
+if ! has_animate_plugin; then
+    for file in "${FILES[@]+"${FILES[@]}"}"; do
+        { grep -nHE -m1 "$ANIMATE_UTILITY_PATTERN" "$file" || true; } | report R18 motion-plugin-missing
+    done
+fi
+
+FIXED_WIDTH_PATTERN="(^|[\"'[:space:]])w-(64|72|80|96)([\"'[:space:]]|$)"
+for file in "${MARKUP[@]+"${MARKUP[@]}"}"; do
+    if grep -qE "<(input|Input|SearchInput|textarea|Textarea)([[:space:]>/]|$)" "$file"; then
+        { grep -nHE "$FIXED_WIDTH_PATTERN" "$file" || true; }             | { grep -vE "(sm|md|lg|xl|2xl|@[a-z0-9]+):w-" || true; }             | report R19 fixed-width-control
+    fi
+done
+
 scan "—|&mdash;|&#8212;" | report R9 em-dash
 scan_json "—" | report R9 em-dash
 scan "[A-Za-z0-9\"'/]>[^<>{}]*[A-Za-z0-9)][[:space:]]*;[[:space:]]+[A-Za-z][^<>{}]*<" | report R9 semicolon-in-copy
