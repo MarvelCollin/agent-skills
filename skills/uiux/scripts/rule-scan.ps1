@@ -254,6 +254,27 @@ foreach ($file in $markupFiles) {
     }
 }
 
+Add-Findings (Find-Lines $files "<h[1-6]([\s>]|$)" | Where-Object {
+    $_.Line -cmatch "<(em|i)([\s>]|$)|(^|[`"'\s])italic([`"'\s]|$)|font-style\s*:\s*italic"
+}) "R20" "italic-heading"
+Add-Findings (Find-Lines $files "(^|[`"'\s])font-mono([`"'\s]|$)" | Where-Object {
+    $_.Line -cmatch "(^|[`"'\s])(uppercase|tracking-(wide|wider|widest|\[[^\]]*\]))([`"'\s]|$)" -and
+    $_.Line -cnotmatch "<(code|kbd|pre|samp)([\s>]|$)"
+}) "R20" "decorative-mono"
+Add-Findings (Find-Lines $files "<h[1-6](\s[^>]*)?>.*<br([\s/>]|$)") "R20" "headline-break"
+Add-Findings (Find-Lines $files "(^|[`"'\s])text-(gray|slate|zinc|neutral|stone)-(200|300|400)([`"'\s]|$)|(^|[^a-z-])color\s*:\s*#(9ca3af|d1d5db|94a3b8|cbd5e1|a1a1aa|d4d4d8|a3a3a3|d4d4d4|a8a29e|d6d3d1)([^0-9a-f]|$)" -IgnoreCase | Where-Object {
+    $_.Line -cnotmatch "bg-(gray|slate|zinc|neutral|stone)-(700|800|900|950)|bg-black"
+}) "R20" "faint-text"
+$numberFormatPattern = "\.toFixed\(|\.toLocaleString\(|Intl\.NumberFormat|format(Currency|Price|Number|Money|Amount)\("
+$tabularPattern = "tabular-nums|font-variant-numeric|[`"']tnum[`"']"
+foreach ($file in $markupFiles) {
+    $formatted = @(Select-String -LiteralPath $file.FullName -Pattern $numberFormatPattern -Encoding UTF8 -CaseSensitive)
+    $hasTabular = Select-String -LiteralPath $file.FullName -Pattern $tabularPattern -Encoding UTF8 -CaseSensitive -Quiet
+    if ($formatted.Count -gt 0 -and -not $hasTabular) {
+        Add-Findings ($formatted | Select-Object -First 1) "R20" "proportional-numbers"
+    }
+}
+
 Add-Findings (Find-Lines $files "$emDash|&mdash;|&#8212;") "R9" "em-dash"
 Add-Findings (Find-Lines $jsonFiles $emDash) "R9" "em-dash"
 Add-Findings (Find-Lines $files "[A-Za-z0-9`"'/]>[^<>{}]*[A-Za-z0-9)]\s*;\s+[A-Za-z][^<>{}]*<") "R9" "semicolon-in-copy"
@@ -265,7 +286,7 @@ Write-Output ""
 $results | Sort-Object { $_ } -Culture "en-US" | ForEach-Object { Write-Output $_ }
 Write-Output ""
 Write-Output "FINDINGS: $($results.Count)"
-foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9", "R10", "R11", "R13", "R14", "R15", "R16", "R17", "R18", "R19")) {
+foreach ($rule in @("R1", "R3", "R4", "R5", "R6", "R7", "R9", "R10", "R11", "R13", "R14", "R15", "R16", "R17", "R18", "R19", "R20")) {
     $count = @($results | Where-Object { $_.StartsWith("$rule ") }).Count
     Write-Output "${rule}: $count"
 }

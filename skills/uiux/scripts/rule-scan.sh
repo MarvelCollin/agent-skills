@@ -276,6 +276,25 @@ for file in "${MARKUP[@]+"${MARKUP[@]}"}"; do
     fi
 done
 
+scan "<h[1-6]([[:space:]>]|$)" \
+    | { grep -E "<(em|i)([[:space:]>]|$)|(^|[\"'[:space:]])italic([\"'[:space:]]|$)|font-style[[:space:]]*:[[:space:]]*italic" || true; } \
+    | report R20 italic-heading
+scan "(^|[\"'[:space:]])font-mono([\"'[:space:]]|$)" \
+    | { grep -E "(^|[\"'[:space:]])(uppercase|tracking-(wide|wider|widest|\[[^]]*\]))([\"'[:space:]]|$)" || true; } \
+    | { grep -vE "<(code|kbd|pre|samp)([[:space:]>]|$)" || true; } \
+    | report R20 decorative-mono
+scan "<h[1-6]([[:space:]][^>]*)?>.*<br([[:space:]/>]|$)" | report R20 headline-break
+scan_insensitive "(^|[\"'[:space:]])text-(gray|slate|zinc|neutral|stone)-(200|300|400)([\"'[:space:]]|$)|(^|[^a-z-])color[[:space:]]*:[[:space:]]*#(9ca3af|d1d5db|94a3b8|cbd5e1|a1a1aa|d4d4d8|a3a3a3|d4d4d4|a8a29e|d6d3d1)([^0-9a-f]|$)" \
+    | { grep -vE "bg-(gray|slate|zinc|neutral|stone)-(700|800|900|950)|bg-black" || true; } \
+    | report R20 faint-text
+NUMBER_FORMAT_PATTERN="\.toFixed\(|\.toLocaleString\(|Intl\.NumberFormat|format(Currency|Price|Number|Money|Amount)\("
+TABULAR_PATTERN="tabular-nums|font-variant-numeric|[\"']tnum[\"']"
+for file in "${MARKUP[@]+"${MARKUP[@]}"}"; do
+    if grep -qE "$NUMBER_FORMAT_PATTERN" "$file" && ! grep -qE "$TABULAR_PATTERN" "$file"; then
+        grep -nHE -m1 "$NUMBER_FORMAT_PATTERN" "$file" | report R20 proportional-numbers
+    fi
+done
+
 scan "—|&mdash;|&#8212;" | report R9 em-dash
 scan_json "—" | report R9 em-dash
 scan "[A-Za-z0-9\"'/]>[^<>{}]*[A-Za-z0-9)][[:space:]]*;[[:space:]]+[A-Za-z][^<>{}]*<" | report R9 semicolon-in-copy
@@ -287,6 +306,6 @@ echo ""
 sort "$RESULTS"
 echo ""
 echo "FINDINGS: $(wc -l <"$RESULTS" | tr -d ' ')"
-for rule in R1 R3 R4 R5 R6 R7 R9 R10 R11 R13 R14 R15 R16 R17 R18 R19; do
+for rule in R1 R3 R4 R5 R6 R7 R9 R10 R11 R13 R14 R15 R16 R17 R18 R19 R20; do
     echo "$rule: $(grep -c "^$rule " "$RESULTS" || true)"
 done
