@@ -37,7 +37,7 @@ tests/                           Script unit tests, fixture server, fake npx
 
 ## /uiux Design Principles
 
-- Build mode hard rules R1 to R19 live in `skills/uiux/references/build-rules.md`. Keep `scripts/rule-scan.*` in sync when a rule changes. Form geometry (R17) lives in `references/form-layout.md`, motion (R18) in `references/motion.md`
+- Build mode hard rules R1 to R20 live in `skills/uiux/references/build-rules.md`. Keep `scripts/rule-scan.*` in sync when a rule changes. Form geometry (R17) lives in `references/form-layout.md`, motion (R18) in `references/motion.md`, the polish pass (R20) in `references/polish.md`
 - No semicolons or em dashes in anything the skill tells Claude to write, and none in the skill's own prose
 - Page and component patterns live in `skills/uiux/references/patterns/`, one file per screen type, each ending with a Check list. SKILL.md maps screens to files in Patterns by Screen. Keep the map in sync when a file is added
 - Build mode changes only what the user asked for. Everything outside the scope goes under Still Open in the review

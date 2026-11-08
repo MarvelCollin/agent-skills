@@ -1,8 +1,8 @@
 # UI Build Rules
 
-These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R19 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
+These rules apply whenever you create or change UI: pages, components, dashboards, forms, tables, modals. Rules R1 to R20 are hard rules. Break one only when the user explicitly asks for that exact thing, and say so in the review.
 
-Read these alongside [color.md](color.md), [navigation.md](navigation.md), [golden-rules.md](golden-rules.md), [form-layout.md](form-layout.md), [motion.md](motion.md), the slop catalog in [slop-patterns.md](slop-patterns.md), and the page and component patterns in [patterns/](patterns/) that match the screen you are building.
+Read these alongside [color.md](color.md), [navigation.md](navigation.md), [golden-rules.md](golden-rules.md), [form-layout.md](form-layout.md), [motion.md](motion.md), [polish.md](polish.md), the slop catalog in [slop-patterns.md](slop-patterns.md), and the page and component patterns in [patterns/](patterns/) that match the screen you are building.
 
 ## R1: Random Color Hunt Palette Unless the User Picks Colors
 
@@ -324,13 +324,31 @@ The user should see what they came for without scrolling. Scrolling is the last 
 - **Tell the user more is there.** If content continues below, a cut off row, a fade edge or a count ("Showing 10 of 48") makes it visible. Never a page that looks finished above the fold while the important part hides below
 - **Marketing pages are the exception.** Public long form pages scroll by design. They still keep the main action reachable (R16)
 
+## R20: Polish Pass Before It Is Done
+
+A screen that works is not finished. Run the twenty item polish pass in [polish.md](polish.md) on everything in scope before the UI Review. Items owned by an earlier rule are checked there. These are R20's own:
+
+- **No filler badges.** Keep a badge only when it changes what the user does next (an unread count, a required action). Delete "New", "Beta", "AI powered", "Popular", zero counts and badges that repeat the text beside them
+- **No redundant labels.** Drop a label, heading, tooltip or placeholder that repeats what the content or control already says. Form field labels and accessible names always stay
+- **No random italics.** No italic accent word in a heading and no italic serif hero (T03, T05). Italic only for titles of works, terms being defined, foreign words and quotes
+- **Mono only where needed.** Monospace only for code, commands, keys, paths, IDs and hashes. Never for eyebrows, labels, navigation, buttons, prices or stats (T09)
+- **Specific headlines.** A headline names what the product does, for whom or the result. If it could sit on a competitor's site unchanged, rewrite it. Never invent a number to make it specific
+- **The main feature is the biggest thing.** The element a screen is about is about 1.5 to 2 times larger than the next, and there is one primary action per view, filled in the primary color, with a verb and outcome label
+- **Spacing groups.** The gap inside a group is half or less of the gap between groups. A heading sits closer to its own section than to the one above. Spacing before borders and cards
+- **One icon set.** One library, one stroke width, one style (filled only for the active state), sizes matched to the text, one icon per concept
+- **Concentric corners.** A rounded element inside a rounded container gets `max(0px, outer radius minus padding)`, derived from tokens. Never the same radius on both
+- **Readable muted text.** Secondary, helper and placeholder text still reach 4.5:1. Tailwind `gray-400` and its siblings on white fail
+- **Headlines wrap well.** `text-wrap: balance` on headings, `text-wrap: pretty` on paragraphs, a `max-width` measure, no `<br>` to force breaks, no single word on the last line
+- **Optical alignment.** Play glyphs, icon buttons, large headings and hanging quotes are adjusted until they look centered and aligned, checked on a zoomed screenshot
+- **Tabular numbers.** `tabular-nums` on every number in a table, price, total, counter, timer, stat or chart axis, with numeric columns right aligned
+
 ## Every Component Ships with Every State
 
 Default, hover, focus-visible, active, disabled, loading, empty, error and success, where they apply. A screen is not done until its loading, empty and error states exist.
 
 ## Checking the Rules
 
-Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7, R9, R10, R11, R13, R14, R15, R16, R17, R18 and R19 violations with file and line:
+Run the rule scan on the code you changed. It flags likely R1, R3, R4, R5, R6, R7, R9, R10, R11, R13, R14, R15, R16, R17, R18, R19 and R20 violations with file and line:
 
 ```bash
 bash "<skill-dir>/scripts/rule-scan.sh" "<project-or-folder>"
@@ -342,4 +360,4 @@ On Windows without bash:
 powershell -NoProfile -ExecutionPolicy Bypass -File "<skill-dir>/scripts/rule-scan.ps1" -Path "<project-or-folder>"
 ```
 
-The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2, R8, the rest of R10, the rest of R14, the rest of R15, the rest of R16, the rest of R17, the rest of R18 and R19 in the rendered UI. For R16, screenshot every public page at 375x812 and 1440x900, open a made up URL and read its status code, and submit every form once with errors and once correctly. For R14, open every form overlay with the most content it can hold and at a 700px tall window: the footer must be visible without scrolling and there must be one scrollbar. For R17, run the alignment check in [form-layout.md](form-layout.md) on every form at 1440 and 375 wide, with errors showing and without. For R18, run the motion checks in [motion.md](motion.md) and record one Performance trace while opening each overlay. For R19, screenshot every app screen at 1440x900 and 1366x768 and note what sits below the fold, then scroll each long view and confirm the headers stay put. Check R12 by comparing the names and style of new files against the conventions report.
+The scan is a heuristic. Check every finding by eye, fix the real ones, and check R2, R8, the rest of R10, the rest of R14, the rest of R15, the rest of R16, the rest of R17, the rest of R18, R19 and the rest of R20 in the rendered UI. For R16, screenshot every public page at 375x812 and 1440x900, open a made up URL and read its status code, and submit every form once with errors and once correctly. For R14, open every form overlay with the most content it can hold and at a 700px tall window: the footer must be visible without scrolling and there must be one scrollbar. For R17, run the alignment check in [form-layout.md](form-layout.md) on every form at 1440 and 375 wide, with errors showing and without. For R18, run the motion checks in [motion.md](motion.md) and record one Performance trace while opening each overlay. For R19, screenshot every app screen at 1440x900 and 1366x768 and note what sits below the fold, then scroll each long view and confirm the headers stay put. For R20, go through the Check list in [polish.md](polish.md) on screenshots at 1440x900 and 375x812. Check R12 by comparing the names and style of new files against the conventions report.

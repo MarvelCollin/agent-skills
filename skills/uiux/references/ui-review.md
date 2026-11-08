@@ -32,7 +32,8 @@ If the UI can run (a dev server, a static file, a preview), open it with a brows
 14. For forms (R17): run the alignment check in [form-layout.md](form-layout.md) on every form at 1440 and 375 wide, once clean and once after a submit with errors, until it prints `ALIGNED`. Then look at the screenshot: labels, controls, checkboxes and buttons share one left edge and controls in a row share one height
 15. For motion (R18): open every menu, popover, modal, drawer, toast and accordion, run the motion check from [motion.md](motion.md) right after each opens, and record one Performance trace with 4x CPU throttling. Repeat with reduced motion emulated
 16. For screen fit (R19): screenshot every app screen at 1440x900 and 1366x768. The title, the main action and the main content are visible without scrolling. Scroll every long view and confirm the page header, tabs and table header stay in place
-17. For every screen and component in scope, run the Check list at the end of its pattern file (Patterns by Screen in SKILL.md). Each failed check is fixed or listed under Still Open
+17. For polish (R20): go through the Check list in [polish.md](polish.md) on the screenshots. Delete filler badges and redundant labels, then zoom into nested corners, icon buttons, headlines and number columns
+18. For every screen and component in scope, run the Check list at the end of its pattern file (Patterns by Screen in SKILL.md). Each failed check is fixed or listed under Still Open
 
 ## 3. Answer the Three Questions
 
@@ -50,7 +51,7 @@ Judge the feel, with evidence for each point:
 - Color: the picked Color Hunt palette or the user's colors, no purple, `palette-check` passed or its warnings fixed, comfortable for long sessions (R1, Eye Comfort in [color.md](color.md))
 - Speed: pages load one at a time from the backend, skeletons hold the layout, nothing lags or jumps (R10)
 - Feedback: every action responds on the first frame, motion is short, explains the change and never drops a frame (R18)
-- Craft: consistent spacing, radius and type tokens, every state designed
+- Craft: consistent spacing, radius and type tokens, every state designed, and the twenty item polish pass done (R20)
 - Slop: check against [slop-patterns.md](slop-patterns.md). The build must rate Clean (0 to 10). Anything worse gets fixed before reporting
 
 Verdict: **Yes**, **Mostly** or **No**.
@@ -104,6 +105,7 @@ Write the review in chat, without semicolons or em dashes (R9):
 | R17 Forms on one grid, controls aligned | | |
 | R18 Short, calm, compositor only motion | | |
 | R19 Fits the screen, sticky headers, tabs | | |
+| R20 Polish pass: badges, labels, type, radius, alignment, numbers | | |
 
 ### Fixed During Review
 - ...
