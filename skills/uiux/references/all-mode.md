@@ -19,7 +19,7 @@ The palette is replaced with a new one from the picker, unless the user named co
 
 ## Before Changing Anything
 
-1. **Safety net.** Run `git status`. If the working tree has uncommitted changes, stop and ask the user to commit or stash them. Then create a branch `uiux-all-<YYYYMMDD>` and work only there. Never commit unless the user's own instructions say to
+1. **Safety net.** Run `git status`. If the working tree has uncommitted changes, stop and ask the user to commit or stash them. Then create a branch `uiux-all-<YYYYMMDD>` and work only there. If the project is not a git repository, copy the untouched frontend (sources, styles, config, not `node_modules`) into `uiux-all-<YYYYMMDD>/original/`, say so, and continue. Never commit unless the user's own instructions say to
 2. **Baseline.** Run the project's build, type check, lint and tests, and record what passes. Run the rule scan on the whole frontend and save the counts per rule. If the app runs, screenshot every route at 1440x900 and 375x812 into `uiux-all-<YYYYMMDD>/before/`
 3. **Inventory.** List every route, layout, shared component and overlay, from the router config and the pages folder. For each screen note its main task, the pattern file it matches (Patterns by Screen in SKILL.md), the components it uses and its rule scan findings
 4. **Plan.** Show the user, in one short message: the screen count, the new palette with its Color Hunt link, the type pairing, the tokens, the shared components to build or replace, the navigation, and the order of work. Then start without waiting, unless the user asked to approve the plan first
@@ -45,4 +45,4 @@ On a large project with the Agent tool available, steps 4 and 5 may run in paral
 2. Run the rule scan on the whole frontend. Report the counts before and after per rule. Every remaining finding is a false positive with a one line reason, or is listed under Still Open
 3. Screenshot every route again into `uiux-all-<YYYYMMDD>/after/` at the same sizes and compare with the baseline. Click through every main task once to confirm nothing the user could do before is gone
 4. Run the UI Review in [ui-review.md](ui-review.md) on the three most used screens, and the R20 Check list on all of them
-5. Give the user a summary: the branch name, the new palette and tokens, the screens changed, the rule scan counts before and after, the test results, and Still Open. Tell them how to see it (the dev server command) and how to drop it (`git checkout <previous-branch>` and delete the branch)
+5. Give the user a summary: the branch name, the new palette and tokens, the screens changed, the rule scan counts before and after, the test results, and Still Open. Tell them how to see it (the dev server command) and how to drop it (`git checkout <previous-branch>` and delete the branch, or restore the copy in `original/`)
