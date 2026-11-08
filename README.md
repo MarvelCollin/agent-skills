@@ -83,6 +83,15 @@ It also applies the guides on [navigation](skills/uiux/references/navigation.md)
 
 It changes only what you asked for. A request to fix a table changes the table, not the page around it, and anything else it notices goes into the review as an open item.
 
+To redesign a whole project to every rule at once:
+
+```
+/uiux all                 # every screen and component in the project
+/uiux all src/app/admin   # only this folder
+```
+
+It works on a new `uiux-all-<date>` branch, records the build, tests and rule scan first, then rebuilds tokens, shared components, the app shell and every screen in that order, and finishes with the polish pass. Routes, data, business logic and features stay as they are. At the end it reports the rule scan counts before and after and how to drop the branch.
+
 After building, it reviews its own work and answers three questions with evidence: **Is it easy to use? Is it nice to use? Is the navigation good?** It runs a rule scan on the code, uses the UI in a browser when it can, and fixes what it finds before reporting.
 
 ```
