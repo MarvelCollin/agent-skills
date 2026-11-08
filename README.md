@@ -92,6 +92,38 @@ To redesign a whole project to every rule at once:
 
 It works on a new `uiux-all-<date>` branch, records the build, tests and rule scan first, then rebuilds tokens, shared components, the app shell and every screen in that order, and finishes with the polish pass. Routes, data, business logic and features stay as they are. At the end it reports the rule scan counts before and after and how to drop the branch.
 
+#### Example: one dashboard, two prompts
+
+Both runs start from the same school admin app (the fixture in [evals/redesign-all](evals/redesign-all/fixture)), on the same day, with a mock API of 60 students. Only the dashboard was in scope.
+
+- **Plain:** Claude Code with skills turned off and the prompt `make me nice dashboard`
+- **/uiux:** `make me new dashboard /uiux all`, limited to the tokens, the app shell and the dashboard
+
+| Starting point | Plain prompt | /uiux |
+|---|---|---|
+| ![Original dashboard](docs/images/dashboard-original.jpeg) | ![Dashboard from the plain prompt](docs/images/dashboard-plain.jpeg) | ![Dashboard from /uiux](docs/images/dashboard-uiux.jpeg) |
+
+<table>
+<tr><th>Plain prompt at 375px</th><th>/uiux at 375px</th></tr>
+<tr>
+<td><img src="docs/images/dashboard-plain-mobile.jpeg" alt="Dashboard from the plain prompt on a phone" width="300"></td>
+<td><img src="docs/images/dashboard-uiux-mobile.jpeg" alt="Dashboard from /uiux on a phone" width="300"></td>
+</tr>
+</table>
+
+| | Plain prompt | /uiux |
+|---|---|---|
+| Colors | Near black page with green and coral, chosen by the model | A random [Color Hunt palette](https://colorhunt.co/palette/6f4e37a67b5becb176fed8b1) passed by `palette-check`, dark text on a light page (R1) |
+| Labels | Mono uppercase labels on every metric and axis | Mono kept for code only (R20) |
+| Data | Loads the whole roster in one request (`pageSize` set to the student count) | Calls only the stats endpoint, with a skeleton and an error state with retry (R10) |
+| Numbers | "14 below pass mark" next to "12 students are below the pass mark" | One count used everywhere, tabular figures (R20) |
+| Main action | "Open roster" as a small text link | One primary button, "Review 14 students below 55" (R16, R20) |
+| Hierarchy | Five equal metric boxes | The average score is the largest element, the other two sit beside it (R2, R20) |
+| Phone at 375px | Navigation wraps onto two lines, chart axis labels shrink with the chart until they are hard to read | Navigation on one row, 44px targets, no sideways scroll (R19) |
+| Rule scan, whole app | 41 to 20 leads | 41 to 16 leads |
+
+The plain run did one thing better: it lists the students below the pass mark by name. The /uiux run left that out because the API has no score filter and listing them would mean loading every student. It went under Still Open as a backend change instead. The leads left in both apps sit on the pages that were not redesigned (Students and Settings).
+
 After building, it reviews its own work and answers three questions with evidence: **Is it easy to use? Is it nice to use? Is the navigation good?** It runs a rule scan on the code, uses the UI in a browser when it can, and fixes what it finds before reporting.
 
 ```
